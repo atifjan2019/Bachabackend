@@ -7,16 +7,20 @@ use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class CatalogController extends Controller
 {
     public function categories(): JsonResponse
     {
-        $categories = Category::query()
-            ->orderBy('name')
-            ->get(['id', 'name', 'slug', 'description', 'image', 'meta_title', 'meta_description']);
+        $data = Cache::remember('api:categories', 300, function () {
+            return Category::query()
+                ->orderBy('name')
+                ->get(['id', 'name', 'slug', 'description', 'image', 'meta_title', 'meta_description']);
+        });
 
-        return response()->json(['data' => $categories]);
+        return response()->json(['data' => $data])
+            ->header('Cache-Control', 'public, max-age=60, s-maxage=300');
     }
 
     public function products(Request $request): JsonResponse
@@ -28,39 +32,46 @@ class CatalogController extends Controller
             'per_page' => 'nullable|integer|min:1|max:100',
         ]);
 
-        $perPage = (int) ($request->integer('per_page') ?: 20);
+        $cacheKey = 'api:products:' . md5(json_encode($request->query()));
 
-        $query = Product::query()->orderByDesc('id');
+        $data = Cache::remember($cacheKey, 300, function () use ($request) {
+            $perPage = (int) ($request->integer('per_page') ?: 20);
+            $query = Product::query()->orderByDesc('id');
 
-        if ($request->filled('category')) {
-            $query->where('category', $request->string('category'));
-        }
+            if ($request->filled('category')) {
+                $query->where('category', $request->string('category'));
+            }
 
-        if ($request->filled('search')) {
-            $search = (string) $request->string('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('slug', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
-            });
-        }
+            if ($request->filled('search')) {
+                $search = (string) $request->string('search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('slug', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%");
+                });
+            }
 
-        if (!is_null($request->query('is_new'))) {
-            $query->where('is_new', $request->boolean('is_new'));
-        }
+            if (!is_null($request->query('is_new'))) {
+                $query->where('is_new', $request->boolean('is_new'));
+            }
 
-        $products = $query->paginate($perPage)->appends($request->query());
+            return $query->paginate($perPage)->appends($request->query());
+        });
 
-        return response()->json($products);
+        return response()->json($data)
+            ->header('Cache-Control', 'public, max-age=60, s-maxage=300');
     }
 
     public function product(string $slugOrId): JsonResponse
     {
-        $product = Product::query()
-            ->where('slug', $slugOrId)
-            ->orWhere('id', $slugOrId)
-            ->firstOrFail();
+        $data = Cache::remember('api:product:' . $slugOrId, 300, function () use ($slugOrId) {
+            return Product::query()
+                ->where('slug', $slugOrId)
+                ->orWhere('id', $slugOrId)
+                ->firstOrFail();
+        });
 
-        return response()->json(['data' => $product]);
+        return response()->json(['data' => $data])
+            ->header('Cache-Control', 'public, max-age=60, s-maxage=300');
     }
 }
