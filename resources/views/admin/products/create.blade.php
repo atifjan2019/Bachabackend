@@ -110,7 +110,7 @@
                         <div class="col-12">
                             <label class="form-label">Main Image</label>
                             <input type="file" name="image_file" class="form-control" accept="image/*" onchange="previewImg(this, 'preview-main')">
-                            <span class="url-toggle" onclick="openMediaPicker('image', false)" style="color:#e74c3c;">📁 Select from Library</span>
+                            <span class="btn-library" onclick="openMediaPicker('image', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
                             <div id="preview-main" class="preview-box" style="display:none; margin-top:8px;"><img src="" alt="Preview" style="max-height:160px; border-radius:6px;"></div>
                             <input type="hidden" name="image" value="{{ old('image') }}">
                         </div>
@@ -118,7 +118,7 @@
                         <div class="col-12">
                             <label class="form-label">Gallery Images</label>
                             <input type="file" name="gallery_files[]" class="form-control" accept="image/*" multiple onchange="previewGallery(this, 'preview-gallery')">
-                            <span class="url-toggle" onclick="openMediaPicker('gallery', true)" style="color:#e74c3c;">📁 Select from Library</span>
+                            <span class="btn-library" onclick="openMediaPicker('gallery', true)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
                             <div id="preview-gallery" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;"></div>
                             <input type="hidden" name="gallery" value="{{ old('gallery') }}">
                         </div>

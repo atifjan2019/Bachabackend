@@ -544,6 +544,32 @@
     .btn-ghost-del:hover { background: #ef4444; color: #fff; }
     .d-grid { display: grid; }
 
+    .btn-library {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 8px;
+        padding: 7px 14px;
+        font-family: inherit;
+        font-size: .72rem;
+        font-weight: 700;
+        color: var(--red);
+        background: linear-gradient(135deg, rgba(217,45,32,.06), rgba(249,115,22,.04));
+        border: 1.5px solid rgba(217,45,32,.18);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all .18s ease;
+        text-decoration: none;
+    }
+    .btn-library:hover {
+        background: linear-gradient(135deg, var(--red), #f97316);
+        color: #fff;
+        border-color: var(--red);
+        box-shadow: 0 8px 24px rgba(217,45,32,.22);
+        transform: translateY(-1px);
+    }
+    .btn-library i { font-size: .88rem; }
+
     .action-group {
         display: flex;
         gap: 6px;
