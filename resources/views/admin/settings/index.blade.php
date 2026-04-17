@@ -9,7 +9,7 @@
     </div>
 </div>
 
-<form action="{{ route('admin.settings.update') }}" method="POST">
+<form id="settingsForm" action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data">
     @csrf @method('PUT')
     <div class="row g-4">
         <div class="col-lg-8">
@@ -43,15 +43,30 @@
                 <div class="bcard-body">
                     <div class="row g-3">
                         <div class="col-12">
-                            <label class="form-label">Logo URL</label>
-                            <input type="text" name="logo_url" class="form-control" value="{{ $settings['logo_url'] ?? '' }}" placeholder="https://...">
-                            @if(!empty($settings['logo_url']))
-                                <div class="preview-box"><img src="{{ $settings['logo_url'] }}" alt="Logo Preview"></div>
-                            @endif
+                            <label class="form-label">Logo</label>
+                            <input type="file" name="logo_file" class="form-control" accept="image/*" onchange="previewImg(this, 'logo-preview')">
+                            <div id="logo-preview" style="margin-top:8px;">
+                                @if(!empty($settings['logo_url']))
+                                    <img src="{{ $settings['logo_url'] }}" alt="Logo" style="max-height:60px; border-radius:4px;">
+                                @endif
+                            </div>
+                            <span onclick="this.nextElementSibling.classList.toggle('show'); this.textContent = this.nextElementSibling.classList.contains('show') ? '− Hide URL' : '+ Enter URL manually'" style="display:inline-block; font-size:11px; color:#999; cursor:pointer; margin-top:6px; text-decoration:underline;">+ Enter URL manually</span>
+                            <div style="display:none; margin-top:6px;" class="url-field">
+                                <input type="text" name="logo_url" class="form-control form-control-sm" value="{{ $settings['logo_url'] ?? '' }}" placeholder="https://...">
+                            </div>
                         </div>
                         <div class="col-12">
-                            <label class="form-label">Favicon URL</label>
-                            <input type="text" name="favicon_url" class="form-control" value="{{ $settings['favicon_url'] ?? '' }}" placeholder="https://...">
+                            <label class="form-label">Favicon</label>
+                            <input type="file" name="favicon_file" class="form-control" accept="image/*,.ico" onchange="previewImg(this, 'favicon-preview')">
+                            <div id="favicon-preview" style="margin-top:8px;">
+                                @if(!empty($settings['favicon_url']))
+                                    <img src="{{ $settings['favicon_url'] }}" alt="Favicon" style="max-height:32px; border-radius:4px;">
+                                @endif
+                            </div>
+                            <span onclick="this.nextElementSibling.classList.toggle('show'); this.textContent = this.nextElementSibling.classList.contains('show') ? '− Hide URL' : '+ Enter URL manually'" style="display:inline-block; font-size:11px; color:#999; cursor:pointer; margin-top:6px; text-decoration:underline;">+ Enter URL manually</span>
+                            <div style="display:none; margin-top:6px;" class="url-field">
+                                <input type="text" name="favicon_url" class="form-control form-control-sm" value="{{ $settings['favicon_url'] ?? '' }}" placeholder="https://...">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -119,4 +134,20 @@
         </div>
     </div>
 </form>
+
+@include('admin.partials.upload-progress')
+
+<script>
+function previewImg(input, previewId) {
+    const preview = document.getElementById(previewId);
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML = '<img src="' + e.target.result + '" alt="Preview" style="max-height:60px; border-radius:4px;">';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+initUploadProgress('settingsForm', '{{ route("admin.settings.index") }}');
+</script>
 @endsection
