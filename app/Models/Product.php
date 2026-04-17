@@ -14,7 +14,6 @@ class Product extends Model
         'price',
         'original_price',
         'image',
-        'lifestyle',
         'gallery',
         'sizes',
         'video_url',

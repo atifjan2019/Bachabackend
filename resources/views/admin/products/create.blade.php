@@ -116,15 +116,7 @@
                                 <input type="text" name="image" class="form-control form-control-sm" value="{{ old('image') }}" placeholder="https://...">
                             </div>
                         </div>
-                        <div class="col-12">
-                            <label class="form-label">Lifestyle Image</label>
-                            <input type="file" name="lifestyle_file" class="form-control" accept="image/*" onchange="previewImg(this, 'preview-lifestyle')">
-                            <div id="preview-lifestyle" class="preview-box" style="display:none; margin-top:8px;"><img src="" alt="Preview" style="max-height:160px; border-radius:6px;"></div>
-                            <span class="url-toggle" onclick="toggleUrl(this)">+ Enter URL manually</span>
-                            <div class="url-field">
-                                <input type="text" name="lifestyle" class="form-control form-control-sm" value="{{ old('lifestyle') }}" placeholder="https://...">
-                            </div>
-                        </div>
+
                         <div class="col-12">
                             <label class="form-label">Gallery Images</label>
                             <input type="file" name="gallery_files[]" class="form-control" accept="image/*" multiple onchange="previewGallery(this, 'preview-gallery')">

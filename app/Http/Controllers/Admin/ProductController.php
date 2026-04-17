@@ -29,11 +29,10 @@ class ProductController extends Controller
             'name'  => 'required|string|max:255',
             'price' => 'required',
             'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
-            'lifestyle_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
             'gallery_files.*' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
         ]);
 
-        $data = $request->except(['_token', 'image_file', 'lifestyle_file', 'gallery_files']);
+        $data = $request->except(['_token', 'image_file', 'gallery_files']);
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
 
         // Upload main image
@@ -41,10 +40,7 @@ class ProductController extends Controller
             $data['image'] = $this->uploadToR2($request->file('image_file'));
         }
 
-        // Upload lifestyle image
-        if ($request->hasFile('lifestyle_file')) {
-            $data['lifestyle'] = $this->uploadToR2($request->file('lifestyle_file'));
-        }
+
 
         // Upload gallery images
         if ($request->hasFile('gallery_files')) {
@@ -84,12 +80,11 @@ class ProductController extends Controller
             'name'  => 'required|string|max:255',
             'price' => 'required',
             'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
-            'lifestyle_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
             'gallery_files.*' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
         ]);
 
         $product = Product::findOrFail($id);
-        $data = $request->except(['_token', '_method', 'image_file', 'lifestyle_file', 'gallery_files']);
+        $data = $request->except(['_token', '_method', 'image_file', 'gallery_files']);
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
 
         // Upload main image
@@ -97,10 +92,7 @@ class ProductController extends Controller
             $data['image'] = $this->uploadToR2($request->file('image_file'));
         }
 
-        // Upload lifestyle image
-        if ($request->hasFile('lifestyle_file')) {
-            $data['lifestyle'] = $this->uploadToR2($request->file('lifestyle_file'));
-        }
+
 
         // Upload gallery images
         if ($request->hasFile('gallery_files')) {
