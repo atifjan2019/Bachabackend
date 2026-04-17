@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Customer extends Model
+{
+    protected $fillable = [
+        'name',
+        'email',
+        'phone',
+        'address',
+        'orders_count',
+        'total_spent',
+    ];
+
+    protected $casts = [
+        'orders_count' => 'integer',
+        'total_spent' => 'decimal:2',
+    ];
+}
+
