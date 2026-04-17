@@ -44,7 +44,10 @@
                                 <img src="{{ $category->image }}" alt="Category image" style="max-height:140px; border-radius:6px; width:100%; object-fit:cover;">
                             @endif
                         </div>
-                        <span class="url-toggle" onclick="this.nextElementSibling.classList.toggle('show'); this.textContent = this.nextElementSibling.classList.contains('show') ? '− Hide URL field' : '+ Enter URL manually'" style="display:inline-block; font-size:11px; color:#999; cursor:pointer; margin-top:6px; text-decoration:underline;">+ Enter URL manually</span>
+                        <div style="display:flex; gap:8px; margin-top:6px;">
+                            <span onclick="this.parentElement.nextElementSibling.classList.toggle('show'); this.textContent = this.parentElement.nextElementSibling.classList.contains('show') ? '− Hide URL' : '+ Enter URL manually'" style="font-size:11px; color:#999; cursor:pointer; text-decoration:underline;">+ Enter URL manually</span>
+                            <span onclick="openMediaPicker('image', false)" style="font-size:11px; color:#e74c3c; cursor:pointer; text-decoration:underline;">📁 Select from Library</span>
+                        </div>
                         <div style="display:none; margin-top:6px;" class="url-field">
                             <input type="text" name="image" class="form-control form-control-sm" value="{{ old('image', $category->image) }}">
                         </div>
@@ -79,4 +82,5 @@ function previewImg(input) {
 
 @include('admin.partials.upload-progress')
 <script>initUploadProgress('catForm', '{{ route("admin.categories.index") }}');</script>
+@include('admin.partials.media-picker')
 @endsection
