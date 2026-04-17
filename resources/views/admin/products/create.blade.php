@@ -315,4 +315,5 @@ document.getElementById('productForm').addEventListener('formdata', function(e) 
     e.formData.set('description', quill.root.innerHTML);
 });
 </script>
+@include('admin.partials.media-picker')
 @endsection
