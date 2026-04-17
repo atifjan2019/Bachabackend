@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\CatalogController;
 use App\Http\Controllers\Api\V1\CheckoutController;
 use App\Http\Controllers\Api\V1\ContentController;
+use App\Http\Controllers\Api\V1\UploadController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -18,4 +19,6 @@ Route::prefix('v1')->group(function () {
 
     Route::post('/orders', [CheckoutController::class, 'storeOrder']);
     Route::post('/abandoned-carts', [CheckoutController::class, 'storeAbandonedCart']);
+
+    Route::post('/upload', [UploadController::class, 'store']);
 });
