@@ -40,13 +40,8 @@
                         <label class="form-label">Category Image</label>
                         <input type="file" name="image_file" class="form-control" accept="image/*" onchange="previewImg(this)">
                         <div id="img-preview" style="margin-top:8px; display:none;"><img src="" alt="Preview" style="max-height:140px; border-radius:6px; width:100%; object-fit:cover;"></div>
-                        <div style="display:flex; gap:8px; margin-top:6px;">
-                            <span onclick="this.parentElement.nextElementSibling.classList.toggle('show'); this.textContent = this.parentElement.nextElementSibling.classList.contains('show') ? '− Hide URL' : '+ Enter URL manually'" style="font-size:11px; color:#999; cursor:pointer; text-decoration:underline;">+ Enter URL manually</span>
-                            <span onclick="openMediaPicker('image', false)" style="font-size:11px; color:#e74c3c; cursor:pointer; text-decoration:underline;">📁 Select from Library</span>
-                        </div>
-                        <div style="display:none; margin-top:6px;" class="url-field">
-                            <input type="text" name="image" class="form-control form-control-sm" value="{{ old('image') }}" placeholder="https://...">
-                        </div>
+                        <span onclick="openMediaPicker('image', false)" style="display:inline-block; font-size:11px; color:#e74c3c; cursor:pointer; text-decoration:underline; margin-top:6px;">📁 Select from Library</span>
+                        <input type="hidden" name="image" value="{{ old('image') }}">
                     </div>
                     <div class="form-group border-top pt-3 mt-3">
                         <label class="form-label">Meta Title (SEO)</label>
