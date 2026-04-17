@@ -19,8 +19,7 @@ class CatalogController extends Controller
                 ->get(['id', 'name', 'slug', 'description', 'image', 'meta_title', 'meta_description']);
         });
 
-        return response()->json(['data' => $data])
-            ->header('Cache-Control', 'public, max-age=60, s-maxage=300');
+        return response()->json(['data' => $data]);
     }
 
     public function products(Request $request): JsonResponse
@@ -58,8 +57,7 @@ class CatalogController extends Controller
             return $query->paginate($perPage)->appends($request->query());
         });
 
-        return response()->json($data)
-            ->header('Cache-Control', 'public, max-age=60, s-maxage=300');
+        return response()->json($data);
     }
 
     public function product(string $slugOrId): JsonResponse
@@ -71,7 +69,6 @@ class CatalogController extends Controller
                 ->firstOrFail();
         });
 
-        return response()->json(['data' => $data])
-            ->header('Cache-Control', 'public, max-age=60, s-maxage=300');
+        return response()->json(['data' => $data]);
     }
 }
