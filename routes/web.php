@@ -30,6 +30,8 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
     Route::resource('abandoned-carts', \App\Http\Controllers\Admin\AbandonedCartController::class)->only(['index', 'destroy']);
     Route::resource('blog', \App\Http\Controllers\Admin\BlogPostController::class);
     Route::resource('media', \App\Http\Controllers\Admin\MediaController::class)->only(['index', 'store', 'destroy']);
+    Route::get('media-api/list', [\App\Http\Controllers\Admin\MediaController::class, 'apiList'])->name('media.api.list');
+    Route::post('media-api/delete-r2', [\App\Http\Controllers\Admin\MediaController::class, 'deleteR2'])->name('media.api.deleteR2');
     Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
     Route::put('settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
     Route::get('seo', [\App\Http\Controllers\Admin\SeoController::class, 'index'])->name('seo.index');
