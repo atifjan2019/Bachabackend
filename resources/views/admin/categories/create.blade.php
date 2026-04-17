@@ -12,7 +12,7 @@
     </div>
 </div>
 
-<form action="{{ route('admin.categories.store') }}" method="POST" enctype="multipart/form-data">
+<form id="catForm" action="{{ route('admin.categories.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
     <div class="row g-4">
         <div class="col-lg-8">
