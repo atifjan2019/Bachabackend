@@ -12,7 +12,7 @@
     </div>
 </div>
 
-<form action="{{ route('admin.products.store') }}" method="POST">
+<form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
     <div class="row g-4">
         <div class="col-lg-8">
@@ -40,16 +40,31 @@
                 <div class="bcard-body">
                     <div class="row g-3">
                         <div class="col-12">
-                            <label class="form-label">Main Image URL</label>
-                            <input type="text" name="image" class="form-control" value="{{ old('image') }}" placeholder="https://...">
+                            <label class="form-label">Main Image</label>
+                            <input type="file" name="image_file" class="form-control" accept="image/*" onchange="previewImg(this, 'preview-main')">
+                            <div id="preview-main" class="preview-box" style="display:none; margin-top:8px;"><img src="" alt="Preview" style="max-height:160px; border-radius:6px;"></div>
+                            <div style="margin-top:6px;">
+                                <small class="text-muted">Or paste URL:</small>
+                                <input type="text" name="image" class="form-control form-control-sm mt-1" value="{{ old('image') }}" placeholder="https://...">
+                            </div>
                         </div>
                         <div class="col-12">
-                            <label class="form-label">Lifestyle Image URL</label>
-                            <input type="text" name="lifestyle" class="form-control" value="{{ old('lifestyle') }}" placeholder="https://...">
+                            <label class="form-label">Lifestyle Image</label>
+                            <input type="file" name="lifestyle_file" class="form-control" accept="image/*" onchange="previewImg(this, 'preview-lifestyle')">
+                            <div id="preview-lifestyle" class="preview-box" style="display:none; margin-top:8px;"><img src="" alt="Preview" style="max-height:160px; border-radius:6px;"></div>
+                            <div style="margin-top:6px;">
+                                <small class="text-muted">Or paste URL:</small>
+                                <input type="text" name="lifestyle" class="form-control form-control-sm mt-1" value="{{ old('lifestyle') }}" placeholder="https://...">
+                            </div>
                         </div>
                         <div class="col-12">
-                            <label class="form-label">Gallery URLs <span class="form-hint">(JSON array)</span></label>
-                            <textarea name="gallery" class="form-control" rows="2" placeholder='["https://...", "https://..."]'>{{ old('gallery') }}</textarea>
+                            <label class="form-label">Gallery Images</label>
+                            <input type="file" name="gallery_files[]" class="form-control" accept="image/*" multiple onchange="previewGallery(this, 'preview-gallery')">
+                            <div id="preview-gallery" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;"></div>
+                            <div style="margin-top:6px;">
+                                <small class="text-muted">Or paste URLs (JSON array):</small>
+                                <textarea name="gallery" class="form-control form-control-sm mt-1" rows="2" placeholder='["https://...", "https://..."]'>{{ old('gallery') }}</textarea>
+                            </div>
                         </div>
                         <div class="col-12">
                             <label class="form-label">Video URL</label>
@@ -109,4 +124,34 @@
         </div>
     </div>
 </form>
+
+<script>
+function previewImg(input, previewId) {
+    const preview = document.getElementById(previewId);
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.style.display = 'block';
+            preview.querySelector('img').src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+function previewGallery(input, containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    if (input.files) {
+        Array.from(input.files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.cssText = 'max-height:100px; border-radius:6px; border:1px solid #ddd;';
+                container.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+}
+</script>
 @endsection

@@ -12,7 +12,7 @@
     </div>
 </div>
 
-<form action="{{ route('admin.products.update', $product->id) }}" method="POST">
+<form action="{{ route('admin.products.update', $product->id) }}" method="POST" enctype="multipart/form-data">
     @csrf @method('PUT')
     <div class="row g-4">
         <div class="col-lg-8">
@@ -37,24 +37,53 @@
             <div class="bcard">
                 <div class="bcard-head"><span class="bcard-title">Media</span></div>
                 <div class="bcard-body">
-                    <div class="form-group">
-                        <label class="form-label">Main Image URL</label>
-                        <input type="text" name="image" class="form-control" value="{{ old('image', $product->image) }}">
-                        @if($product->image)
-                            <div class="preview-box"><img src="{{ $product->image }}" alt="Product image"></div>
-                        @endif
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Lifestyle Image URL</label>
-                        <input type="text" name="lifestyle" class="form-control" value="{{ old('lifestyle', $product->lifestyle) }}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Gallery URLs <span class="form-hint">(JSON array)</span></label>
-                        <textarea name="gallery" class="form-control" rows="2">{{ old('gallery', is_array($product->gallery) ? json_encode($product->gallery) : $product->gallery) }}</textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Video URL</label>
-                        <input type="text" name="video_url" class="form-control" value="{{ old('video_url', $product->video_url) }}">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Main Image</label>
+                            <input type="file" name="image_file" class="form-control" accept="image/*" onchange="previewImg(this, 'preview-main')">
+                            <div id="preview-main" class="preview-box" style="margin-top:8px;">
+                                @if($product->image)
+                                    <img src="{{ $product->image }}" alt="Product image" style="max-height:160px; border-radius:6px;">
+                                @endif
+                            </div>
+                            <div style="margin-top:6px;">
+                                <small class="text-muted">Or paste URL:</small>
+                                <input type="text" name="image" class="form-control form-control-sm mt-1" value="{{ old('image', $product->image) }}">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Lifestyle Image</label>
+                            <input type="file" name="lifestyle_file" class="form-control" accept="image/*" onchange="previewImg(this, 'preview-lifestyle')">
+                            <div id="preview-lifestyle" class="preview-box" style="margin-top:8px;">
+                                @if($product->lifestyle)
+                                    <img src="{{ $product->lifestyle }}" alt="Lifestyle image" style="max-height:160px; border-radius:6px;">
+                                @endif
+                            </div>
+                            <div style="margin-top:6px;">
+                                <small class="text-muted">Or paste URL:</small>
+                                <input type="text" name="lifestyle" class="form-control form-control-sm mt-1" value="{{ old('lifestyle', $product->lifestyle) }}">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Gallery Images</label>
+                            <input type="file" name="gallery_files[]" class="form-control" accept="image/*" multiple onchange="previewGallery(this, 'preview-gallery')">
+                            <div id="preview-gallery" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+                                @php
+                                    $galleryUrls = is_array($product->gallery) ? $product->gallery : json_decode($product->gallery ?? '[]', true) ?? [];
+                                @endphp
+                                @foreach($galleryUrls as $gUrl)
+                                    <img src="{{ $gUrl }}" alt="Gallery" style="max-height:100px; border-radius:6px; border:1px solid #ddd;">
+                                @endforeach
+                            </div>
+                            <div style="margin-top:6px;">
+                                <small class="text-muted">Or paste URLs (JSON array):</small>
+                                <textarea name="gallery" class="form-control form-control-sm mt-1" rows="2">{{ old('gallery', is_array($product->gallery) ? json_encode($product->gallery) : $product->gallery) }}</textarea>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Video URL</label>
+                            <input type="text" name="video_url" class="form-control" value="{{ old('video_url', $product->video_url) }}">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -108,4 +137,33 @@
         </div>
     </div>
 </form>
+
+<script>
+function previewImg(input, previewId) {
+    const preview = document.getElementById(previewId);
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML = '<img src="' + e.target.result + '" alt="Preview" style="max-height:160px; border-radius:6px;">';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+function previewGallery(input, containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    if (input.files) {
+        Array.from(input.files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.cssText = 'max-height:100px; border-radius:6px; border:1px solid #ddd;';
+                container.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+}
+</script>
 @endsection
