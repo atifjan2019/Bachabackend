@@ -13,7 +13,6 @@
     border: 1px solid #e5e5e5;
     border-radius: 8px;
     overflow: hidden;
-    cursor: pointer;
     transition: all 0.15s ease;
     position: relative;
     background: #fafafa;
@@ -28,6 +27,7 @@
     height: 130px;
     object-fit: cover;
     display: block;
+    cursor: pointer;
 }
 .r2-card .r2-icon {
     width: 100%;
@@ -37,6 +37,7 @@
     justify-content: center;
     color: #999;
     font-size: 2.5rem;
+    cursor: pointer;
 }
 .r2-card .r2-meta {
     padding: 8px 10px;
@@ -54,6 +55,24 @@
     color: #999;
     margin-top: 2px;
 }
+.r2-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+}
+.r2-actions button {
+    flex: 1;
+    padding: 4px 0;
+    font-size: 11px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: #fff;
+}
+.r2-actions .copy-btn:hover { background: #2d3436; color: #fff; border-color: #2d3436; }
+.r2-actions .del-btn { color: #e74c3c; }
+.r2-actions .del-btn:hover { background: #e74c3c; color: #fff; border-color: #e74c3c; }
 .copied-toast {
     position: fixed;
     bottom: 24px;
@@ -126,11 +145,10 @@
 
 {{-- Copied Toast --}}
 <div class="copied-toast" id="copiedToast">
-    <i class="mdi mdi-check-circle"></i> URL copied to clipboard!
+    <i class="mdi mdi-check-circle"></i> <span id="toastMsg">URL copied to clipboard!</span>
 </div>
 
 @if(count($r2Files) > 0)
-    {{-- Folder filter pills --}}
     @php
         $folders = collect($r2Files)->pluck('folder')->unique()->filter()->sort()->values();
     @endphp
@@ -143,7 +161,7 @@
     </div>
     @endif
 
-    <p style="font-size:12px; color:#999; margin-bottom:4px;">Click any image to copy its URL</p>
+    <p style="font-size:12px; color:#999; margin-bottom:4px;">Click image to copy URL · Use delete to remove from cloud</p>
 
     <div class="r2-grid" id="mediaGrid">
         @foreach($r2Files as $file)
@@ -151,17 +169,21 @@
                 $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
                 $isImage = in_array($ext, ['jpg','jpeg','png','gif','webp','svg']);
             @endphp
-            <div class="r2-card" data-folder="{{ $file['folder'] }}" onclick="copyUrl('{{ $file['url'] }}')">
+            <div class="r2-card" data-folder="{{ $file['folder'] }}" id="card-{{ md5($file['path']) }}">
                 @if($isImage)
-                    <img src="{{ $file['url'] }}" alt="{{ $file['name'] }}" loading="lazy">
+                    <img src="{{ $file['url'] }}" alt="{{ $file['name'] }}" loading="lazy" onclick="copyUrl('{{ $file['url'] }}')">
                 @else
-                    <div class="r2-icon"><i class="mdi mdi-file-outline"></i></div>
+                    <div class="r2-icon" onclick="copyUrl('{{ $file['url'] }}')"><i class="mdi mdi-file-outline"></i></div>
                 @endif
                 <div class="r2-meta">
                     <div class="r2-name" title="{{ $file['name'] }}">{{ $file['name'] }}</div>
                     @if($file['folder'])
                         <div class="r2-folder">{{ $file['folder'] }}</div>
                     @endif
+                    <div class="r2-actions">
+                        <button class="copy-btn" onclick="copyUrl('{{ $file['url'] }}')"><i class="mdi mdi-content-copy"></i> Copy</button>
+                        <button class="del-btn" onclick="deleteR2File('{{ $file['path'] }}', 'card-{{ md5($file['path']) }}')"><i class="mdi mdi-delete-outline"></i> Delete</button>
+                    </div>
                 </div>
             </div>
         @endforeach
@@ -179,23 +201,53 @@
 <script>
 function copyUrl(url) {
     navigator.clipboard.writeText(url).then(function() {
-        const toast = document.getElementById('copiedToast');
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 2000);
+        showToast('URL copied to clipboard!');
     });
+}
+
+function showToast(msg) {
+    const toast = document.getElementById('copiedToast');
+    document.getElementById('toastMsg').textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
 }
 
 function filterFolder(folder, el) {
     document.querySelectorAll('.folder-pill').forEach(p => p.classList.remove('active'));
     el.classList.add('active');
-
     document.querySelectorAll('.r2-card').forEach(card => {
-        if (folder === 'all' || card.dataset.folder === folder) {
-            card.style.display = '';
-        } else {
-            card.style.display = 'none';
-        }
+        card.style.display = (folder === 'all' || card.dataset.folder === folder) ? '' : 'none';
     });
+}
+
+function deleteR2File(path, cardId) {
+    if (!confirm('Delete this file from cloud storage? This cannot be undone.')) return;
+
+    fetch('{{ route("admin.media.api.deleteR2") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify({ path: path }),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const card = document.getElementById(cardId);
+            if (card) {
+                card.style.transition = 'opacity 0.3s, transform 0.3s';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.9)';
+                setTimeout(() => card.remove(), 300);
+            }
+            showToast('File deleted from cloud');
+        } else {
+            alert('Failed to delete file');
+        }
+    })
+    .catch(() => alert('Failed to delete file'));
 }
 </script>
 
