@@ -50,7 +50,7 @@
                                     <img src="{{ $settings['logo_url'] }}" alt="Logo" style="max-height:60px; border-radius:4px;">
                                 @endif
                             </div>
-                            <span onclick="openMediaPicker('logo_url', false)" style="display:inline-block; font-size:11px; color:#e74c3c; cursor:pointer; text-decoration:underline; margin-top:6px;">📁 Select from Library</span>
+                            <span class="btn-library" onclick="openMediaPicker('logo_url', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
                             <input type="hidden" name="logo_url" value="{{ $settings['logo_url'] ?? '' }}">
                         </div>
                         <div class="col-12">
@@ -61,7 +61,7 @@
                                     <img src="{{ $settings['favicon_url'] }}" alt="Favicon" style="max-height:32px; border-radius:4px;">
                                 @endif
                             </div>
-                            <span onclick="openMediaPicker('favicon_url', false)" style="display:inline-block; font-size:11px; color:#e74c3c; cursor:pointer; text-decoration:underline; margin-top:6px;">📁 Select from Library</span>
+                            <span class="btn-library" onclick="openMediaPicker('favicon_url', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
                             <input type="hidden" name="favicon_url" value="{{ $settings['favicon_url'] ?? '' }}">
                         </div>
                     </div>

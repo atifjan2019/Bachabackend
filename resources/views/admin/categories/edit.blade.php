@@ -44,7 +44,7 @@
                                 <img src="{{ $category->image }}" alt="Category image" style="max-height:140px; border-radius:6px; width:100%; object-fit:cover;">
                             @endif
                         </div>
-                        <span onclick="openMediaPicker('image', false)" style="display:inline-block; font-size:11px; color:#e74c3c; cursor:pointer; text-decoration:underline; margin-top:6px;">📁 Select from Library</span>
+                        <span class="btn-library" onclick="openMediaPicker('image', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
                         <input type="hidden" name="image" value="{{ old('image', $category->image) }}">
                     </div>
                     <div class="form-group border-top pt-3 mt-3">
