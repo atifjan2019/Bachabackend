@@ -73,4 +73,7 @@ function previewImg(input) {
     }
 }
 </script>
+
+@include('admin.partials.upload-progress')
+<script>initUploadProgress('catForm', '{{ route("admin.categories.index") }}');</script>
 @endsection
