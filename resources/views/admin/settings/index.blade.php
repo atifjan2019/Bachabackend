@@ -50,7 +50,10 @@
                                     <img src="{{ $settings['logo_url'] }}" alt="Logo" style="max-height:60px; border-radius:4px;">
                                 @endif
                             </div>
-                            <span onclick="this.nextElementSibling.classList.toggle('show'); this.textContent = this.nextElementSibling.classList.contains('show') ? '− Hide URL' : '+ Enter URL manually'" style="display:inline-block; font-size:11px; color:#999; cursor:pointer; margin-top:6px; text-decoration:underline;">+ Enter URL manually</span>
+                            <div style="display:flex; gap:8px; margin-top:6px;">
+                                <span onclick="this.parentElement.nextElementSibling.classList.toggle('show'); this.textContent = this.parentElement.nextElementSibling.classList.contains('show') ? '− Hide URL' : '+ Enter URL manually'" style="font-size:11px; color:#999; cursor:pointer; text-decoration:underline;">+ Enter URL manually</span>
+                                <span onclick="openMediaPicker('logo_url', false)" style="font-size:11px; color:#e74c3c; cursor:pointer; text-decoration:underline;">📁 Select from Library</span>
+                            </div>
                             <div style="display:none; margin-top:6px;" class="url-field">
                                 <input type="text" name="logo_url" class="form-control form-control-sm" value="{{ $settings['logo_url'] ?? '' }}" placeholder="https://...">
                             </div>
@@ -63,7 +66,10 @@
                                     <img src="{{ $settings['favicon_url'] }}" alt="Favicon" style="max-height:32px; border-radius:4px;">
                                 @endif
                             </div>
-                            <span onclick="this.nextElementSibling.classList.toggle('show'); this.textContent = this.nextElementSibling.classList.contains('show') ? '− Hide URL' : '+ Enter URL manually'" style="display:inline-block; font-size:11px; color:#999; cursor:pointer; margin-top:6px; text-decoration:underline;">+ Enter URL manually</span>
+                            <div style="display:flex; gap:8px; margin-top:6px;">
+                                <span onclick="this.parentElement.nextElementSibling.classList.toggle('show'); this.textContent = this.parentElement.nextElementSibling.classList.contains('show') ? '− Hide URL' : '+ Enter URL manually'" style="font-size:11px; color:#999; cursor:pointer; text-decoration:underline;">+ Enter URL manually</span>
+                                <span onclick="openMediaPicker('favicon_url', false)" style="font-size:11px; color:#e74c3c; cursor:pointer; text-decoration:underline;">📁 Select from Library</span>
+                            </div>
                             <div style="display:none; margin-top:6px;" class="url-field">
                                 <input type="text" name="favicon_url" class="form-control form-control-sm" value="{{ $settings['favicon_url'] ?? '' }}" placeholder="https://...">
                             </div>
@@ -150,4 +156,5 @@ function previewImg(input, previewId) {
 }
 initUploadProgress('settingsForm', '{{ route("admin.settings.index") }}');
 </script>
+@include('admin.partials.media-picker')
 @endsection
