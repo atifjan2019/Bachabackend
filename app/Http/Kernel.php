@@ -36,7 +36,7 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-            \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
+            // \Illuminate\Routing\Middleware\ThrottleRequests::class.':api', // Temporarily disabled to support heavy Next.js static builds
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
