@@ -2,6 +2,8 @@
 @section('title', 'Add Product')
 @section('content')
 
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+
 <style>
 .upload-overlay {
     display: none;
@@ -39,29 +41,21 @@
     transition: width 0.2s ease;
 }
 .upload-pct { font-size: 24px; font-weight: 700; color: #333; }
-.file-item {
-    position: relative;
-}
-.file-progress {
-    height: 4px;
-    background: #e9ecef;
-    border-radius: 4px;
-    margin-top: 6px;
-    overflow: hidden;
-    display: none;
-}
-.file-progress .bar {
-    height: 100%;
-    background: linear-gradient(90deg, #e74c3c, #f39c12);
-    width: 0%;
-    transition: width 0.15s ease;
-}
-.file-progress-text {
+.url-toggle {
+    display: inline-block;
     font-size: 11px;
-    color: #888;
-    margin-top: 2px;
-    display: none;
+    color: #999;
+    cursor: pointer;
+    margin-top: 6px;
+    text-decoration: underline;
+    transition: color 0.15s;
 }
+.url-toggle:hover { color: #555; }
+.url-field { display: none; margin-top: 6px; }
+.url-field.show { display: block; }
+#quill-editor { min-height: 180px; background: #fff; }
+.ql-toolbar.ql-snow { border-radius: 6px 6px 0 0; }
+.ql-container.ql-snow { border-radius: 0 0 6px 6px; }
 </style>
 
 <div class="ph">
@@ -103,7 +97,8 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <textarea name="description" class="form-control" rows="6">{{ old('description') }}</textarea>
+                        <div id="quill-editor">{!! old('description') !!}</div>
+                        <textarea name="description" id="descriptionField" style="display:none;">{{ old('description') }}</textarea>
                     </div>
                 </div>
             </div>
@@ -112,37 +107,31 @@
                 <div class="bcard-head"><span class="bcard-title">Media</span></div>
                 <div class="bcard-body">
                     <div class="row g-3">
-                        <div class="col-12 file-item">
+                        <div class="col-12">
                             <label class="form-label">Main Image</label>
                             <input type="file" name="image_file" class="form-control" accept="image/*" onchange="previewImg(this, 'preview-main')">
-                            <div class="file-progress" id="prog-main"><div class="bar"></div></div>
-                            <div class="file-progress-text" id="prog-main-text"></div>
                             <div id="preview-main" class="preview-box" style="display:none; margin-top:8px;"><img src="" alt="Preview" style="max-height:160px; border-radius:6px;"></div>
-                            <div style="margin-top:6px;">
-                                <small class="text-muted">Or paste URL:</small>
-                                <input type="text" name="image" class="form-control form-control-sm mt-1" value="{{ old('image') }}" placeholder="https://...">
+                            <span class="url-toggle" onclick="toggleUrl(this)">+ Enter URL manually</span>
+                            <div class="url-field">
+                                <input type="text" name="image" class="form-control form-control-sm" value="{{ old('image') }}" placeholder="https://...">
                             </div>
                         </div>
-                        <div class="col-12 file-item">
+                        <div class="col-12">
                             <label class="form-label">Lifestyle Image</label>
                             <input type="file" name="lifestyle_file" class="form-control" accept="image/*" onchange="previewImg(this, 'preview-lifestyle')">
-                            <div class="file-progress" id="prog-lifestyle"><div class="bar"></div></div>
-                            <div class="file-progress-text" id="prog-lifestyle-text"></div>
                             <div id="preview-lifestyle" class="preview-box" style="display:none; margin-top:8px;"><img src="" alt="Preview" style="max-height:160px; border-radius:6px;"></div>
-                            <div style="margin-top:6px;">
-                                <small class="text-muted">Or paste URL:</small>
-                                <input type="text" name="lifestyle" class="form-control form-control-sm mt-1" value="{{ old('lifestyle') }}" placeholder="https://...">
+                            <span class="url-toggle" onclick="toggleUrl(this)">+ Enter URL manually</span>
+                            <div class="url-field">
+                                <input type="text" name="lifestyle" class="form-control form-control-sm" value="{{ old('lifestyle') }}" placeholder="https://...">
                             </div>
                         </div>
-                        <div class="col-12 file-item">
+                        <div class="col-12">
                             <label class="form-label">Gallery Images</label>
                             <input type="file" name="gallery_files[]" class="form-control" accept="image/*" multiple onchange="previewGallery(this, 'preview-gallery')">
-                            <div class="file-progress" id="prog-gallery"><div class="bar"></div></div>
-                            <div class="file-progress-text" id="prog-gallery-text"></div>
                             <div id="preview-gallery" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;"></div>
-                            <div style="margin-top:6px;">
-                                <small class="text-muted">Or paste URLs (JSON array):</small>
-                                <textarea name="gallery" class="form-control form-control-sm mt-1" rows="2" placeholder='["https://...", "https://..."]'>{{ old('gallery') }}</textarea>
+                            <span class="url-toggle" onclick="toggleUrl(this)">+ Enter URLs manually</span>
+                            <div class="url-field">
+                                <textarea name="gallery" class="form-control form-control-sm" rows="2" placeholder='["https://...", "https://..."]'>{{ old('gallery') }}</textarea>
                             </div>
                         </div>
                         <div class="col-12">
@@ -204,7 +193,29 @@
     </div>
 </form>
 
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script>
+// WYSIWYG Editor
+var quill = new Quill('#quill-editor', {
+    theme: 'snow',
+    modules: {
+        toolbar: [
+            [{ 'header': [2, 3, false] }],
+            ['bold', 'italic', 'underline'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['link'],
+            ['clean']
+        ]
+    },
+    placeholder: 'Write product description...'
+});
+
+function toggleUrl(el) {
+    const field = el.nextElementSibling;
+    field.classList.toggle('show');
+    el.textContent = field.classList.contains('show') ? '− Hide URL field' : '+ Enter URL manually';
+}
+
 function previewImg(input, previewId) {
     const preview = document.getElementById(previewId);
     if (input.files && input.files[0]) {
@@ -235,12 +246,15 @@ function previewGallery(input, containerId) {
 
 // AJAX form submission with upload progress
 document.getElementById('productForm').addEventListener('submit', function(e) {
+    // Sync Quill content to hidden textarea
+    document.getElementById('descriptionField').value = quill.root.innerHTML;
+
     const form = this;
     const fileInputs = form.querySelectorAll('input[type="file"]');
     let hasFiles = false;
     fileInputs.forEach(inp => { if (inp.files && inp.files.length > 0) hasFiles = true; });
 
-    if (!hasFiles) return; // No files, let normal form submission proceed
+    if (!hasFiles) return;
 
     e.preventDefault();
 
@@ -255,6 +269,9 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
     submitBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Uploading...';
 
     const formData = new FormData(form);
+    // Ensure Quill content is in formData
+    formData.set('description', quill.root.innerHTML);
+
     const xhr = new XMLHttpRequest();
 
     xhr.upload.addEventListener('progress', function(e) {
@@ -262,16 +279,10 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
             const pct = Math.round((e.loaded / e.total) * 100);
             progressBar.style.width = pct + '%';
             pctText.textContent = pct + '%';
-
-            if (pct < 30) {
-                statusText.textContent = 'Uploading images...';
-            } else if (pct < 70) {
-                statusText.textContent = 'Transferring to cloud storage...';
-            } else if (pct < 100) {
-                statusText.textContent = 'Almost done...';
-            } else {
-                statusText.textContent = 'Processing...';
-            }
+            if (pct < 30) statusText.textContent = 'Uploading images...';
+            else if (pct < 70) statusText.textContent = 'Transferring to cloud storage...';
+            else if (pct < 100) statusText.textContent = 'Almost done...';
+            else statusText.textContent = 'Processing...';
         }
     });
 
@@ -280,12 +291,7 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
             statusText.textContent = 'Done! Redirecting...';
             pctText.textContent = '100%';
             progressBar.style.width = '100%';
-            // Follow redirect - parse redirect URL from response
-            if (xhr.responseURL) {
-                window.location.href = xhr.responseURL;
-            } else {
-                window.location.href = '{{ route("admin.products.index") }}';
-            }
+            window.location.href = xhr.responseURL || '{{ route("admin.products.index") }}';
         } else {
             overlay.classList.remove('active');
             submitBtn.disabled = false;
@@ -298,12 +304,17 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
         overlay.classList.remove('active');
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="mdi mdi-content-save-outline"></i> Save Product';
-        alert('Upload failed. Please check your connection and try again.');
+        alert('Upload failed. Please check your connection.');
     });
 
     xhr.open('POST', form.action);
     xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
     xhr.send(formData);
+});
+
+// Also sync Quill on normal (non-AJAX) submit
+document.getElementById('productForm').addEventListener('formdata', function(e) {
+    e.formData.set('description', quill.root.innerHTML);
 });
 </script>
 @endsection

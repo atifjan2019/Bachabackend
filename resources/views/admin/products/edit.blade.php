@@ -2,6 +2,8 @@
 @section('title', 'Edit Product')
 @section('content')
 
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+
 <style>
 .upload-overlay {
     display: none;
@@ -39,6 +41,21 @@
     transition: width 0.2s ease;
 }
 .upload-pct { font-size: 24px; font-weight: 700; color: #333; }
+.url-toggle {
+    display: inline-block;
+    font-size: 11px;
+    color: #999;
+    cursor: pointer;
+    margin-top: 6px;
+    text-decoration: underline;
+    transition: color 0.15s;
+}
+.url-toggle:hover { color: #555; }
+.url-field { display: none; margin-top: 6px; }
+.url-field.show { display: block; }
+#quill-editor { min-height: 180px; background: #fff; }
+.ql-toolbar.ql-snow { border-radius: 6px 6px 0 0; }
+.ql-container.ql-snow { border-radius: 0 0 6px 6px; }
 </style>
 
 <div class="ph">
@@ -79,7 +96,8 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <textarea name="description" class="form-control" rows="6">{{ old('description', $product->description) }}</textarea>
+                        <div id="quill-editor">{!! old('description', $product->description) !!}</div>
+                        <textarea name="description" id="descriptionField" style="display:none;">{{ old('description', $product->description) }}</textarea>
                     </div>
                 </div>
             </div>
@@ -96,9 +114,9 @@
                                     <img src="{{ $product->image }}" alt="Product image" style="max-height:160px; border-radius:6px;">
                                 @endif
                             </div>
-                            <div style="margin-top:6px;">
-                                <small class="text-muted">Or paste URL:</small>
-                                <input type="text" name="image" class="form-control form-control-sm mt-1" value="{{ old('image', $product->image) }}">
+                            <span class="url-toggle" onclick="toggleUrl(this)">+ Enter URL manually</span>
+                            <div class="url-field">
+                                <input type="text" name="image" class="form-control form-control-sm" value="{{ old('image', $product->image) }}">
                             </div>
                         </div>
                         <div class="col-12">
@@ -109,9 +127,9 @@
                                     <img src="{{ $product->lifestyle }}" alt="Lifestyle image" style="max-height:160px; border-radius:6px;">
                                 @endif
                             </div>
-                            <div style="margin-top:6px;">
-                                <small class="text-muted">Or paste URL:</small>
-                                <input type="text" name="lifestyle" class="form-control form-control-sm mt-1" value="{{ old('lifestyle', $product->lifestyle) }}">
+                            <span class="url-toggle" onclick="toggleUrl(this)">+ Enter URL manually</span>
+                            <div class="url-field">
+                                <input type="text" name="lifestyle" class="form-control form-control-sm" value="{{ old('lifestyle', $product->lifestyle) }}">
                             </div>
                         </div>
                         <div class="col-12">
@@ -125,9 +143,9 @@
                                     <img src="{{ $gUrl }}" alt="Gallery" style="max-height:100px; border-radius:6px; border:1px solid #ddd;">
                                 @endforeach
                             </div>
-                            <div style="margin-top:6px;">
-                                <small class="text-muted">Or paste URLs (JSON array):</small>
-                                <textarea name="gallery" class="form-control form-control-sm mt-1" rows="2">{{ old('gallery', is_array($product->gallery) ? json_encode($product->gallery) : $product->gallery) }}</textarea>
+                            <span class="url-toggle" onclick="toggleUrl(this)">+ Enter URLs manually</span>
+                            <div class="url-field">
+                                <textarea name="gallery" class="form-control form-control-sm" rows="2">{{ old('gallery', is_array($product->gallery) ? json_encode($product->gallery) : $product->gallery) }}</textarea>
                             </div>
                         </div>
                         <div class="col-12">
@@ -188,7 +206,29 @@
     </div>
 </form>
 
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script>
+// WYSIWYG Editor
+var quill = new Quill('#quill-editor', {
+    theme: 'snow',
+    modules: {
+        toolbar: [
+            [{ 'header': [2, 3, false] }],
+            ['bold', 'italic', 'underline'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['link'],
+            ['clean']
+        ]
+    },
+    placeholder: 'Write product description...'
+});
+
+function toggleUrl(el) {
+    const field = el.nextElementSibling;
+    field.classList.toggle('show');
+    el.textContent = field.classList.contains('show') ? '− Hide URL field' : '+ Enter URL manually';
+}
+
 function previewImg(input, previewId) {
     const preview = document.getElementById(previewId);
     if (input.files && input.files[0]) {
@@ -218,6 +258,8 @@ function previewGallery(input, containerId) {
 
 // AJAX form submission with upload progress
 document.getElementById('productForm').addEventListener('submit', function(e) {
+    document.getElementById('descriptionField').value = quill.root.innerHTML;
+
     const form = this;
     const fileInputs = form.querySelectorAll('input[type="file"]');
     let hasFiles = false;
@@ -238,6 +280,8 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
     submitBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Uploading...';
 
     const formData = new FormData(form);
+    formData.set('description', quill.root.innerHTML);
+
     const xhr = new XMLHttpRequest();
 
     xhr.upload.addEventListener('progress', function(e) {
@@ -245,16 +289,10 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
             const pct = Math.round((e.loaded / e.total) * 100);
             progressBar.style.width = pct + '%';
             pctText.textContent = pct + '%';
-
-            if (pct < 30) {
-                statusText.textContent = 'Uploading images...';
-            } else if (pct < 70) {
-                statusText.textContent = 'Transferring to cloud storage...';
-            } else if (pct < 100) {
-                statusText.textContent = 'Almost done...';
-            } else {
-                statusText.textContent = 'Processing...';
-            }
+            if (pct < 30) statusText.textContent = 'Uploading images...';
+            else if (pct < 70) statusText.textContent = 'Transferring to cloud storage...';
+            else if (pct < 100) statusText.textContent = 'Almost done...';
+            else statusText.textContent = 'Processing...';
         }
     });
 
@@ -263,11 +301,7 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
             statusText.textContent = 'Done! Redirecting...';
             pctText.textContent = '100%';
             progressBar.style.width = '100%';
-            if (xhr.responseURL) {
-                window.location.href = xhr.responseURL;
-            } else {
-                window.location.href = '{{ route("admin.products.index") }}';
-            }
+            window.location.href = xhr.responseURL || '{{ route("admin.products.index") }}';
         } else {
             overlay.classList.remove('active');
             submitBtn.disabled = false;
@@ -280,12 +314,16 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
         overlay.classList.remove('active');
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="mdi mdi-content-save-outline"></i> Update Product';
-        alert('Upload failed. Please check your connection and try again.');
+        alert('Upload failed. Please check your connection.');
     });
 
     xhr.open('POST', form.action);
     xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
     xhr.send(formData);
+});
+
+document.getElementById('productForm').addEventListener('formdata', function(e) {
+    e.formData.set('description', quill.root.innerHTML);
 });
 </script>
 @endsection
