@@ -113,7 +113,7 @@
             <h6>Upload File</h6>
             <button onclick="document.getElementById('uploadModal').style.display='none'" class="tb-icon-btn" type="button">&times;</button>
         </div>
-        <form action="{{ route('admin.media.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="mediaUploadForm" action="{{ route('admin.media.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="form-group">
                 <label class="form-label">Select File (max 10MB)</label>
@@ -198,4 +198,7 @@ function filterFolder(folder, el) {
     });
 }
 </script>
+
+@include('admin.partials.upload-progress')
+<script>initUploadProgress('mediaUploadForm', '{{ route("admin.media.index") }}');</script>
 @endsection

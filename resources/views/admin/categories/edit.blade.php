@@ -12,7 +12,7 @@
     </div>
 </div>
 
-<form action="{{ route('admin.categories.update', $category->id) }}" method="POST" enctype="multipart/form-data">
+<form id="catForm" action="{{ route('admin.categories.update', $category->id) }}" method="POST" enctype="multipart/form-data">
     @csrf @method('PUT')
     <div class="row g-4">
         <div class="col-lg-8">
@@ -76,4 +76,7 @@ function previewImg(input) {
     }
 }
 </script>
+
+@include('admin.partials.upload-progress')
+<script>initUploadProgress('catForm', '{{ route("admin.categories.index") }}');</script>
 @endsection
