@@ -109,18 +109,13 @@
                         <div class="col-12">
                             <label class="form-label">Main Image</label>
                             <input type="file" name="image_file" class="form-control" accept="image/*" onchange="previewImg(this, 'preview-main')">
-                            <div style="display:flex; gap:8px; margin-top:6px;">
-                                <span class="url-toggle" onclick="toggleUrl(this)" style="margin:0;">+ Enter URL manually</span>
-                                <span class="url-toggle" onclick="openMediaPicker('image', false)" style="margin:0; color:#e74c3c;">📁 Select from Library</span>
-                            </div>
+                            <span class="url-toggle" onclick="openMediaPicker('image', false)" style="color:#e74c3c;">📁 Select from Library</span>
                             <div id="preview-main" class="preview-box" style="margin-top:8px;">
                                 @if($product->image)
                                     <img src="{{ $product->image }}" alt="Product image" style="max-height:160px; border-radius:6px;">
                                 @endif
                             </div>
-                            <div class="url-field">
-                                <input type="text" name="image" class="form-control form-control-sm" value="{{ old('image', $product->image) }}">
-                            </div>
+                            <input type="hidden" name="image" value="{{ old('image', $product->image) }}">
                         </div>
 
                         <div class="col-12">
@@ -134,13 +129,8 @@
                                     <img src="{{ $gUrl }}" alt="Gallery" style="max-height:100px; border-radius:6px; border:1px solid #ddd;">
                                 @endforeach
                             </div>
-                            <div style="display:flex; gap:8px; margin-top:6px;">
-                                <span class="url-toggle" onclick="toggleUrl(this)" style="margin:0;">+ Enter URLs manually</span>
-                                <span class="url-toggle" onclick="openMediaPicker('gallery', true)" style="margin:0; color:#e74c3c;">📁 Select from Library</span>
-                            </div>
-                            <div class="url-field">
-                                <textarea name="gallery" class="form-control form-control-sm" rows="2">{{ old('gallery', is_array($product->gallery) ? json_encode($product->gallery) : $product->gallery) }}</textarea>
-                            </div>
+                            <span class="url-toggle" onclick="openMediaPicker('gallery', true)" style="color:#e74c3c;">📁 Select from Library</span>
+                            <input type="hidden" name="gallery" value="{{ old('gallery', is_array($product->gallery) ? json_encode($product->gallery) : $product->gallery) }}">
                         </div>
                         <div class="col-12">
                             <label class="form-label">Video URL</label>
