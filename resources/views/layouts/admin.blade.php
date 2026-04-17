@@ -1075,6 +1075,9 @@
                 <span class="page-title">Admin Panel</span>
             </div>
             <div class="topbar-right">
+                <button class="tb-icon-btn" id="syncBtn" onclick="syncNow()" title="Sync to Frontend" style="position:relative;">
+                    <i class="mdi mdi-sync" id="syncIcon"></i>
+                </button>
                 <a class="tb-icon-btn" href="{{ route('admin.dashboard') }}" title="Dashboard">
                     <i class="mdi mdi-home-outline"></i>
                 </a>
@@ -1083,6 +1086,28 @@
                     <span class="tb-uname">{{ Auth::guard('admin')->user()->username ?? 'Admin' }}</span>
                 </div>
             </div>
+<script>
+function syncNow() {
+    var btn = document.getElementById('syncBtn');
+    var icon = document.getElementById('syncIcon');
+    btn.disabled = true;
+    icon.style.animation = 'spin 0.6s linear infinite';
+    fetch('{{ route("admin.sync") }}', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(d => {
+        icon.style.animation = '';
+        btn.disabled = false;
+        btn.style.borderColor = '#22c55e';
+        btn.style.color = '#22c55e';
+        setTimeout(() => { btn.style.borderColor = ''; btn.style.color = ''; }, 2000);
+    })
+    .catch(() => { icon.style.animation = ''; btn.disabled = false; });
+}
+</script>
+<style>@keyframes spin { to { transform: rotate(360deg); } }</style>
         </div>
     </header>
 

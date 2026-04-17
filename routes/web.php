@@ -37,4 +37,9 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
     Route::get('seo', [\App\Http\Controllers\Admin\SeoController::class, 'index'])->name('seo.index');
     Route::put('seo', [\App\Http\Controllers\Admin\SeoController::class, 'update'])->name('seo.update');
     Route::get('api-reference', [ApiReferenceController::class, 'index'])->name('api-reference.index');
+    Route::post('sync', function () {
+        \Illuminate\Support\Facades\Cache::flush();
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        return response()->json(['success' => true, 'message' => 'Cache cleared, frontend synced.']);
+    })->name('sync');
 });
