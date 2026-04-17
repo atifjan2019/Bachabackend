@@ -12,7 +12,7 @@
     </div>
 </div>
 
-<form action="{{ route('admin.categories.update', $category->id) }}" method="POST">
+<form action="{{ route('admin.categories.update', $category->id) }}" method="POST" enctype="multipart/form-data">
     @csrf @method('PUT')
     <div class="row g-4">
         <div class="col-lg-8">
@@ -37,11 +37,17 @@
             <div class="bcard">
                 <div class="bcard-body">
                     <div class="form-group">
-                        <label class="form-label">Image URL</label>
-                        <input type="text" name="image" class="form-control" value="{{ old('image', $category->image) }}" placeholder="https://...">
-                        @if($category->image)
-                            <div class="preview-box"><img src="{{ $category->image }}" alt="Category image"></div>
-                        @endif
+                        <label class="form-label">Category Image</label>
+                        <input type="file" name="image_file" class="form-control" accept="image/*" onchange="previewImg(this)">
+                        <div id="img-preview" style="margin-top:8px;">
+                            @if($category->image)
+                                <img src="{{ $category->image }}" alt="Category image" style="max-height:140px; border-radius:6px; width:100%; object-fit:cover;">
+                            @endif
+                        </div>
+                        <span class="url-toggle" onclick="this.nextElementSibling.classList.toggle('show'); this.textContent = this.nextElementSibling.classList.contains('show') ? '− Hide URL field' : '+ Enter URL manually'" style="display:inline-block; font-size:11px; color:#999; cursor:pointer; margin-top:6px; text-decoration:underline;">+ Enter URL manually</span>
+                        <div style="display:none; margin-top:6px;" class="url-field">
+                            <input type="text" name="image" class="form-control form-control-sm" value="{{ old('image', $category->image) }}">
+                        </div>
                     </div>
                     <div class="form-group border-top pt-3 mt-3">
                         <label class="form-label">Meta Title (SEO)</label>
@@ -57,4 +63,17 @@
         </div>
     </div>
 </form>
+
+<script>
+function previewImg(input) {
+    const preview = document.getElementById('img-preview');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML = '<img src="' + e.target.result + '" alt="Preview" style="max-height:140px; border-radius:6px; width:100%; object-fit:cover;">';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
 @endsection
