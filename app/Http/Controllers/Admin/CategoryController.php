@@ -7,6 +7,7 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 
 class CategoryController extends Controller
 {
@@ -38,6 +39,7 @@ class CategoryController extends Controller
         }
 
         Category::create($data);
+        Cache::flush();
         return redirect()->route('admin.categories.index')->with('success', 'Category created.');
     }
 
@@ -65,12 +67,14 @@ class CategoryController extends Controller
         }
 
         $category->update($data);
+        Cache::flush();
         return redirect()->route('admin.categories.index')->with('success', 'Category updated.');
     }
 
     public function destroy(string $id)
     {
         Category::findOrFail($id)->delete();
+        Cache::flush();
         return redirect()->route('admin.categories.index')->with('success', 'Category deleted.');
     }
 

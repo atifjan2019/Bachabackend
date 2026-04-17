@@ -8,6 +8,7 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
 {
@@ -58,6 +59,7 @@ class ProductController extends Controller
         }
 
         Product::create($data);
+        Cache::flush();
 
         return redirect()->route('admin.products.index')->with('success', 'Product created successfully.');
     }
@@ -109,6 +111,7 @@ class ProductController extends Controller
         }
 
         $product->update($data);
+        Cache::flush();
 
         return redirect()->route('admin.products.index')->with('success', 'Product updated successfully.');
     }
@@ -116,6 +119,7 @@ class ProductController extends Controller
     public function destroy(string $id)
     {
         Product::findOrFail($id)->delete();
+        Cache::flush();
         return redirect()->route('admin.products.index')->with('success', 'Product deleted.');
     }
 
