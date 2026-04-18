@@ -24,6 +24,8 @@ class Product extends Model
     protected $casts = [
         'is_new' => 'boolean',
         'accordions' => 'array',
+        'gallery' => 'array',
+        'sizes' => 'array',
     ];
 }
 

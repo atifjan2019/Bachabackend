@@ -13,10 +13,20 @@ class CatalogController extends Controller
 {
     public function categories(): JsonResponse
     {
-        $data = Cache::remember('api:categories', 300, function () {
-            return Category::query()
-                ->orderBy('name')
-                ->get(['id', 'name', 'slug', 'description', 'image', 'meta_title', 'meta_description']);
+        $categories = Category::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug', 'description', 'image', 'meta_title', 'meta_description']);
+            
+        $data = $categories->map(function ($category) {
+            if ($category->image) {
+                if (str_contains($category->image, 'unsplash.com') || str_contains($category->image, 'cloudinary.com') || str_starts_with($category->image, 'data:')) {
+                    // skip external
+                } else {
+                    $parsed = parse_url($category->image, PHP_URL_PATH);
+                    $category->image = url($parsed);
+                }
+            }
+            return $category;
         });
 
         return response()->json(['data' => $data]);
@@ -31,30 +41,45 @@ class CatalogController extends Controller
             'per_page' => 'nullable|integer|min:1|max:100',
         ]);
 
-        $cacheKey = 'api:products:' . md5(json_encode($request->query()));
+        $perPage = (int) ($request->integer('per_page') ?: 20);
+        $query = Product::query()->orderByDesc('id');
 
-        $data = Cache::remember($cacheKey, 300, function () use ($request) {
-            $perPage = (int) ($request->integer('per_page') ?: 20);
-            $query = Product::query()->orderByDesc('id');
+        if ($request->filled('category')) {
+            $query->where('category', $request->string('category'));
+        }
 
-            if ($request->filled('category')) {
-                $query->where('category', $request->string('category'));
+        if ($request->filled('search')) {
+            $search = (string) $request->string('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('slug', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        if (!is_null($request->query('is_new'))) {
+            $query->where('is_new', $request->boolean('is_new'));
+        }
+
+        $data = $query->paginate($perPage)->appends($request->query())->through(function ($product) {
+            if ($product->image) {
+                if (str_contains($product->image, 'unsplash.com') || str_contains($product->image, 'cloudinary.com') || str_starts_with($product->image, 'data:')) {
+                    // Skip external
+                } else {
+                    $parsed = parse_url($product->image, PHP_URL_PATH);
+                    $product->image = url($parsed);
+                }
+            }
+            
+            if (is_array($product->gallery)) {
+                $product->gallery = array_map(function ($url) {
+                    if (str_contains($url, 'unsplash.com') || str_contains($url, 'cloudinary.com') || str_starts_with($url, 'data:')) return $url;
+                    $parsed = parse_url($url, PHP_URL_PATH);
+                    return $parsed ? url($parsed) : $url;
+                }, $product->gallery);
             }
 
-            if ($request->filled('search')) {
-                $search = (string) $request->string('search');
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('slug', 'like', "%{$search}%")
-                        ->orWhere('description', 'like', "%{$search}%");
-                });
-            }
-
-            if (!is_null($request->query('is_new'))) {
-                $query->where('is_new', $request->boolean('is_new'));
-            }
-
-            return $query->paginate($perPage)->appends($request->query());
+            return $product;
         });
 
         return response()->json($data);
@@ -62,12 +87,28 @@ class CatalogController extends Controller
 
     public function product(string $slugOrId): JsonResponse
     {
-        $data = Cache::remember('api:product:' . $slugOrId, 300, function () use ($slugOrId) {
-            return Product::query()
-                ->where('slug', $slugOrId)
-                ->orWhere('id', $slugOrId)
-                ->firstOrFail();
-        });
+        $product = Product::query()
+            ->where('slug', $slugOrId)
+            ->orWhere('id', $slugOrId)
+            ->firstOrFail();
+
+        if ($product->image) {
+            if (str_contains($product->image, 'unsplash.com') || str_contains($product->image, 'cloudinary.com')) {
+                // Skip external
+            } else {
+                $parsed = parse_url($product->image, PHP_URL_PATH);
+                $product->image = url($parsed);
+            }
+        }
+        
+        if (is_array($product->gallery)) {
+            $product->gallery = array_map(function ($url) {
+                if (str_contains($url, 'unsplash.com') || str_contains($url, 'cloudinary.com')) return $url;
+                $parsed = parse_url($url, PHP_URL_PATH);
+                return $parsed ? url($parsed) : $url;
+            }, $product->gallery);
+        }
+        $data = $product;
 
         return response()->json(['data' => $data]);
     }

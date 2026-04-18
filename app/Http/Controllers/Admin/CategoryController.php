@@ -34,8 +34,9 @@ class CategoryController extends Controller
         if ($request->hasFile('image_file')) {
             $file = $request->file('image_file');
             $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('categories', $filename, 's3');
-            $data['image'] = rtrim(env('AWS_URL', ''), '/') . '/categories/' . $filename;
+            $disk = env('FILESYSTEM_DISK', 'public');
+            $file->storeAs('categories', $filename, $disk);
+            $data['image'] = Storage::disk($disk)->url('categories/' . $filename);
         }
 
         Category::create($data);
@@ -62,8 +63,9 @@ class CategoryController extends Controller
         if ($request->hasFile('image_file')) {
             $file = $request->file('image_file');
             $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('categories', $filename, 's3');
-            $data['image'] = rtrim(env('AWS_URL', ''), '/') . '/categories/' . $filename;
+            $disk = env('FILESYSTEM_DISK', 'public');
+            $file->storeAs('categories', $filename, $disk);
+            $data['image'] = Storage::disk($disk)->url('categories/' . $filename);
         }
 
         $category->update($data);

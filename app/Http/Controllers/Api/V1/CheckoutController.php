@@ -31,9 +31,16 @@ class CheckoutController extends Controller
             'payment_method' => 'nullable|string|max:255',
         ]);
 
+        // If authenticated customer, always use their email for order linking
+        $authCustomer = auth('api')->user();
+        $customerEmail = $validated['customer_email'];
+        if ($authCustomer && $authCustomer->email) {
+            $customerEmail = $authCustomer->email;
+        }
+
         $order = Order::create([
             'customer_name' => $validated['customer_name'],
-            'customer_email' => $validated['customer_email'],
+            'customer_email' => $customerEmail,
             'customer_phone' => $validated['customer_phone'] ?? null,
             'shipping_address' => $validated['shipping_address'],
             'city' => $validated['city'] ?? null,

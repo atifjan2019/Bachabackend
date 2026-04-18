@@ -2,17 +2,24 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Customer extends Model
+class Customer extends Authenticatable
 {
     protected $fillable = [
         'name',
         'email',
+        'password',
+        'api_token',
         'phone',
         'address',
         'orders_count',
         'total_spent',
+    ];
+
+    protected $hidden = [
+        'password',
+        'api_token',
     ];
 
     protected $casts = [
@@ -20,4 +27,3 @@ class Customer extends Model
         'total_spent' => 'decimal:2',
     ];
 }
-

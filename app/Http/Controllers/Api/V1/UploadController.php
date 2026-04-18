@@ -18,9 +18,10 @@ class UploadController extends Controller
 
         $file = $request->file('file');
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs('products', $filename, 's3');
+        $disk = env('FILESYSTEM_DISK', 'public');
+        $path = $file->storeAs('products', $filename, $disk);
 
-        $url = rtrim(env('AWS_URL', ''), '/') . '/' . $path;
+        $url = Storage::disk($disk)->url($path);
 
         return response()->json([
             'url' => $url,

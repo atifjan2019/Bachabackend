@@ -21,4 +21,15 @@ Route::prefix('v1')->group(function () {
     Route::post('/abandoned-carts', [CheckoutController::class, 'storeAbandonedCart']);
 
     Route::post('/upload', [UploadController::class, 'store']);
+
+    // Customer Authentication & Management
+    Route::post('/auth/register', [\App\Http\Controllers\Api\V1\AuthController::class, 'register']);
+    Route::post('/auth/login', [\App\Http\Controllers\Api\V1\AuthController::class, 'login']);
+    
+    Route::middleware('auth:api')->group(function () {
+        Route::get('/account/profile', [\App\Http\Controllers\Api\V1\AuthController::class, 'profile']);
+        Route::patch('/account/profile', [\App\Http\Controllers\Api\V1\AuthController::class, 'updateProfile']);
+        Route::get('/account/orders', [\App\Http\Controllers\Api\V1\AuthController::class, 'orders']);
+        Route::get('/account/orders/{id}', [\App\Http\Controllers\Api\V1\AuthController::class, 'order']);
+    });
 });

@@ -56,16 +56,18 @@ class SettingController extends Controller
         if ($request->hasFile('logo_file')) {
             $file = $request->file('logo_file');
             $filename = 'logo-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('branding', $filename, 's3');
-            $validated['logo_url'] = rtrim(env('AWS_URL', ''), '/') . '/branding/' . $filename;
+            $disk = env('FILESYSTEM_DISK', 'public');
+            $file->storeAs('branding', $filename, $disk);
+            $validated['logo_url'] = Storage::disk($disk)->url('branding/' . $filename);
         }
 
         // Handle favicon file upload
         if ($request->hasFile('favicon_file')) {
             $file = $request->file('favicon_file');
             $filename = 'favicon-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('branding', $filename, 's3');
-            $validated['favicon_url'] = rtrim(env('AWS_URL', ''), '/') . '/branding/' . $filename;
+            $disk = env('FILESYSTEM_DISK', 'public');
+            $file->storeAs('branding', $filename, $disk);
+            $validated['favicon_url'] = Storage::disk($disk)->url('branding/' . $filename);
         }
 
         foreach (self::ALLOWED_KEYS as $key) {

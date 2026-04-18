@@ -128,8 +128,9 @@ class ProductController extends Controller
      */
     private function uploadToR2($file): string
     {
+        $disk = env('FILESYSTEM_DISK', 'public');
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-        $file->storeAs('products', $filename, 's3');
-        return rtrim(env('AWS_URL', ''), '/') . '/products/' . $filename;
+        $file->storeAs('products', $filename, $disk);
+        return Storage::disk($disk)->url('products/' . $filename);
     }
 }

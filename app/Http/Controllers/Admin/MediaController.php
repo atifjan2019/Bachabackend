@@ -14,14 +14,14 @@ class MediaController extends Controller
     {
         $r2Files = [];
         try {
-            $disk = Storage::disk('s3');
+            $diskName = env('FILESYSTEM_DISK', 'public');
+            $disk = Storage::disk($diskName);
             $allFiles = $disk->allFiles();
-            $baseUrl = rtrim(env('AWS_URL', ''), '/');
 
             foreach ($allFiles as $path) {
                 $r2Files[] = [
                     'path' => $path,
-                    'url' => $baseUrl . '/' . $path,
+                    'url' => $disk->url($path),
                     'name' => basename($path),
                     'folder' => dirname($path) === '.' ? '' : dirname($path),
                 ];
@@ -40,16 +40,16 @@ class MediaController extends Controller
     {
         $r2Files = [];
         try {
-            $disk = Storage::disk('s3');
+            $diskName = env('FILESYSTEM_DISK', 'public');
+            $disk = Storage::disk($diskName);
             $allFiles = $disk->allFiles();
-            $baseUrl = rtrim(env('AWS_URL', ''), '/');
 
             foreach ($allFiles as $path) {
                 $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
                 if (in_array($ext, ['jpg','jpeg','png','gif','webp','svg'])) {
                     $r2Files[] = [
                         'path' => $path,
-                        'url' => $baseUrl . '/' . $path,
+                        'url' => $disk->url($path),
                         'name' => basename($path),
                         'folder' => dirname($path) === '.' ? '' : dirname($path),
                     ];
@@ -66,8 +66,9 @@ class MediaController extends Controller
         $file = $request->file('file');
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
 
-        $path = $file->storeAs('media', $filename, 's3');
-        $url = rtrim(env('AWS_URL', ''), '/') . '/' . $path;
+        $diskName = env('FILESYSTEM_DISK', 'public');
+        $path = $file->storeAs('media', $filename, $diskName);
+        $url = Storage::disk($diskName)->url($path);
 
         Media::create([
             'file_name' => $file->getClientOriginalName(),
@@ -88,14 +89,15 @@ class MediaController extends Controller
         $path = $request->input('path');
 
         try {
-            Storage::disk('s3')->delete($path);
+            $diskName = env('FILESYSTEM_DISK', 'public');
+            Storage::disk($diskName)->delete($path);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to delete'], 500);
         }
 
         // Also remove from DB if tracked
-        $baseUrl = rtrim(env('AWS_URL', ''), '/');
-        $url = $baseUrl . '/' . $path;
+        $diskName = env('FILESYSTEM_DISK', 'public');
+        $url = Storage::disk($diskName)->url($path);
         Media::where('file_path', $url)->delete();
 
         return response()->json(['success' => true]);
@@ -105,10 +107,15 @@ class MediaController extends Controller
     {
         $media = Media::findOrFail($id);
         if (!empty($media->file_path)) {
-            $baseUrl = rtrim(env('AWS_URL', ''), '/');
-            $relativePath = str_replace($baseUrl . '/', '', $media->file_path);
+            $diskName = env('FILESYSTEM_DISK', 'public');
+            $parsedUrl = parse_url($media->file_path, PHP_URL_PATH);
+            $relativePath = ltrim(str_replace('/storage/', '', $parsedUrl), '/');
+            if (env('FILESYSTEM_DISK') === 's3' && env('AWS_URL')) {
+                $baseUrl = rtrim(env('AWS_URL', ''), '/');
+                $relativePath = str_replace($baseUrl . '/', '', $media->file_path);
+            }
             if (!empty($relativePath)) {
-                try { Storage::disk('s3')->delete($relativePath); } catch (\Exception $e) {}
+                try { Storage::disk($diskName)->delete($relativePath); } catch (\Exception $e) {}
             }
         }
         $media->delete();
