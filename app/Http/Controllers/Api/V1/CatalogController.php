@@ -15,8 +15,9 @@ class CatalogController extends Controller
     {
         $categories = Category::query()
             ->whereNull('parent_id')
+            ->withCount('products')
             ->with(['children' => function ($q) {
-                $q->orderBy('id');
+                $q->withCount('products')->orderBy('id');
             }])
             ->orderBy('id')
             ->get();
