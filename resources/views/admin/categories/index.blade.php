@@ -42,6 +42,13 @@
                                         <span class="soft-badge ms-2" style="font-size: 0.6rem; padding: 2px 6px;">{{ $cat->parent->name }}</span>
                                     @endif
                                 </div>
+                                <div class="text-muted mt-1" style="font-size: 0.75rem;">
+                                    <strong>{{ $cat->products_count }}</strong> products
+                                    @if($cat->children_count > 0)
+                                        <span class="mx-1">&bull;</span>
+                                        <strong>{{ $cat->children_count }}</strong> subcategories
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </td>
