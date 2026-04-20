@@ -14,8 +14,12 @@ class CatalogController extends Controller
     public function categories(): JsonResponse
     {
         $categories = Category::query()
-            ->orderBy('name')
-            ->get(['id', 'name', 'slug', 'description', 'image', 'meta_title', 'meta_description']);
+            ->whereNull('parent_id')
+            ->with(['children' => function ($q) {
+                $q->orderBy('id');
+            }])
+            ->orderBy('id')
+            ->get();
 
         return response()->json(['data' => $categories]);
     }

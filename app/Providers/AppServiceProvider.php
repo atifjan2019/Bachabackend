@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +20,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Paginator::useBootstrapFive();
+
         try {
             $site_settings = \App\Models\Setting::pluck('setting_value', 'setting_key')->toArray();
             \Illuminate\Support\Facades\View::share('site_settings', $site_settings);
