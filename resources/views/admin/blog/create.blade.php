@@ -12,7 +12,7 @@
     </div>
 </div>
 
-<form action="{{ route('admin.blog.store') }}" method="POST">
+<form id="blogForm" action="{{ route('admin.blog.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
     <div class="row g-4">
         <div class="col-lg-8">
@@ -37,8 +37,11 @@
             <div class="bcard">
                 <div class="bcard-body">
                     <div class="form-group">
-                        <label class="form-label">Featured Image URL</label>
-                        <input type="text" name="image" class="form-control" value="{{ old('image') }}" placeholder="https://...">
+                        <label class="form-label">Featured Image</label>
+                        <input type="file" name="image_file" class="form-control" accept="image/*" onchange="previewImg(this)">
+                        <div id="img-preview" style="margin-top:8px; display:none;"><img src="" alt="Preview" style="max-height:140px; border-radius:6px; width:100%; object-fit:cover;"></div>
+                        <span class="btn-library" onclick="openMediaPicker('image', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
+                        <input type="hidden" name="image" value="{{ old('image') }}">
                     </div>
                     <div class="form-group">
                         <div class="form-check form-switch">
@@ -52,4 +55,23 @@
         </div>
     </div>
 </form>
+
+<script>
+function previewImg(input) {
+    const preview = document.getElementById('img-preview');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.style.display = 'block';
+            preview.querySelector('img').src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+
+@include('admin.partials.upload-progress')
+<script>initUploadProgress('blogForm', '{{ route("admin.blog.index") }}');</script>
+@include('admin.partials.media-picker')
+
 @endsection

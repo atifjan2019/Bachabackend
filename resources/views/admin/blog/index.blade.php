@@ -27,7 +27,18 @@
             <tbody>
                 @forelse($posts as $post)
                 <tr>
-                    <td data-label="Title" class="text-strong">{{ $post->title }}</td>
+                    <td data-label="Title">
+                        <div class="entity">
+                            @if($post->image)
+                                <div class="entity-thumb"><img src="{{ $post->image }}" alt=""></div>
+                            @else
+                                <div class="entity-thumb"><i class="mdi mdi-image-outline"></i></div>
+                            @endif
+                            <div class="entity-copy">
+                                <div class="entity-title">{{ $post->title }}</div>
+                            </div>
+                        </div>
+                    </td>
                     <td data-label="Slug" class="text-muted">{{ $post->slug }}</td>
                     <td data-label="Status">
                         @if($post->status)

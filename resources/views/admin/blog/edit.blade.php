@@ -12,7 +12,7 @@
     </div>
 </div>
 
-<form action="{{ route('admin.blog.update', $post->id) }}" method="POST">
+<form id="blogForm" action="{{ route('admin.blog.update', $post->id) }}" method="POST" enctype="multipart/form-data">
     @csrf @method('PUT')
     <div class="row g-4">
         <div class="col-lg-8">
@@ -37,8 +37,15 @@
             <div class="bcard">
                 <div class="bcard-body">
                     <div class="form-group">
-                        <label class="form-label">Featured Image URL</label>
-                        <input type="text" name="image" class="form-control" value="{{ old('image', $post->image) }}">
+                        <label class="form-label">Featured Image</label>
+                        <input type="file" name="image_file" class="form-control" accept="image/*" onchange="previewImg(this)">
+                        <div id="img-preview" style="margin-top:8px;">
+                            @if($post->image)
+                                <img src="{{ $post->image }}" alt="Featured image" style="max-height:140px; border-radius:6px; width:100%; object-fit:cover;">
+                            @endif
+                        </div>
+                        <span class="btn-library" onclick="openMediaPicker('image', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
+                        <input type="hidden" name="image" value="{{ old('image', $post->image) }}">
                     </div>
                     <div class="form-group">
                         <div class="form-check form-switch">
@@ -49,13 +56,31 @@
                     <button type="submit" class="btn btn-primary w-100">Update Post</button>
                 </div>
             </div>
-            <form action="{{ route('admin.blog.destroy', $post->id) }}" method="POST" onsubmit="return confirm('Delete this post?')">
-                @csrf @method('DELETE')
-                <div class="d-grid mt-2">
-                    <button type="submit" class="btn btn-outline-danger">Delete Post</button>
-                </div>
-            </form>
+            <div class="d-grid mt-2">
+                <button type="button" onclick="document.getElementById('deleteForm-{{ $post->id }}').submit()" class="btn btn-outline-danger">Delete Post</button>
+            </div>
         </div>
     </div>
 </form>
+
+<form id="deleteForm-{{ $post->id }}" action="{{ route('admin.blog.destroy', $post->id) }}" method="POST" onsubmit="return confirm('Delete this post?')">
+    @csrf @method('DELETE')
+</form>
+
+<script>
+function previewImg(input) {
+    const preview = document.getElementById('img-preview');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML = '<img src="' + e.target.result + '" alt="Preview" style="max-height:140px; border-radius:6px; width:100%; object-fit:cover;">';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+
+@include('admin.partials.upload-progress')
+<script>initUploadProgress('blogForm', '{{ route("admin.blog.index") }}');</script>
+@include('admin.partials.media-picker')
 @endsection
