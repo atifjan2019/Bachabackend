@@ -35,14 +35,6 @@ class ContentController extends Controller
             ->whereIn('setting_key', $whitelist)
             ->pluck('setting_value', 'setting_key')
             ->map(function ($value, $key) {
-                if (in_array($key, ['logo_url', 'favicon_url', 'og_image']) && !empty($value)) {
-                    if (str_contains($value, 'unsplash.com') || str_contains($value, 'cloudinary.com') || str_starts_with($value, 'data:')) {
-                        // Skip external
-                    } else {
-                        $parsed = parse_url($value, PHP_URL_PATH);
-                        return url($parsed);
-                    }
-                }
                 return $value;
             });
 

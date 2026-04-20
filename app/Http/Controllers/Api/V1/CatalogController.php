@@ -16,20 +16,8 @@ class CatalogController extends Controller
         $categories = Category::query()
             ->orderBy('name')
             ->get(['id', 'name', 'slug', 'description', 'image', 'meta_title', 'meta_description']);
-            
-        $data = $categories->map(function ($category) {
-            if ($category->image) {
-                if (str_contains($category->image, 'unsplash.com') || str_contains($category->image, 'cloudinary.com') || str_starts_with($category->image, 'data:')) {
-                    // skip external
-                } else {
-                    $parsed = parse_url($category->image, PHP_URL_PATH);
-                    $category->image = url($parsed);
-                }
-            }
-            return $category;
-        });
 
-        return response()->json(['data' => $data]);
+        return response()->json(['data' => $categories]);
     }
 
     public function products(Request $request): JsonResponse
@@ -61,26 +49,7 @@ class CatalogController extends Controller
             $query->where('is_new', $request->boolean('is_new'));
         }
 
-        $data = $query->paginate($perPage)->appends($request->query())->through(function ($product) {
-            if ($product->image) {
-                if (str_contains($product->image, 'unsplash.com') || str_contains($product->image, 'cloudinary.com') || str_starts_with($product->image, 'data:')) {
-                    // Skip external
-                } else {
-                    $parsed = parse_url($product->image, PHP_URL_PATH);
-                    $product->image = url($parsed);
-                }
-            }
-            
-            if (is_array($product->gallery)) {
-                $product->gallery = array_map(function ($url) {
-                    if (str_contains($url, 'unsplash.com') || str_contains($url, 'cloudinary.com') || str_starts_with($url, 'data:')) return $url;
-                    $parsed = parse_url($url, PHP_URL_PATH);
-                    return $parsed ? url($parsed) : $url;
-                }, $product->gallery);
-            }
-
-            return $product;
-        });
+        $data = $query->paginate($perPage)->appends($request->query());
 
         return response()->json($data);
     }
@@ -92,24 +61,6 @@ class CatalogController extends Controller
             ->orWhere('id', $slugOrId)
             ->firstOrFail();
 
-        if ($product->image) {
-            if (str_contains($product->image, 'unsplash.com') || str_contains($product->image, 'cloudinary.com')) {
-                // Skip external
-            } else {
-                $parsed = parse_url($product->image, PHP_URL_PATH);
-                $product->image = url($parsed);
-            }
-        }
-        
-        if (is_array($product->gallery)) {
-            $product->gallery = array_map(function ($url) {
-                if (str_contains($url, 'unsplash.com') || str_contains($url, 'cloudinary.com')) return $url;
-                $parsed = parse_url($url, PHP_URL_PATH);
-                return $parsed ? url($parsed) : $url;
-            }, $product->gallery);
-        }
-        $data = $product;
-
-        return response()->json(['data' => $data]);
+        return response()->json(['data' => $product]);
     }
 }
