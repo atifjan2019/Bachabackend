@@ -106,7 +106,7 @@
         background: rgba(255,255,255,.02);
     }
     .sb-logo a { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-    .sb-logo img { height: 24px; max-width: 130px; object-fit: contain; filter: brightness(0) invert(1); }
+    .sb-logo img { height: 32px; max-width: 160px; object-fit: contain; background: #fff; border-radius: 8px; padding: 4px 8px; }
     .sb-logo .brand-name {
         color: #fff; font-weight: 800; font-size: .92rem;
         letter-spacing: -.4px; white-space: nowrap;
@@ -974,8 +974,9 @@
         <a href="{{ route('admin.dashboard') }}">
             @if(!empty($site_settings['logo_url']))
                 <img src="{{ $site_settings['logo_url'] }}" alt="Logo">
+            @else
+                <span class="brand-name">Bacha<span class="brand-dot">·</span>Stylo</span>
             @endif
-            <span class="brand-name">Bacha<span class="brand-dot">·</span>Stylo</span>
         </a>
     </div>
 
