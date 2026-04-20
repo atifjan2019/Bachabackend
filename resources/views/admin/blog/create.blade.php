@@ -2,6 +2,12 @@
 @section('title', 'New Blog Post')
 @section('content')
 
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<style>
+#quill-editor { min-height: 300px; background: #fff; }
+.ql-toolbar.ql-snow { border-radius: 6px 6px 0 0; }
+.ql-container.ql-snow { border-radius: 0 0 6px 6px; }
+</style>
 <div class="ph">
     <div>
         <h4>New Blog Post</h4>
@@ -28,7 +34,8 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Content</label>
-                        <textarea name="content" class="form-control" rows="12">{{ old('content') }}</textarea>
+                        <div id="quill-editor">{!! old('content') !!}</div>
+                        <textarea name="content" id="contentField" style="display:none;">{{ old('content') }}</textarea>
                     </div>
                 </div>
             </div>
@@ -56,7 +63,31 @@
     </div>
 </form>
 
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script>
+var quill = new Quill('#quill-editor', {
+    theme: 'snow',
+    modules: {
+        toolbar: [
+            [{ 'header': [2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['link', 'image', 'video'],
+            ['clean']
+        ]
+    },
+    placeholder: 'Write blog content...'
+});
+
+document.getElementById('blogForm').addEventListener('submit', function(e) {
+    document.getElementById('contentField').value = quill.root.innerHTML;
+});
+
+// For AJAX / FormData integration fallback
+document.getElementById('blogForm').addEventListener('formdata', function(e) {
+    e.formData.set('content', quill.root.innerHTML);
+});
+
 function previewImg(input) {
     const preview = document.getElementById('img-preview');
     if (input.files && input.files[0]) {
