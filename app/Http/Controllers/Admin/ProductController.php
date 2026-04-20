@@ -20,7 +20,7 @@ class ProductController extends Controller
 
     public function create()
     {
-        $categories = Category::orderBy('name')->get();
+        $categories = Category::whereNull('parent_id')->with('children')->orderBy('name')->get();
         return view('admin.products.create', compact('categories'));
     }
 
@@ -58,6 +58,18 @@ class ProductController extends Controller
             $data['gallery'] = json_encode(array_merge($existing, $urls));
         }
 
+        // Parse sizes from comma separated string
+        if (!empty($data['sizes']) && is_string($data['sizes'])) {
+            $cleaned = trim($data['sizes']);
+            if (Str::startsWith($cleaned, '[') && Str::endsWith($cleaned, ']')) {
+                // assume json
+                $data['sizes'] = json_decode($cleaned, true) ?? [];
+            } else {
+                // comma separated
+                $data['sizes'] = array_values(array_filter(array_map('trim', explode(',', $cleaned))));
+            }
+        }
+
         Product::create($data);
         Cache::flush();
 
@@ -72,7 +84,7 @@ class ProductController extends Controller
     public function edit(string $id)
     {
         $product = Product::findOrFail($id);
-        $categories = Category::orderBy('name')->get();
+        $categories = Category::whereNull('parent_id')->with('children')->orderBy('name')->get();
         return view('admin.products.edit', compact('product', 'categories'));
     }
 
@@ -108,6 +120,18 @@ class ProductController extends Controller
                 $existing = is_array($decoded) ? $decoded : [];
             }
             $data['gallery'] = json_encode(array_merge($existing, $urls));
+        }
+
+        // Parse sizes from comma separated string
+        if (!empty($data['sizes']) && is_string($data['sizes'])) {
+            $cleaned = trim($data['sizes']);
+            if (Str::startsWith($cleaned, '[') && Str::endsWith($cleaned, ']')) {
+                // assume json
+                $data['sizes'] = json_decode($cleaned, true) ?? [];
+            } else {
+                // comma separated
+                $data['sizes'] = array_values(array_filter(array_map('trim', explode(',', $cleaned))));
+            }
         }
 
         $product->update($data);

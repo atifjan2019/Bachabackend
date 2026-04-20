@@ -156,13 +156,22 @@
                         <select name="category" class="form-select">
                             <option value="">— None —</option>
                             @foreach($categories as $cat)
-                            <option value="{{ $cat->name }}" {{ old('category') == $cat->name ? 'selected' : '' }}>{{ $cat->name }}</option>
+                                @if($cat->children && $cat->children->count() > 0)
+                                    <optgroup label="{{ $cat->name }}">
+                                        <option value="{{ $cat->slug }}" {{ old('category') == $cat->slug ? 'selected' : '' }}>{{ $cat->name }}</option>
+                                        @foreach($cat->children as $child)
+                                            <option value="{{ $child->slug }}" {{ old('category') == $child->slug ? 'selected' : '' }}>— {{ $child->name }}</option>
+                                        @endforeach
+                                    </optgroup>
+                                @else
+                                    <option value="{{ $cat->slug }}" {{ old('category') == $cat->slug ? 'selected' : '' }}>{{ $cat->name }}</option>
+                                @endif
                             @endforeach
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Sizes <span class="form-hint">(JSON array)</span></label>
-                        <input type="text" name="sizes" class="form-control" value="{{ old('sizes') }}" placeholder='["S","M","L","XL"]'>
+                        <label class="form-label">Sizes <span class="form-hint">(comma separated text)</span></label>
+                        <input type="text" name="sizes" class="form-control" value="{{ old('sizes') }}" placeholder='e.g. S, M, L, XL or 32, 34, 36'>
                     </div>
                     <div class="form-group">
                         <div class="form-check form-switch">
