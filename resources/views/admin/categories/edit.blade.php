@@ -23,6 +23,15 @@
                         <input type="text" name="name" class="form-control" value="{{ old('name', $category->name) }}" required>
                     </div>
                     <div class="form-group">
+                        <label class="form-label">Parent Category</label>
+                        <select name="parent_id" class="form-select">
+                            <option value="">No Parent (Top Level)</option>
+                            @foreach($parentCategories as $parent)
+                                <option value="{{ $parent->id }}" @selected(old('parent_id', $category->parent_id) == $parent->id)>{{ $parent->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label class="form-label">URL Slug</label>
                         <input type="text" name="slug" class="form-control" value="{{ old('slug', $category->slug) }}">
                     </div>

@@ -19,13 +19,15 @@ class CategoryController extends Controller
 
     public function create()
     {
-        return view('admin.categories.create');
+        $parentCategories = Category::whereNull('parent_id')->orderBy('name')->get();
+        return view('admin.categories.create', compact('parentCategories'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:100|unique:categories',
+            'parent_id' => 'nullable|exists:categories,id',
             'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
         ]);
         $data = $request->except(['_token', 'image_file']);
@@ -47,7 +49,8 @@ class CategoryController extends Controller
     public function edit(string $id)
     {
         $category = Category::findOrFail($id);
-        return view('admin.categories.edit', compact('category'));
+        $parentCategories = Category::whereNull('parent_id')->where('id', '!=', $id)->orderBy('name')->get();
+        return view('admin.categories.edit', compact('category', 'parentCategories'));
     }
 
     public function update(Request $request, string $id)
@@ -55,6 +58,7 @@ class CategoryController extends Controller
         $category = Category::findOrFail($id);
         $request->validate([
             'name' => 'required|string|max:100|unique:categories,name,'.$id,
+            'parent_id' => 'nullable|exists:categories,id',
             'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
         ]);
         $data = $request->except(['_token', '_method', 'image_file']);

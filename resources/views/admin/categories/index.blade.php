@@ -36,7 +36,12 @@
                                 <div class="entity-thumb"><i class="mdi mdi-shape-outline"></i></div>
                             @endif
                             <div class="entity-copy">
-                                <div class="entity-title">{{ $cat->name }}</div>
+                                <div class="entity-title">
+                                    {{ $cat->name }}
+                                    @if($cat->parent)
+                                        <span class="soft-badge ms-2" style="font-size: 0.6rem; padding: 2px 6px;">{{ $cat->parent->name }}</span>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </td>
