@@ -4,10 +4,20 @@ use App\Http\Controllers\Api\V1\CatalogController;
 use App\Http\Controllers\Api\V1\CheckoutController;
 use App\Http\Controllers\Api\V1\ContentController;
 use App\Http\Controllers\Api\V1\UploadController;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
-    Route::get('/health', fn () => response()->json(['ok' => true]));
+
+    Route::get('/clear-cache', function () {
+        Artisan::call('config:clear');
+        Artisan::call('route:clear');
+        Artisan::call('cache:clear');
+        Artisan::call('view:clear');
+        return "All caches cleared!";
+    });
+
+    Route::get('/health', fn() => response()->json(['ok' => true]));
 
     Route::get('/settings', [ContentController::class, 'settings']);
     Route::get('/blog-posts', [ContentController::class, 'blogPosts']);
@@ -25,7 +35,7 @@ Route::prefix('v1')->group(function () {
     // Customer Authentication & Management
     Route::post('/auth/register', [\App\Http\Controllers\Api\V1\AuthController::class, 'register']);
     Route::post('/auth/login', [\App\Http\Controllers\Api\V1\AuthController::class, 'login']);
-    
+
     Route::middleware('auth:api')->group(function () {
         Route::get('/account/profile', [\App\Http\Controllers\Api\V1\AuthController::class, 'profile']);
         Route::patch('/account/profile', [\App\Http\Controllers\Api\V1\AuthController::class, 'updateProfile']);
