@@ -28,6 +28,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/products/{slugOrId}', [CatalogController::class, 'product']);
 
     Route::post('/orders', [CheckoutController::class, 'storeOrder']);
+    Route::get('/orders/{id}', [CheckoutController::class, 'getOrder']);
     Route::post('/abandoned-carts', [CheckoutController::class, 'storeAbandonedCart']);
 
     Route::post('/upload', [UploadController::class, 'store']);

@@ -109,4 +109,10 @@ class CheckoutController extends Controller
             'data' => ['id' => $record->id],
         ], 201);
     }
+
+    public function getOrder(string $id): JsonResponse
+    {
+        $order = Order::findOrFail($id);
+        return response()->json(['data' => $order]);
+    }
 }
