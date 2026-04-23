@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AbandonedCart;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -25,11 +26,24 @@ class CheckoutController extends Controller
             'items.*.price' => 'required|numeric|min:0',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.size' => 'nullable|string|max:50',
-            'subtotal' => 'nullable|numeric|min:0',
-            'shipping_fee' => 'nullable|numeric|min:0',
-            'total_amount' => 'required|numeric|min:0',
             'payment_method' => 'nullable|string|max:255',
         ]);
+
+        // Calculate totals on backend for accuracy
+        $subtotal = 0;
+        foreach ($validated['items'] as $item) {
+            $subtotal += $item['price'] * $item['quantity'];
+        }
+
+        // Get shipping settings
+        $settings = Setting::whereIn('setting_key', ['shipping_fee', 'free_shipping_threshold'])
+            ->pluck('setting_value', 'setting_key');
+        
+        $baseFee = (float) ($settings['shipping_fee'] ?? 250);
+        $threshold = (float) ($settings['free_shipping_threshold'] ?? 5000);
+        
+        $shippingFee = ($subtotal >= $threshold) ? 0 : $baseFee;
+        $totalAmount = $subtotal + $shippingFee;
 
         // If authenticated customer, always use their email for order linking
         $authCustomer = auth('api')->user();
@@ -44,11 +58,11 @@ class CheckoutController extends Controller
             'customer_phone' => $validated['customer_phone'] ?? null,
             'shipping_address' => $validated['shipping_address'],
             'city' => $validated['city'] ?? null,
-            'country' => $validated['country'] ?? null,
+            'country' => $validated['country'] ?? 'Pakistan',
             'items' => $validated['items'],
-            'subtotal' => $validated['subtotal'] ?? 0,
-            'shipping_fee' => $validated['shipping_fee'] ?? 0,
-            'total_amount' => $validated['total_amount'],
+            'subtotal' => $subtotal,
+            'shipping_fee' => $shippingFee,
+            'total_amount' => $totalAmount,
             'payment_method' => $validated['payment_method'] ?? 'Cash on Delivery',
             'status' => 'Pending',
         ]);
@@ -63,13 +77,15 @@ class CheckoutController extends Controller
         );
 
         $customer->increment('orders_count');
-        $customer->increment('total_spent', (float) $validated['total_amount']);
+        $customer->increment('total_spent', $totalAmount);
 
         return response()->json([
             'message' => 'Order created successfully.',
             'data' => [
                 'id' => $order->id,
                 'status' => $order->status,
+                'shipping_fee' => $shippingFee,
+                'total_amount' => $totalAmount,
             ],
         ], 201);
     }
