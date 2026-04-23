@@ -8,6 +8,15 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\ApiReferenceController;
+use Illuminate\Support\Facades\Artisan;
+
+Route::get('/clear', function () {
+    Artisan::call('config:clear');
+    Artisan::call('route:clear');
+    Artisan::call('cache:clear');
+    Artisan::call('view:clear');
+    return "All caches cleared!";
+});
 
 Route::get('/', function () {
     // This backend doesn't have a storefront anymore
@@ -22,7 +31,7 @@ Route::post('admin/logout', [AdminLoginController::class, 'logout'])->name('admi
 // Admin Protected Routes
 Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-    
+
     Route::resource('products', ProductController::class);
     Route::resource('orders', OrderController::class)->except(['create', 'store']);
     Route::resource('categories', CategoryController::class);
