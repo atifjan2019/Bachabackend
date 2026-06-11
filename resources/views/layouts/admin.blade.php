@@ -1031,6 +1031,16 @@
                     <i class="mdi mdi-image-multiple-outline"></i> Media Library
                 </a>
             </li>
+            <li class="sb-item">
+                <a href="{{ route('admin.newsletter.index') }}" class="sb-link {{ request()->routeIs('admin.newsletter*') ? 'active' : '' }}">
+                    <i class="mdi mdi-email-newsletter"></i> Newsletter
+                </a>
+            </li>
+            <li class="sb-item">
+                <a href="{{ route('admin.reviews.index') }}" class="sb-link {{ request()->routeIs('admin.reviews*') ? 'active' : '' }}">
+                    <i class="mdi mdi-star-outline"></i> Reviews
+                </a>
+            </li>
         </ul>
 
         <span class="sb-label">System</span>

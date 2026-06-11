@@ -4,12 +4,29 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\BlogPost;
+use App\Models\NewsletterSubscriber;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ContentController extends Controller
 {
+    public function subscribeNewsletter(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => 'required|email|max:255',
+        ]);
+
+        $subscriber = NewsletterSubscriber::updateOrCreate(
+            ['email' => strtolower(trim($validated['email']))],
+        );
+
+        return response()->json([
+            'message' => 'Subscribed successfully.',
+            'data' => ['email' => $subscriber->email],
+        ], 201);
+    }
+
     public function settings(): JsonResponse
     {
         $whitelist = [
@@ -21,6 +38,7 @@ class ContentController extends Controller
             'favicon_url',
             'facebook_url',
             'instagram_url',
+            'tiktok_url',
             'whatsapp_number',
             'shipping_fee',
             'free_shipping_threshold',
@@ -29,6 +47,12 @@ class ContentController extends Controller
             'meta_keywords',
             'og_image',
             'canonical_base_url',
+            'home_highlight_title',
+            'home_highlight_description',
+            'home_highlight_image',
+            'home_highlight_button',
+            'home_highlight_link',
+            'footer_about',
         ];
 
         $settings = Setting::query()

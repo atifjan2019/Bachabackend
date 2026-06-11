@@ -20,12 +20,15 @@ Route::prefix('v1')->group(function () {
     Route::get('/health', fn() => response()->json(['ok' => true]));
 
     Route::get('/settings', [ContentController::class, 'settings']);
+    Route::post('/newsletter', [ContentController::class, 'subscribeNewsletter']);
     Route::get('/blog-posts', [ContentController::class, 'blogPosts']);
     Route::get('/blog-posts/{slug}', [ContentController::class, 'blogPost']);
 
     Route::get('/categories', [CatalogController::class, 'categories']);
     Route::get('/products', [CatalogController::class, 'products']);
     Route::get('/products/{slugOrId}', [CatalogController::class, 'product']);
+    Route::get('/products/{slugOrId}/reviews', [CatalogController::class, 'reviews']);
+    Route::post('/products/{slugOrId}/reviews', [CatalogController::class, 'storeReview']);
 
     Route::post('/orders', [CheckoutController::class, 'storeOrder']);
     Route::get('/orders/{id}', [CheckoutController::class, 'getOrder']);

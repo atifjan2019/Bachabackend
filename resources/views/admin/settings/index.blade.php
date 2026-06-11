@@ -84,6 +84,54 @@
                 </div>
             </div>
 
+            <div class="bcard">
+                <div class="bcard-head"><span class="bcard-title">Homepage — Traditional Highlight</span></div>
+                <div class="bcard-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Section Image</label>
+                            <input type="file" name="home_highlight_image_file" class="form-control" accept="image/*" onchange="previewImg(this, 'home-highlight-preview')">
+                            <div id="home-highlight-preview" style="margin-top:8px;">
+                                @if(!empty($settings['home_highlight_image']))
+                                    <img src="{{ $settings['home_highlight_image'] }}" alt="Highlight" style="max-height:120px; border-radius:6px;">
+                                @endif
+                            </div>
+                            <span class="btn-library" onclick="openMediaPicker('home_highlight_image', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
+                            <input type="hidden" name="home_highlight_image" value="{{ $settings['home_highlight_image'] ?? '' }}">
+                            <div class="form-hint">Cinematic heritage visual shown beside the heading.</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Heading</label>
+                            <input type="text" name="home_highlight_title" class="form-control" value="{{ $settings['home_highlight_title'] ?? '' }}" placeholder="Traditional wear with modern elegance.">
+                            <div class="form-hint">Leave blank to use the default styled heading.</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea name="home_highlight_description" class="form-control" rows="3" placeholder="Explore premium waistcoats, clothes, authentic Chitrali pakol caps...">{{ $settings['home_highlight_description'] ?? '' }}</textarea>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Button Label</label>
+                            <input type="text" name="home_highlight_button" class="form-control" value="{{ $settings['home_highlight_button'] ?? '' }}" placeholder="View Collection">
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Button Link</label>
+                            <input type="text" name="home_highlight_link" class="form-control" value="{{ $settings['home_highlight_link'] ?? '' }}" placeholder="/products">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bcard">
+                <div class="bcard-head"><span class="bcard-title">Footer</span></div>
+                <div class="bcard-body">
+                    <div class="form-group">
+                        <label class="form-label">Footer About Text</label>
+                        <textarea name="footer_about" class="form-control" rows="3" placeholder="Bacha Stylo is a premium Pakistani fashion and lifestyle brand...">{{ $settings['footer_about'] ?? '' }}</textarea>
+                        <div class="form-hint">Short brand description shown in the website footer.</div>
+                    </div>
+                </div>
+            </div>
+
         </div>
         <div class="col-lg-4">
             <div class="side-stack">
@@ -113,6 +161,10 @@
                     <div class="form-group">
                         <label class="form-label">Instagram URL</label>
                         <input type="text" name="instagram_url" class="form-control" value="{{ $settings['instagram_url'] ?? '' }}" placeholder="https://instagram.com/...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">TikTok URL</label>
+                        <input type="text" name="tiktok_url" class="form-control" value="{{ $settings['tiktok_url'] ?? '' }}" placeholder="https://tiktok.com/@...">
                     </div>
                     <div class="form-group">
                         <label class="form-label">WhatsApp Number</label>

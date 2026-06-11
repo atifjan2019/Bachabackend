@@ -23,7 +23,14 @@ class SettingController extends Controller
         'email_from_name',
         'facebook_url',
         'instagram_url',
+        'tiktok_url',
         'whatsapp_number',
+        'home_highlight_title',
+        'home_highlight_description',
+        'home_highlight_image',
+        'home_highlight_button',
+        'home_highlight_link',
+        'footer_about',
     ];
 
     public function index()
@@ -47,9 +54,17 @@ class SettingController extends Controller
             'email_from_name' => 'nullable|string|max:255',
             'facebook_url' => 'nullable|string|max:2000',
             'instagram_url' => 'nullable|string|max:2000',
+            'tiktok_url' => 'nullable|string|max:2000',
             'whatsapp_number' => 'nullable|string|max:100',
+            'home_highlight_title' => 'nullable|string|max:255',
+            'home_highlight_description' => 'nullable|string|max:2000',
+            'home_highlight_image' => 'nullable|string|max:2000',
+            'home_highlight_button' => 'nullable|string|max:100',
+            'home_highlight_link' => 'nullable|string|max:2000',
+            'footer_about' => 'nullable|string|max:2000',
             'logo_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,svg|max:5120',
             'favicon_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,svg,ico|max:2048',
+            'home_highlight_image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
         ]);
 
         // Handle logo file upload
@@ -68,6 +83,15 @@ class SettingController extends Controller
             $disk = env('FILESYSTEM_DISK', 'public');
             $file->storeAs('branding', $filename, $disk);
             $validated['favicon_url'] = Storage::disk($disk)->url('branding/' . $filename);
+        }
+
+        // Handle homepage highlight image upload
+        if ($request->hasFile('home_highlight_image_file')) {
+            $file = $request->file('home_highlight_image_file');
+            $filename = 'highlight-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $disk = env('FILESYSTEM_DISK', 'public');
+            $file->storeAs('branding', $filename, $disk);
+            $validated['home_highlight_image'] = Storage::disk($disk)->url('branding/' . $filename);
         }
 
         foreach (self::ALLOWED_KEYS as $key) {

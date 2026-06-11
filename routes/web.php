@@ -36,6 +36,11 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
     Route::resource('orders', OrderController::class)->except(['create', 'store']);
     Route::resource('categories', CategoryController::class);
     Route::resource('customers', CustomerController::class)->only(['index', 'show', 'destroy']);
+    Route::get('newsletter', [\App\Http\Controllers\Admin\NewsletterController::class, 'index'])->name('newsletter.index');
+    Route::delete('newsletter/{id}', [\App\Http\Controllers\Admin\NewsletterController::class, 'destroy'])->name('newsletter.destroy');
+    Route::get('reviews', [\App\Http\Controllers\Admin\ReviewController::class, 'index'])->name('reviews.index');
+    Route::patch('reviews/{id}/toggle', [\App\Http\Controllers\Admin\ReviewController::class, 'toggle'])->name('reviews.toggle');
+    Route::delete('reviews/{id}', [\App\Http\Controllers\Admin\ReviewController::class, 'destroy'])->name('reviews.destroy');
     Route::resource('abandoned-carts', \App\Http\Controllers\Admin\AbandonedCartController::class)->only(['index', 'destroy']);
     Route::resource('blog', \App\Http\Controllers\Admin\BlogPostController::class);
     Route::resource('media', \App\Http\Controllers\Admin\MediaController::class)->only(['index', 'store', 'destroy']);

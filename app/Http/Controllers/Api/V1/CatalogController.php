@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductReview;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -82,5 +83,52 @@ class CatalogController extends Controller
             ->firstOrFail();
 
         return response()->json(['data' => $product]);
+    }
+
+    public function reviews(string $slugOrId): JsonResponse
+    {
+        $product = Product::query()
+            ->where('slug', $slugOrId)
+            ->orWhere('id', $slugOrId)
+            ->firstOrFail();
+
+        $reviews = $product->reviews()
+            ->where('is_approved', true)
+            ->orderByDesc('id')
+            ->get(['id', 'author_name', 'rating', 'comment', 'created_at']);
+
+        return response()->json([
+            'data' => $reviews,
+            'meta' => [
+                'count' => $reviews->count(),
+                'average' => round((float) $reviews->avg('rating'), 1),
+            ],
+        ]);
+    }
+
+    public function storeReview(Request $request, string $slugOrId): JsonResponse
+    {
+        $product = Product::query()
+            ->where('slug', $slugOrId)
+            ->orWhere('id', $slugOrId)
+            ->firstOrFail();
+
+        $validated = $request->validate([
+            'author_name' => 'required|string|max:120',
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:2000',
+        ]);
+
+        $review = $product->reviews()->create([
+            'author_name' => $validated['author_name'],
+            'rating' => $validated['rating'],
+            'comment' => $validated['comment'] ?? null,
+            'is_approved' => true,
+        ]);
+
+        return response()->json([
+            'message' => 'Review submitted successfully.',
+            'data' => $review->only(['id', 'author_name', 'rating', 'comment', 'created_at']),
+        ], 201);
     }
 }
