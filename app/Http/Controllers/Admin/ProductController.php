@@ -36,6 +36,12 @@ class ProductController extends Controller
         $data = $request->except(['_token', 'image_file', 'gallery_files']);
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
 
+        // Merchandising flags — checkboxes only submit when checked, so set explicitly.
+        $data['is_new'] = $request->boolean('is_new');
+        $data['is_featured'] = $request->boolean('is_featured');
+        $data['is_best_seller'] = $request->boolean('is_best_seller');
+        $data['label'] = $request->filled('label') ? $request->input('label') : null;
+
         // Upload main image
         if ($request->hasFile('image_file')) {
             $data['image'] = $this->uploadToR2($request->file('image_file'));
@@ -100,6 +106,12 @@ class ProductController extends Controller
         $product = Product::findOrFail($id);
         $data = $request->except(['_token', '_method', 'image_file', 'gallery_files']);
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
+
+        // Merchandising flags — checkboxes only submit when checked, so set explicitly.
+        $data['is_new'] = $request->boolean('is_new');
+        $data['is_featured'] = $request->boolean('is_featured');
+        $data['is_best_seller'] = $request->boolean('is_best_seller');
+        $data['label'] = $request->filled('label') ? $request->input('label') : null;
 
         // Upload main image
         if ($request->hasFile('image_file')) {

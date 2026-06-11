@@ -31,6 +31,9 @@ class CatalogController extends Controller
             'category' => 'nullable|string|max:100',
             'search' => 'nullable|string|max:255',
             'is_new' => 'nullable|boolean',
+            'featured' => 'nullable|boolean',
+            'best_seller' => 'nullable|boolean',
+            'label' => 'nullable|string|max:100',
             'per_page' => 'nullable|integer|min:1|max:100',
         ]);
 
@@ -52,6 +55,18 @@ class CatalogController extends Controller
 
         if (!is_null($request->query('is_new'))) {
             $query->where('is_new', $request->boolean('is_new'));
+        }
+
+        if (!is_null($request->query('featured'))) {
+            $query->where('is_featured', $request->boolean('featured'));
+        }
+
+        if (!is_null($request->query('best_seller'))) {
+            $query->where('is_best_seller', $request->boolean('best_seller'));
+        }
+
+        if ($request->filled('label')) {
+            $query->where('label', $request->string('label'));
         }
 
         $data = $query->paginate($perPage)->appends($request->query());

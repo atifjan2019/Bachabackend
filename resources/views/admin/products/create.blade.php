@@ -182,6 +182,36 @@
                 </div>
             </div>
 
+            <div class="bcard">
+                <div class="bcard-head"><span class="bcard-title">Merchandising</span></div>
+                <div class="bcard-body">
+                    <div class="form-group">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="is_featured" id="is_featured" value="1" {{ old('is_featured') ? 'checked' : '' }}>
+                            <label class="form-check-label" for="is_featured">Featured Product</label>
+                        </div>
+                        <div class="form-hint">Shown in the homepage “Featured Collection”.</div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="is_best_seller" id="is_best_seller" value="1" {{ old('is_best_seller') ? 'checked' : '' }}>
+                            <label class="form-check-label" for="is_best_seller">Best Seller</label>
+                        </div>
+                        <div class="form-hint">Shown in the homepage “Best Sellers”.</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Card Label / Badge</label>
+                        <select name="label" class="form-select">
+                            <option value="">— None —</option>
+                            @foreach(['Trending Now', 'Limited Edition', 'Customer Favourite', 'New Arrival'] as $opt)
+                                <option value="{{ $opt }}" {{ old('label') === $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                            @endforeach
+                        </select>
+                        <div class="form-hint">Optional badge shown on the product card.</div>
+                    </div>
+                </div>
+            </div>
+
             <button type="submit" class="btn btn-primary w-100 btn-lg" id="submitBtn">
                 <i class="mdi mdi-content-save-outline"></i> Save Product
             </button>
