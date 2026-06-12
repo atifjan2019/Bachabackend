@@ -115,4 +115,16 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Notification Address
+    |--------------------------------------------------------------------------
+    |
+    | Where new-order notifications are delivered. Set MAIL_ADMIN_ADDRESS in
+    | your .env. Falls back to the default "from" address when not provided.
+    |
+    */
+
+    'admin_address' => env('MAIL_ADMIN_ADDRESS', env('MAIL_FROM_ADDRESS')),
+
 ];

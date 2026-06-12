@@ -3,12 +3,16 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Mail\NewOrderMail;
+use App\Mail\OrderPlacedMail;
 use App\Models\AbandonedCart;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class CheckoutController extends Controller
 {
@@ -78,6 +82,25 @@ class CheckoutController extends Controller
 
         $customer->increment('orders_count');
         $customer->increment('total_spent', $totalAmount);
+
+        // Send branded order emails (customer confirmation + admin notification).
+        // Failures must never break order creation.
+        try {
+            if ($order->customer_email) {
+                Mail::to($order->customer_email)->send(new OrderPlacedMail($order));
+            }
+
+            $adminEmail = config('mail.admin_address')
+                ?: Setting::where('setting_key', 'order_notification_email')->value('setting_value')
+                ?: Setting::where('setting_key', 'business_email')->value('setting_value')
+                ?: config('mail.from.address');
+
+            if ($adminEmail) {
+                Mail::to($adminEmail)->send(new NewOrderMail($order));
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Order email failed for order #' . $order->id . ': ' . $e->getMessage());
+        }
 
         return response()->json([
             'message' => 'Order created successfully.',

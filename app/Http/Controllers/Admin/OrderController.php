@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\OrderStatusMail;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class OrderController extends Controller
 {
@@ -31,7 +34,19 @@ class OrderController extends Controller
     {
         $request->validate(['status' => 'required|string']);
         $order = Order::findOrFail($id);
+        $previousStatus = $order->status;
         $order->update(['status' => $request->status]);
+
+        // Email the customer when the status actually changes (shipped, delivered,
+        // cancelled, etc.). Email failures must never block the status update.
+        if ($order->customer_email && strtolower($previousStatus) !== strtolower($request->status)) {
+            try {
+                Mail::to($order->customer_email)->send(new OrderStatusMail($order, $request->status));
+            } catch (\Throwable $e) {
+                Log::warning('Status email failed for order #' . $order->id . ': ' . $e->getMessage());
+            }
+        }
+
         return redirect()->route('admin.orders.show', $id)->with('success', 'Order status updated.');
     }
 
