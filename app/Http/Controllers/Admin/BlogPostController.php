@@ -29,6 +29,7 @@ class BlogPostController extends Controller
         ]);
         $data = $request->except(['_token', 'image_file']);
         $data['slug'] = $data['slug'] ?? Str::slug($data['title']);
+        $data['status'] = $request->boolean('status');
 
         if ($request->hasFile('image_file')) {
             $file = $request->file('image_file');
@@ -57,6 +58,7 @@ class BlogPostController extends Controller
         $post = BlogPost::findOrFail($id);
         $data = $request->except(['_token', '_method', 'image_file']);
         $data['slug'] = $data['slug'] ?? Str::slug($data['title']);
+        $data['status'] = $request->boolean('status');
 
         if ($request->hasFile('image_file')) {
             $file = $request->file('image_file');

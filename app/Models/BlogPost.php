@@ -10,7 +10,14 @@ class BlogPost extends Model
         'title',
         'slug',
         'content',
+        'excerpt',
+        'category',
         'image',
+        'meta_title',
+        'meta_description',
+        'meta_keywords',
+        'og_image',
+        'canonical_url',
         'status',
     ];
 

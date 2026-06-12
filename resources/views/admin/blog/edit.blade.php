@@ -37,6 +37,45 @@
                         <div id="quill-editor">{!! old('content', $post->content) !!}</div>
                         <textarea name="content" id="contentField" style="display:none;">{{ old('content', $post->content) }}</textarea>
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">Excerpt</label>
+                        <textarea name="excerpt" class="form-control" rows="2" placeholder="Short summary shown on cards and used as a search snippet.">{{ old('excerpt', $post->excerpt) }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <input type="text" name="category" class="form-control" value="{{ old('category', $post->category) }}" placeholder="e.g. Heritage, Styling, Collections">
+                    </div>
+                </div>
+            </div>
+
+            <div class="bcard">
+                <div class="bcard-head"><span class="bcard-title">SEO Settings</span></div>
+                <div class="bcard-body">
+                    <div class="form-group">
+                        <label class="form-label">Meta Title</label>
+                        <input type="text" name="meta_title" class="form-control" value="{{ old('meta_title', $post->meta_title) }}" placeholder="Defaults to the post title">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Meta Description</label>
+                        <textarea name="meta_description" class="form-control" rows="2" placeholder="~155 characters shown in search results">{{ old('meta_description', $post->meta_description) }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Meta Keywords</label>
+                        <input type="text" name="meta_keywords" class="form-control" value="{{ old('meta_keywords', $post->meta_keywords) }}" placeholder="comma, separated, keywords">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Social Share Image (OG Image)</label>
+                        <div id="og-preview" style="margin-bottom:8px; {{ old('og_image', $post->og_image) ? '' : 'display:none;' }}">
+                            <img src="{{ old('og_image', $post->og_image) }}" alt="OG preview" style="max-height:120px; border-radius:6px;">
+                        </div>
+                        <span class="btn-library" onclick="openMediaPicker('og_image', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
+                        <input type="hidden" name="og_image" value="{{ old('og_image', $post->og_image) }}">
+                        <div class="form-hint">Used when the post is shared on social media. Defaults to the featured image.</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Canonical URL</label>
+                        <input type="text" name="canonical_url" class="form-control" value="{{ old('canonical_url', $post->canonical_url) }}" placeholder="https://bachastylo.com/blogs/...">
+                    </div>
                 </div>
             </div>
         </div>
