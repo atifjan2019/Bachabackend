@@ -16,6 +16,7 @@ class SettingController extends Controller
         'business_phone',
         'business_address',
         'logo_url',
+        'footer_logo_url',
         'favicon_url',
         'shipping_fee',
         'free_shipping_threshold',
@@ -47,6 +48,7 @@ class SettingController extends Controller
             'business_phone' => 'nullable|string|max:100',
             'business_address' => 'nullable|string|max:2000',
             'logo_url' => 'nullable|string|max:2000',
+            'footer_logo_url' => 'nullable|string|max:2000',
             'favicon_url' => 'nullable|string|max:2000',
             'shipping_fee' => 'nullable|numeric|min:0',
             'free_shipping_threshold' => 'nullable|numeric|min:0',
@@ -63,6 +65,7 @@ class SettingController extends Controller
             'home_highlight_link' => 'nullable|string|max:2000',
             'footer_about' => 'nullable|string|max:2000',
             'logo_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,svg|max:5120',
+            'footer_logo_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,svg|max:5120',
             'favicon_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,svg,ico|max:2048',
             'home_highlight_image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
         ]);
@@ -74,6 +77,15 @@ class SettingController extends Controller
             $disk = env('FILESYSTEM_DISK', 'public');
             $file->storeAs('branding', $filename, $disk);
             $validated['logo_url'] = Storage::disk($disk)->url('branding/' . $filename);
+        }
+
+        // Handle footer logo file upload
+        if ($request->hasFile('footer_logo_file')) {
+            $file = $request->file('footer_logo_file');
+            $filename = 'footer-logo-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $disk = env('FILESYSTEM_DISK', 'public');
+            $file->storeAs('branding', $filename, $disk);
+            $validated['footer_logo_url'] = Storage::disk($disk)->url('branding/' . $filename);
         }
 
         // Handle favicon file upload

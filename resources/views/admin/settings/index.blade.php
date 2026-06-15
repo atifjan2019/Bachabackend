@@ -54,6 +54,18 @@
                             <input type="hidden" name="logo_url" value="{{ $settings['logo_url'] ?? '' }}">
                         </div>
                         <div class="col-12">
+                            <label class="form-label">Footer Logo</label>
+                            <input type="file" name="footer_logo_file" class="form-control" accept="image/*" onchange="previewImg(this, 'footer-logo-preview')">
+                            <div id="footer-logo-preview" style="margin-top:8px;">
+                                @if(!empty($settings['footer_logo_url']))
+                                    <img src="{{ $settings['footer_logo_url'] }}" alt="Footer Logo" style="max-height:60px; border-radius:4px;">
+                                @endif
+                            </div>
+                            <span class="btn-library" onclick="openMediaPicker('footer_logo_url', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
+                            <input type="hidden" name="footer_logo_url" value="{{ $settings['footer_logo_url'] ?? '' }}">
+                            <div class="form-hint">Logo shown in the website footer. Leave blank to use the main logo.</div>
+                        </div>
+                        <div class="col-12">
                             <label class="form-label">Favicon</label>
                             <input type="file" name="favicon_file" class="form-control" accept="image/*,.ico" onchange="previewImg(this, 'favicon-preview')">
                             <div id="favicon-preview" style="margin-top:8px;">

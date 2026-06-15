@@ -35,6 +35,7 @@ class ContentController extends Controller
             'business_phone',
             'business_address',
             'logo_url',
+            'footer_logo_url',
             'favicon_url',
             'facebook_url',
             'instagram_url',
