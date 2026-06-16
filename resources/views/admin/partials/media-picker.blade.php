@@ -241,16 +241,40 @@ function closeMediaPicker() {
 function confirmMediaPick() {
     if (_mpCallback) {
         _mpCallback(_mpSelected);
-    } else if (_mpTarget) {
+        closeMediaPicker();
+        return;
+    }
+    if (_mpTarget) {
         const field = document.querySelector('[name="' + _mpTarget + '"]');
         if (field) {
-            if (field.tagName === 'TEXTAREA') {
-                field.value = JSON.stringify(_mpSelected);
-            } else {
-                field.value = _mpSelected[0] || '';
-            }
+            // Multi-select fields (e.g. gallery) store ALL chosen URLs as a JSON array;
+            // single-select fields (e.g. main image) store just the one URL.
+            field.value = (field.tagName === 'TEXTAREA' || _mpMultiple)
+                ? JSON.stringify(_mpSelected)
+                : (_mpSelected[0] || '');
         }
+        renderMpPreview(_mpTarget, _mpSelected, _mpMultiple);
     }
     closeMediaPicker();
+}
+
+// Show the picked images in the field's on-page preview so the user gets feedback.
+function renderMpPreview(target, urls, multiple) {
+    const previewIds = { gallery: 'preview-gallery', image: 'preview-main' };
+    const container = document.getElementById(previewIds[target]);
+    if (!container) return;
+
+    if (multiple) {
+        container.innerHTML = '';
+        urls.forEach(url => {
+            const img = document.createElement('img');
+            img.src = url;
+            img.style.cssText = 'max-height:100px; border-radius:6px; border:1px solid #ddd;';
+            container.appendChild(img);
+        });
+    } else if (urls[0]) {
+        container.style.display = 'block';
+        container.innerHTML = '<img src="' + urls[0] + '" alt="Preview" style="max-height:160px; border-radius:6px;">';
+    }
 }
 </script>

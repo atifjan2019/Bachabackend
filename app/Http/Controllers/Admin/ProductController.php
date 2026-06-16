@@ -49,20 +49,9 @@ class ProductController extends Controller
 
 
 
-        // Upload gallery images
-        if ($request->hasFile('gallery_files')) {
-            $urls = [];
-            foreach ($request->file('gallery_files') as $file) {
-                $urls[] = $this->uploadToR2($file);
-            }
-            // Merge with any manually entered gallery URLs
-            $existing = [];
-            if (!empty($data['gallery'])) {
-                $decoded = json_decode($data['gallery'], true);
-                $existing = is_array($decoded) ? $decoded : [];
-            }
-            $data['gallery'] = json_encode(array_merge($existing, $urls));
-        }
+        // Gallery: combine library-selected URLs (hidden field) with any uploaded files.
+        // Stored as a real array so the model's `array` cast JSON-encodes it exactly once.
+        $data['gallery'] = $this->buildGallery($request, $data['gallery'] ?? null);
 
         // Parse sizes from comma separated string
         if (!empty($data['sizes']) && is_string($data['sizes'])) {
@@ -120,19 +109,9 @@ class ProductController extends Controller
 
 
 
-        // Upload gallery images
-        if ($request->hasFile('gallery_files')) {
-            $urls = [];
-            foreach ($request->file('gallery_files') as $file) {
-                $urls[] = $this->uploadToR2($file);
-            }
-            $existing = [];
-            if (!empty($data['gallery'])) {
-                $decoded = json_decode($data['gallery'], true);
-                $existing = is_array($decoded) ? $decoded : [];
-            }
-            $data['gallery'] = json_encode(array_merge($existing, $urls));
-        }
+        // Gallery: combine library-selected/existing URLs (hidden field) with any uploaded files.
+        // Stored as a real array so the model's `array` cast JSON-encodes it exactly once.
+        $data['gallery'] = $this->buildGallery($request, $data['gallery'] ?? null);
 
         // Parse sizes from comma separated string
         if (!empty($data['sizes']) && is_string($data['sizes'])) {
@@ -157,6 +136,28 @@ class ProductController extends Controller
         Product::findOrFail($id)->delete();
         Cache::flush();
         return redirect()->route('admin.products.index')->with('success', 'Product deleted.');
+    }
+
+    /**
+     * Build the gallery array: existing/library-selected URLs (from the hidden `gallery`
+     * field, sent as a JSON array) plus any newly uploaded `gallery_files`.
+     * Returns a plain array — the model's `array` cast handles JSON encoding.
+     */
+    private function buildGallery(Request $request, $hidden): array
+    {
+        $gallery = [];
+        if (!empty($hidden)) {
+            $decoded = is_array($hidden) ? $hidden : json_decode($hidden, true);
+            $gallery = is_array($decoded) ? $decoded : [];
+        }
+
+        if ($request->hasFile('gallery_files')) {
+            foreach ($request->file('gallery_files') as $file) {
+                $gallery[] = $this->uploadToR2($file);
+            }
+        }
+
+        return array_values(array_filter($gallery, fn ($url) => is_string($url) && $url !== ''));
     }
 
     /**
