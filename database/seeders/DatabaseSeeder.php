@@ -36,7 +36,9 @@ class DatabaseSeeder extends Seeder
         $settings = [
             'business_name' => 'Bacha Stylo',
             'business_email' => 'support@bachastylo.com',
-            'business_phone' => '923001234567',
+            'order_notification_email' => 'support@bachastylo.com',
+            'email_from_name' => 'Bacha Stylo',
+            'business_phone' => '923409002068',
             'business_address' => 'Main Boulevard, Lahore, Pakistan',
             'logo_url' => 'https://storage.googleapis.com/msgsndr/1a90x6oFSkLT95cM2HEE/media/698b19b767d7491d79450638.png',
             'favicon_url' => 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Red_Logo.svg',
@@ -45,9 +47,9 @@ class DatabaseSeeder extends Seeder
             'facebook_url' => 'https://facebook.com/bachastylo',
             'instagram_url' => 'https://instagram.com/bachastylo',
             'whatsapp_number' => '923001234567',
-            'meta_title' => 'Bacha Stylo - Premium Kids Fashion',
-            'meta_description' => 'Discover premium kids wear and accessories with fast delivery.',
-            'meta_keywords' => 'kids fashion, boys clothes, girls clothes, pakistan',
+            'meta_title' => 'Bacha Stylo - Fashion Home',
+            'meta_description' => 'Discover premium Pakistani fashion, traditional wear, and accessories with fast nationwide delivery.',
+            'meta_keywords' => 'fashion, traditional wear, waistcoats, shawls, accessories, pakistan',
             'canonical_base_url' => 'https://bachastylo.com',
         ];
 

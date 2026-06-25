@@ -25,7 +25,7 @@ trait HasBrandData
 
         $s = Setting::whereIn('setting_key', $keys)->pluck('setting_value', 'setting_key');
 
-        $site = $s['canonical_base_url'] ?? 'https://bachastylo.pk';
+        $site = $s['canonical_base_url'] ?? 'https://bachastylo.com';
 
         return [
             'name' => $s['business_name'] ?? 'Bacha Stylo',

@@ -61,6 +61,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Storefront (Frontend) URL
+    |--------------------------------------------------------------------------
+    |
+    | Public URL of the Next.js storefront. Used to build customer-facing
+    | links in emails (e.g. the password reset link). Falls back to the
+    | canonical_base_url admin setting when not set.
+    |
+    */
+
+    'frontend_url' => env('FRONTEND_URL'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

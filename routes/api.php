@@ -39,6 +39,8 @@ Route::prefix('v1')->group(function () {
     // Customer Authentication & Management
     Route::post('/auth/register', [\App\Http\Controllers\Api\V1\AuthController::class, 'register']);
     Route::post('/auth/login', [\App\Http\Controllers\Api\V1\AuthController::class, 'login']);
+    Route::post('/auth/forgot-password', [\App\Http\Controllers\Api\V1\AuthController::class, 'forgotPassword']);
+    Route::post('/auth/reset-password', [\App\Http\Controllers\Api\V1\AuthController::class, 'resetPassword']);
 
     Route::middleware('auth:api')->group(function () {
         Route::get('/account/profile', [\App\Http\Controllers\Api\V1\AuthController::class, 'profile']);
