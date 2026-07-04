@@ -38,6 +38,8 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
     Route::resource('categories', CategoryController::class);
     Route::resource('customers', CustomerController::class)->only(['index', 'show', 'destroy']);
     Route::get('newsletter', [\App\Http\Controllers\Admin\NewsletterController::class, 'index'])->name('newsletter.index');
+    Route::get('newsletter/compose', [\App\Http\Controllers\Admin\NewsletterController::class, 'compose'])->name('newsletter.compose');
+    Route::post('newsletter/send', [\App\Http\Controllers\Admin\NewsletterController::class, 'send'])->name('newsletter.send');
     Route::delete('newsletter/{id}', [\App\Http\Controllers\Admin\NewsletterController::class, 'destroy'])->name('newsletter.destroy');
     Route::get('reviews', [\App\Http\Controllers\Admin\ReviewController::class, 'index'])->name('reviews.index');
     Route::patch('reviews/{id}/toggle', [\App\Http\Controllers\Admin\ReviewController::class, 'toggle'])->name('reviews.toggle');

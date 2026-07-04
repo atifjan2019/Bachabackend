@@ -7,6 +7,9 @@
         <h4>Newsletter Subscribers</h4>
         <div class="ph-sub">{{ $subscribers->total() }} subscribers</div>
     </div>
+    <div class="ph-action">
+        <a href="{{ route('admin.newsletter.compose') }}" class="btn btn-primary"><i class="mdi mdi-email-edit"></i> Compose Email</a>
+    </div>
 </div>
 
 <div class="bcard">

@@ -18,4 +18,29 @@ class NewsletterController extends Controller
         NewsletterSubscriber::findOrFail($id)->delete();
         return redirect()->route('admin.newsletter.index')->with('success', 'Subscriber removed.');
     }
+
+    public function compose()
+    {
+        return view('admin.newsletter.compose');
+    }
+
+    public function send(\Illuminate\Http\Request $request)
+    {
+        $request->validate([
+            'subject' => 'required|string|max:255',
+            'body' => 'required|string',
+        ]);
+
+        $subscribers = NewsletterSubscriber::all();
+
+        foreach ($subscribers as $subscriber) {
+            \App\Jobs\SendNewsletterJob::dispatch(
+                $subscriber->email, 
+                $request->subject, 
+                $request->body
+            );
+        }
+
+        return redirect()->route('admin.newsletter.index')->with('success', "Newsletter queued for {$subscribers->count()} subscribers.");
+    }
 }
