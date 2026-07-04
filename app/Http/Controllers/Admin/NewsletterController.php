@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\NewsletterMail;
 use App\Models\NewsletterSubscriber;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class NewsletterController extends Controller
 {
@@ -24,23 +28,34 @@ class NewsletterController extends Controller
         return view('admin.newsletter.compose');
     }
 
-    public function send(\Illuminate\Http\Request $request)
+    public function send(Request $request)
     {
         $request->validate([
             'subject' => 'required|string|max:255',
-            'body' => 'required|string',
+            'body'    => 'required|string',
         ]);
 
         $subscribers = NewsletterSubscriber::all();
+        $sent  = 0;
+        $failed = 0;
 
         foreach ($subscribers as $subscriber) {
-            \App\Jobs\SendNewsletterJob::dispatch(
-                $subscriber->email, 
-                $request->subject, 
-                $request->body
-            );
+            try {
+                Mail::to($subscriber->email)->send(
+                    new NewsletterMail($request->subject, $request->body, $subscriber->email)
+                );
+                $sent++;
+            } catch (\Exception $e) {
+                $failed++;
+                Log::error("Newsletter send failed for {$subscriber->email}: " . $e->getMessage());
+            }
         }
 
-        return redirect()->route('admin.newsletter.index')->with('success', "Newsletter queued for {$subscribers->count()} subscribers.");
+        $message = "Newsletter sent to {$sent} subscriber(s).";
+        if ($failed > 0) {
+            $message .= " {$failed} failed (check logs).";
+        }
+
+        return redirect()->route('admin.newsletter.index')->with('success', $message);
     }
 }
