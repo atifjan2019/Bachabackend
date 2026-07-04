@@ -19,7 +19,7 @@
             $itemTotal = (float) ($item['price'] ?? 0) * $itemQty;
             $metaParts = [];
             if (! empty($item['size'])) { $metaParts[] = 'Size: ' . $item['size']; }
-            if (! empty($item['color'])) { $metaParts[] = $item['color']; }
+            if (! empty($item['color']) && strtolower(trim($item['color'])) !== 'default') { $metaParts[] = $item['color']; }
             $itemMeta = implode(' · ', $metaParts);
         @endphp
         <tr>

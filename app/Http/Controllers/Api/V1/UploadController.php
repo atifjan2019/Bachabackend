@@ -13,13 +13,15 @@ class UploadController extends Controller
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'file' => 'required|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
+            'file' => 'required|file|mimes:jpg,jpeg,png,gif,webp,pdf|max:10240',
+            'folder' => 'nullable|string|in:products,receipts',
         ]);
 
+        $folder = $request->input('folder', 'products');
         $file = $request->file('file');
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
         $disk = env('FILESYSTEM_DISK', 'public');
-        $path = $file->storeAs('products', $filename, $disk);
+        $path = $file->storeAs($folder, $filename, $disk);
 
         $url = Storage::disk($disk)->url($path);
 

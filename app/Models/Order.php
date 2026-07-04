@@ -18,6 +18,7 @@ class Order extends Model
         'shipping_fee',
         'total_amount',
         'payment_method',
+        'payment_receipt',
         'status',
     ];
     

@@ -118,6 +118,19 @@
                         <div class="detail-label">Payment Method</div>
                         <div class="detail-value">{{ $order->payment_method ?? 'Cash on Delivery' }}</div>
                     </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Payment Receipt</div>
+                        <div class="detail-value">
+                            @if(!empty($order->payment_receipt))
+                                <a href="{{ $order->payment_receipt }}" target="_blank" rel="noopener">
+                                    <img src="{{ $order->payment_receipt }}" alt="Payment receipt" style="max-width:100%;max-height:220px;border-radius:6px;border:1px solid var(--line,#e5e7eb);">
+                                    <div style="margin-top:6px;font-size:12px;"><i class="mdi mdi-open-in-new"></i> View full receipt</div>
+                                </a>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

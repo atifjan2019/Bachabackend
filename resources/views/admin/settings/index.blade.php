@@ -134,6 +134,158 @@
             </div>
 
             <div class="bcard">
+                <div class="bcard-head"><span class="bcard-title">Homepage — Intro Banner / Video</span></div>
+                <div class="bcard-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" role="switch" id="intro_enabled" name="intro_enabled" value="1" {{ !empty($settings['intro_enabled']) && $settings['intro_enabled'] === '1' ? 'checked' : '' }}>
+                                <label class="form-check-label" for="intro_enabled">Show intro banner / video on the homepage</label>
+                            </div>
+                            <div class="form-hint">When enabled, the hero background is replaced by your banner image or video. Visitors can Play the promo or Skip to reveal the default hero.</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label d-block">Step 1 — What should the background be?</label>
+                            @php $introBg = $settings['intro_bg_type'] ?? 'image'; @endphp
+                            <div class="btn-group" role="group" aria-label="Background type">
+                                <input type="radio" class="btn-check" name="intro_bg_type" id="intro_bg_image" value="image" {{ $introBg !== 'video' ? 'checked' : '' }} onchange="toggleIntroBg()">
+                                <label class="btn btn-outline-primary" for="intro_bg_image"><i class="mdi mdi-image"></i> Image</label>
+                                <input type="radio" class="btn-check" name="intro_bg_type" id="intro_bg_video" value="video" {{ $introBg === 'video' ? 'checked' : '' }} onchange="toggleIntroBg()">
+                                <label class="btn btn-outline-primary" for="intro_bg_video"><i class="mdi mdi-video"></i> Video</label>
+                            </div>
+                        </div>
+
+                        {{-- IMAGE background --}}
+                        <div class="col-12" id="intro-image-group">
+                            <label class="form-label">Step 2 — Banner Image</label>
+                            <input type="file" name="intro_image_file" class="form-control" accept="image/*" onchange="previewImg(this, 'intro-image-preview')">
+                            <div id="intro-image-preview" style="margin-top:8px;">
+                                @if(!empty($settings['intro_image']))
+                                    <img src="{{ $settings['intro_image'] }}" alt="Intro banner" style="max-height:120px; border-radius:6px;">
+                                @endif
+                            </div>
+                            <span class="btn-library" onclick="openMediaPicker('intro_image', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
+                            <input type="text" name="intro_image" class="form-control mt-2" value="{{ $settings['intro_image'] ?? '' }}" placeholder="…or paste an image URL">
+                            @if(!empty($settings['intro_image']))
+                                <div class="form-check mt-2">
+                                    <input type="checkbox" class="form-check-input" id="remove_intro_image" name="remove_intro_image" value="1">
+                                    <label class="form-check-label text-danger" for="remove_intro_image">Remove current image</label>
+                                </div>
+                            @endif
+                            <div class="form-hint">Upload a file, pick from the library, or paste an image URL.</div>
+                        </div>
+
+                        {{-- VIDEO background --}}
+                        <div class="col-12" id="intro-video-group">
+                            <label class="form-label">Step 2 — Background Video</label>
+                            <input type="file" name="intro_video_file" class="form-control" accept="video/mp4,video/webm,video/ogg,video/quicktime">
+                            <input type="text" name="intro_video_url" class="form-control mt-2" value="{{ $settings['intro_video_url'] ?? '' }}" placeholder="…or paste a YouTube / Vimeo / .mp4 link">
+                            @if(!empty($settings['intro_video_url']))
+                                <div class="form-hint">Current: <a href="{{ $settings['intro_video_url'] }}" target="_blank">{{ $settings['intro_video_url'] }}</a></div>
+                                <div class="form-check mt-2">
+                                    <input type="checkbox" class="form-check-input" id="remove_intro_video" name="remove_intro_video" value="1">
+                                    <label class="form-check-label text-danger" for="remove_intro_video">Remove current video</label>
+                                </div>
+                            @endif
+                            <div class="form-hint">Upload a short MP4/WebM (max 50 MB), or paste a YouTube / Vimeo / video link. Plays muted &amp; looped.</div>
+                        </div>
+
+                        {{-- Play button — video background only --}}
+                        <div class="col-12" id="intro-play-group">
+                            <div class="row g-3">
+                                <div class="col-12"><hr class="my-1"></div>
+                                <div class="col-12">
+                                    <label class="form-label">Step 3 — Play Button <span class="text-muted fw-normal">(optional)</span></label>
+                                    <input type="text" name="intro_social_url" class="form-control" value="{{ $settings['intro_social_url'] ?? '' }}" placeholder="Promo link — Facebook / Instagram / TikTok / YouTube">
+                                    <div class="form-hint">Adds a Play button over the video that opens this promo link in a new tab. Leave blank for no Play button.</div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="form-label">Play Button Text</label>
+                                    <input type="text" name="intro_button_text" class="form-control" value="{{ $settings['intro_button_text'] ?? '' }}" placeholder="Watch Video">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bcard">
+                <div class="bcard-head"><span class="bcard-title">Payment Methods (Checkout)</span></div>
+                <div class="bcard-body">
+                    <p class="form-hint mb-3">These details are shown to customers on the checkout page for each online payment method. Cash on Delivery needs no details.</p>
+                    <div class="row g-3">
+                        <div class="col-12 d-flex align-items-center justify-content-between">
+                            <h6 class="mb-0 text-uppercase" style="letter-spacing:.05em;font-size:12px;color:var(--red);"><i class="mdi mdi-truck-delivery-outline"></i> Cash on Delivery</h6>
+                            <div class="form-check form-switch mb-0">
+                                <input type="checkbox" class="form-check-input" role="switch" id="cod_enabled" name="cod_enabled" value="1" {{ ($settings['cod_enabled'] ?? '1') !== '0' ? 'checked' : '' }}>
+                                <label class="form-check-label" for="cod_enabled" style="font-size:12px;">Enabled</label>
+                            </div>
+                        </div>
+                        <div class="col-12"><span class="form-hint">No details needed — customers pay at delivery.</span></div>
+
+                        <div class="col-12"><hr class="my-1"></div>
+                        <div class="col-12 d-flex align-items-center justify-content-between">
+                            <h6 class="mb-0 text-uppercase" style="letter-spacing:.05em;font-size:12px;color:var(--red);"><i class="mdi mdi-bank"></i> Bank Transfer</h6>
+                            <div class="form-check form-switch mb-0">
+                                <input type="checkbox" class="form-check-input" role="switch" id="bank_transfer_enabled" name="bank_transfer_enabled" value="1" {{ ($settings['bank_transfer_enabled'] ?? '1') !== '0' ? 'checked' : '' }}>
+                                <label class="form-check-label" for="bank_transfer_enabled" style="font-size:12px;">Enabled</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Bank Name</label>
+                            <input type="text" name="bank_name" class="form-control" value="{{ $settings['bank_name'] ?? '' }}" placeholder="e.g. Meezan Bank">
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Account Title</label>
+                            <input type="text" name="bank_account_title" class="form-control" value="{{ $settings['bank_account_title'] ?? '' }}" placeholder="Account holder name">
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Account Number</label>
+                            <input type="text" name="bank_account_number" class="form-control" value="{{ $settings['bank_account_number'] ?? '' }}" placeholder="Account number">
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">IBAN</label>
+                            <input type="text" name="bank_iban" class="form-control" value="{{ $settings['bank_iban'] ?? '' }}" placeholder="PK00XXXX0000000000000000">
+                        </div>
+
+                        <div class="col-12"><hr class="my-1"></div>
+                        <div class="col-12 d-flex align-items-center justify-content-between">
+                            <h6 class="mb-0 text-uppercase" style="letter-spacing:.05em;font-size:12px;color:var(--red);"><i class="mdi mdi-cellphone"></i> EasyPaisa</h6>
+                            <div class="form-check form-switch mb-0">
+                                <input type="checkbox" class="form-check-input" role="switch" id="easypaisa_enabled" name="easypaisa_enabled" value="1" {{ ($settings['easypaisa_enabled'] ?? '1') !== '0' ? 'checked' : '' }}>
+                                <label class="form-check-label" for="easypaisa_enabled" style="font-size:12px;">Enabled</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Account Name</label>
+                            <input type="text" name="easypaisa_account_name" class="form-control" value="{{ $settings['easypaisa_account_name'] ?? '' }}" placeholder="Account holder name">
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">EasyPaisa Number</label>
+                            <input type="text" name="easypaisa_number" class="form-control" value="{{ $settings['easypaisa_number'] ?? '' }}" placeholder="03XXXXXXXXX">
+                        </div>
+
+                        <div class="col-12"><hr class="my-1"></div>
+                        <div class="col-12 d-flex align-items-center justify-content-between">
+                            <h6 class="mb-0 text-uppercase" style="letter-spacing:.05em;font-size:12px;color:var(--red);"><i class="mdi mdi-cellphone"></i> JazzCash</h6>
+                            <div class="form-check form-switch mb-0">
+                                <input type="checkbox" class="form-check-input" role="switch" id="jazzcash_enabled" name="jazzcash_enabled" value="1" {{ ($settings['jazzcash_enabled'] ?? '1') !== '0' ? 'checked' : '' }}>
+                                <label class="form-check-label" for="jazzcash_enabled" style="font-size:12px;">Enabled</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Account Name</label>
+                            <input type="text" name="jazzcash_account_name" class="form-control" value="{{ $settings['jazzcash_account_name'] ?? '' }}" placeholder="Account holder name">
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">JazzCash Number</label>
+                            <input type="text" name="jazzcash_number" class="form-control" value="{{ $settings['jazzcash_number'] ?? '' }}" placeholder="03XXXXXXXXX">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bcard">
                 <div class="bcard-head"><span class="bcard-title">Footer</span></div>
                 <div class="bcard-body">
                     <div class="form-group">
@@ -209,6 +361,16 @@ function previewImg(input, previewId) {
     }
 }
 initUploadProgress('settingsForm', '{{ route("admin.settings.index") }}');
+
+// Show only the fields for the selected background type. The Play button is
+// video-only; an image background is simply the hero, with nothing over it.
+function toggleIntroBg() {
+    var isVideo = document.getElementById('intro_bg_video').checked;
+    document.getElementById('intro-image-group').style.display = isVideo ? 'none' : '';
+    document.getElementById('intro-video-group').style.display = isVideo ? '' : 'none';
+    document.getElementById('intro-play-group').style.display = isVideo ? '' : 'none';
+}
+toggleIntroBg();
 </script>
 @include('admin.partials.media-picker')
 @endsection

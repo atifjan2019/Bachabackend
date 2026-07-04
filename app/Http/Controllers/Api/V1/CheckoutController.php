@@ -31,7 +31,18 @@ class CheckoutController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.size' => 'nullable|string|max:50',
             'payment_method' => 'nullable|string|max:255',
+            'payment_receipt' => 'nullable|string|max:2000',
         ]);
+
+        // Non-COD methods must include a payment receipt/screenshot.
+        $method = $validated['payment_method'] ?? 'Cash on Delivery';
+        $isCod = in_array(strtolower(trim($method)), ['cod', 'cash on delivery'], true);
+        if (!$isCod && empty($validated['payment_receipt'])) {
+            return response()->json([
+                'message' => 'A payment receipt is required for this payment method.',
+                'errors' => ['payment_receipt' => ['Please upload your payment receipt.']],
+            ], 422);
+        }
 
         // Calculate totals on backend for accuracy
         $subtotal = 0;
@@ -68,6 +79,7 @@ class CheckoutController extends Controller
             'shipping_fee' => $shippingFee,
             'total_amount' => $totalAmount,
             'payment_method' => $validated['payment_method'] ?? 'Cash on Delivery',
+            'payment_receipt' => $validated['payment_receipt'] ?? null,
             'status' => 'Pending',
         ]);
 

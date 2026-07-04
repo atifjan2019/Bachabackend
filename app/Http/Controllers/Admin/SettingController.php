@@ -31,6 +31,26 @@ class SettingController extends Controller
         'home_highlight_image',
         'home_highlight_button',
         'home_highlight_link',
+        'intro_enabled',
+        'intro_bg_type',
+        'intro_title',
+        'intro_subtitle',
+        'intro_image',
+        'intro_video_url',
+        'intro_social_url',
+        'intro_button_text',
+        'cod_enabled',
+        'bank_transfer_enabled',
+        'easypaisa_enabled',
+        'jazzcash_enabled',
+        'bank_name',
+        'bank_account_title',
+        'bank_account_number',
+        'bank_iban',
+        'easypaisa_account_name',
+        'easypaisa_number',
+        'jazzcash_account_name',
+        'jazzcash_number',
         'footer_about',
     ];
 
@@ -63,11 +83,28 @@ class SettingController extends Controller
             'home_highlight_image' => 'nullable|string|max:2000',
             'home_highlight_button' => 'nullable|string|max:100',
             'home_highlight_link' => 'nullable|string|max:2000',
+            'intro_bg_type' => 'nullable|in:image,video',
+            'intro_title' => 'nullable|string|max:255',
+            'intro_subtitle' => 'nullable|string|max:2000',
+            'intro_image' => 'nullable|string|max:2000',
+            'intro_video_url' => 'nullable|string|max:2000',
+            'intro_social_url' => 'nullable|string|max:2000',
+            'intro_button_text' => 'nullable|string|max:100',
+            'bank_name' => 'nullable|string|max:255',
+            'bank_account_title' => 'nullable|string|max:255',
+            'bank_account_number' => 'nullable|string|max:100',
+            'bank_iban' => 'nullable|string|max:100',
+            'easypaisa_account_name' => 'nullable|string|max:255',
+            'easypaisa_number' => 'nullable|string|max:50',
+            'jazzcash_account_name' => 'nullable|string|max:255',
+            'jazzcash_number' => 'nullable|string|max:50',
             'footer_about' => 'nullable|string|max:2000',
             'logo_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,svg|max:5120',
             'footer_logo_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,svg|max:5120',
             'favicon_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,svg,ico|max:2048',
             'home_highlight_image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
+            'intro_image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
+            'intro_video_file' => 'nullable|file|mimes:mp4,webm,ogg,mov,m4v|max:51200',
         ]);
 
         // Handle logo file upload
@@ -104,6 +141,42 @@ class SettingController extends Controller
             $disk = env('FILESYSTEM_DISK', 'public');
             $file->storeAs('branding', $filename, $disk);
             $validated['home_highlight_image'] = Storage::disk($disk)->url('branding/' . $filename);
+        }
+
+        // Handle intro banner image upload
+        if ($request->hasFile('intro_image_file')) {
+            $file = $request->file('intro_image_file');
+            $filename = 'intro-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $disk = env('FILESYSTEM_DISK', 'public');
+            $file->storeAs('branding', $filename, $disk);
+            $validated['intro_image'] = Storage::disk($disk)->url('branding/' . $filename);
+        }
+
+        // Handle intro video upload (falls back to a pasted URL otherwise)
+        if ($request->hasFile('intro_video_file')) {
+            $file = $request->file('intro_video_file');
+            $filename = 'intro-video-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $disk = env('FILESYSTEM_DISK', 'public');
+            $file->storeAs('branding', $filename, $disk);
+            $validated['intro_video_url'] = Storage::disk($disk)->url('branding/' . $filename);
+        }
+
+        // Remove buttons: clear the stored value unless a replacement was just
+        // uploaded in the same request (upload wins).
+        if ($request->boolean('remove_intro_image') && !$request->hasFile('intro_image_file')) {
+            $validated['intro_image'] = '';
+        }
+        if ($request->boolean('remove_intro_video') && !$request->hasFile('intro_video_file')) {
+            $validated['intro_video_url'] = '';
+        }
+
+        // Checkbox: absent from the request means "disabled". Normalise to "1"/"0"
+        // so the feature can be toggled off (unchecked inputs are never submitted).
+        $validated['intro_enabled'] = $request->boolean('intro_enabled') ? '1' : '0';
+
+        // Payment method enable/disable switches (same unchecked-checkbox handling).
+        foreach (['cod_enabled', 'bank_transfer_enabled', 'easypaisa_enabled', 'jazzcash_enabled'] as $flag) {
+            $validated[$flag] = $request->boolean($flag) ? '1' : '0';
         }
 
         foreach (self::ALLOWED_KEYS as $key) {
