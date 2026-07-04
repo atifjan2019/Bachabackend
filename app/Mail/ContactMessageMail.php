@@ -3,7 +3,7 @@
 namespace App\Mail;
 
 use App\Mail\Concerns\HasBrandData;
-use App\Models\Order;
+use App\Models\ContactMessage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
@@ -11,11 +11,11 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class NewOrderMail extends Mailable
+class ContactMessageMail extends Mailable
 {
     use Queueable, SerializesModels, HasBrandData;
 
-    public function __construct(public Order $order)
+    public function __construct(public ContactMessage $contact)
     {
     }
 
@@ -25,15 +25,19 @@ class NewOrderMail extends Mailable
 
         return new Envelope(
             from: new Address(config('mail.from.address'), $brand['from_name']),
-            subject: 'New order ' . $this->order->ref . ' — Rs. ' . number_format((float) $this->order->total_amount),
+            // Reply goes straight to the person who contacted us.
+            replyTo: $this->contact->email
+                ? [new Address($this->contact->email, $this->contact->name)]
+                : [],
+            subject: 'New contact message: ' . $this->contact->subject,
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            view: 'emails.new-order-admin',
-            with: ['order' => $this->order, 'brand' => $this->brand()],
+            view: 'emails.contact-message',
+            with: ['contact' => $this->contact, 'brand' => $this->brand()],
         );
     }
 }

@@ -1,7 +1,7 @@
 @extends('emails.layout')
 
 @section('title', 'Order Confirmed')
-@section('preheader', 'Thank you! Your order #'.$order->id.' has been received and is being prepared.')
+@section('preheader', 'Thank you! Your order '.$order->ref.' has been received and is being prepared.')
 
 @section('content')
     @php
@@ -27,7 +27,7 @@
         <tr>
             <td class="stack" style="padding:18px 20px;">
                 <span style="font-size:11px; letter-spacing:1px; text-transform:uppercase; color:#6b6b6b;">Order Number</span><br>
-                <span style="font-size:18px; font-weight:bold; color:#141414;">#{{ $order->id }}</span>
+                <span style="font-size:18px; font-weight:bold; color:#141414;">{{ $order->ref }}</span>
             </td>
             <td align="right" class="stack stack-r" style="padding:18px 20px;">
                 <span style="font-size:11px; letter-spacing:1px; text-transform:uppercase; color:#6b6b6b;">Status</span><br>

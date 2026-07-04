@@ -4,11 +4,15 @@
 
 <div class="ph">
     <div>
-        <h4>Order #{{ $order->id }}</h4>
-        <div class="ph-sub">Placed on {{ \Carbon\Carbon::parse($order->created_at)->format('d M Y, h:i A') }}</div>
+        <h4>Order {{ $order->reference ?? ('#'.$order->id) }}</h4>
+        <div class="ph-sub">Internal #{{ $order->id }} · Placed on {{ \Carbon\Carbon::parse($order->created_at)->format('d M Y, h:i A') }}</div>
     </div>
     <div class="page-actions">
-        <a href="{{ route('admin.orders.edit', $order->id) }}" class="btn btn-primary"><i class="mdi mdi-pencil-outline"></i> Update Status</a>
+        @if($order->isLocked())
+            <span class="btn btn-light" style="cursor:default;" title="Delivered and cancelled orders are locked"><i class="mdi mdi-lock-outline"></i> {{ $order->status }} · Locked</span>
+        @else
+            <a href="{{ route('admin.orders.edit', $order->id) }}" class="btn btn-primary"><i class="mdi mdi-pencil-outline"></i> Update Status</a>
+        @endif
         <a href="{{ route('admin.orders.index') }}" class="btn btn-light"><i class="mdi mdi-arrow-left"></i> Back</a>
     </div>
 </div>
@@ -66,6 +70,51 @@
                         <span class="metric-row-value" style="color:var(--red);">Rs. {{ number_format($order->total_amount ?? 0) }}</span>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        {{-- Admin Comments --}}
+        <div class="bcard mt-4">
+            <div class="bcard-head"><span class="bcard-title">Admin Comments</span></div>
+            <div class="bcard-body">
+                @forelse($order->comments as $c)
+                    <div style="border-left:3px solid var(--red);background:var(--surf2,#f6f6f7);padding:10px 14px;border-radius:6px;margin-bottom:10px;">
+                        <div style="white-space:pre-line;font-size:14px;color:var(--t1,#141414);">{{ $c->body }}</div>
+                        <div style="font-size:11px;color:var(--t2);margin-top:6px;">
+                            {{ \Carbon\Carbon::parse($c->created_at)->format('d M Y, h:i A') }}
+                            @if($c->emailed)
+                                &middot; <span style="color:#1f9d55;"><i class="mdi mdi-email-check-outline"></i> emailed to customer</span>
+                            @else
+                                &middot; <span style="color:#b45309;">not emailed</span>
+                            @endif
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-muted" style="margin-bottom:14px;">No comments yet. Add a note below and it will be emailed to the customer.</p>
+                @endforelse
+
+                <form method="POST" action="{{ route('admin.orders.comments.store', $order->id) }}">
+                    @csrf
+                    <label class="form-label">Add a comment @if($order->customer_email)<span class="text-muted" style="font-weight:400;">(emailed to {{ $order->customer_email }})</span>@endif</label>
+                    @php
+                        $presets = [
+                            'Payment not confirmed' => 'We could not confirm the payment for this order. Please complete your payment and re-share your payment receipt so we can process your order.',
+                            'Invalid shipping address' => 'The shipping address on your order appears to be incomplete or invalid. Please reply with your complete and correct delivery address so we can ship your order.',
+                            'Additional information required' => 'We need some additional information to process your order. Please reply with the requested details.',
+                        ];
+                    @endphp
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
+                        @foreach($presets as $label => $text)
+                            <button type="button" class="btn btn-sm btn-light" onclick="var t=document.getElementById('order_comment'); t.value=@js($text); t.focus();">{{ $label }}</button>
+                        @endforeach
+                    </div>
+                    <textarea id="order_comment" name="body" class="form-control" rows="3" required placeholder="Write a note to the customer…">{{ old('body') }}</textarea>
+                    @error('body')<div class="text-danger" style="font-size:12px;margin-top:4px;">{{ $message }}</div>@enderror
+                    <button type="submit" class="btn btn-primary mt-2"><i class="mdi mdi-send-outline"></i> Send to customer</button>
+                    @unless($order->customer_email)
+                        <div class="form-hint" style="color:#b45309;margin-top:6px;">This order has no customer email — the comment will be saved but not emailed.</div>
+                    @endunless
+                </form>
             </div>
         </div>
     </div>

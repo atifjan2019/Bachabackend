@@ -1037,6 +1037,13 @@
                 </a>
             </li>
             <li class="sb-item">
+                <a href="{{ route('admin.contact-messages.index') }}" class="sb-link {{ request()->routeIs('admin.contact-messages*') ? 'active' : '' }}">
+                    <i class="mdi mdi-message-text-outline"></i> Messages
+                    @php $unreadContacts = \App\Models\ContactMessage::where('is_read', false)->count(); @endphp
+                    @if($unreadContacts)<span class="soft-badge" style="margin-left:8px;background:var(--red);color:#fff;">{{ $unreadContacts }}</span>@endif
+                </a>
+            </li>
+            <li class="sb-item">
                 <a href="{{ route('admin.reviews.index') }}" class="sb-link {{ request()->routeIs('admin.reviews*') ? 'active' : '' }}">
                     <i class="mdi mdi-star-outline"></i> Reviews
                 </a>

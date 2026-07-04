@@ -2,16 +2,77 @@
 @section('title', 'Dashboard')
 @section('content')
 
-<section class="hero-banner">
-    <div class="hero-kicker">Operations Overview</div>
-    <h1 class="hero-title">Store performance at a glance.</h1>
-    <p class="hero-subtitle">Track orders, revenue, fulfilment load, and product inventory from one responsive control surface.</p>
-    <div class="hero-meta">
-        <div class="hero-pill"><i class="mdi mdi-shopping-outline"></i> {{ $order_count }} total orders</div>
-        <div class="hero-pill"><i class="mdi mdi-cash-multiple"></i> Rs. {{ number_format($total_revenue) }} revenue</div>
-        <div class="hero-pill"><i class="mdi mdi-package-variant-closed"></i> {{ $product_count }} products live</div>
+@php
+    $periodLabels = ['today'=>'Today','weekly'=>'This Week','monthly'=>'This Month','yearly'=>'This Year','all'=>'All Time','custom'=>'Custom Range'];
+    $periodLabel = $periodLabels[$period] ?? 'All Time';
+    $quick = ['today'=>'Today','weekly'=>'Weekly','monthly'=>'Monthly','yearly'=>'Yearly','all'=>'All Time'];
+    $catName = $categorySlug ? (optional($categories->firstWhere('slug', $categorySlug))->name ?? $categorySlug) : null;
+@endphp
+
+@php
+    $customFrom = $period === 'custom' && $from ? $from->format('Y-m-d') : null;
+    $customTo   = $period === 'custom' && $to ? $to->format('Y-m-d') : null;
+    // Query preserving current period/range, used when only the category changes.
+    $keepPeriod = array_filter(['period' => $period, 'from' => $customFrom, 'to' => $customTo]);
+@endphp
+
+<div class="bcard" style="margin-bottom:18px;">
+    <div class="bcard-head">
+        <span class="bcard-title"><i class="mdi mdi-filter-variant"></i> Filters</span>
+        @if($period !== 'all' || $categorySlug)
+            <a href="{{ route('admin.dashboard') }}" class="btn btn-sm btn-light"><i class="mdi mdi-refresh"></i> Reset</a>
+        @endif
     </div>
-</section>
+    <div class="bcard-body">
+        {{-- Time period --}}
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--t2);font-weight:600;margin-bottom:8px;">Time period</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+            @foreach($quick as $key => $label)
+                <a href="{{ route('admin.dashboard', array_filter(['period'=>$key,'category'=>$categorySlug])) }}"
+                   class="btn btn-sm {{ $period === $key ? 'btn-primary' : 'btn-light' }}">{{ $label }}</a>
+            @endforeach
+
+            {{-- Custom range --}}
+            <form method="GET" action="{{ route('admin.dashboard') }}" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0;padding-left:10px;margin-left:2px;border-left:1px solid var(--line,#e5e7eb);">
+                <input type="hidden" name="period" value="custom">
+                @if($categorySlug)<input type="hidden" name="category" value="{{ $categorySlug }}">@endif
+                <span class="btn btn-sm {{ $period==='custom' ? 'btn-primary' : 'btn-light' }}" style="cursor:default;"><i class="mdi mdi-calendar-range"></i> Custom</span>
+                <input type="date" name="from" class="form-control" style="height:34px;width:150px;" value="{{ $customFrom }}" aria-label="From date">
+                <span style="color:var(--t2);">–</span>
+                <input type="date" name="to" class="form-control" style="height:34px;width:150px;" value="{{ $customTo }}" aria-label="To date">
+                <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+            </form>
+        </div>
+
+        {{-- Revenue by category --}}
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--t2);font-weight:600;margin:18px 0 8px;">Revenue by category</div>
+        <form method="GET" action="{{ route('admin.dashboard') }}" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0;">
+            <input type="hidden" name="period" value="{{ $period }}">
+            @if($customFrom)<input type="hidden" name="from" value="{{ $customFrom }}">@endif
+            @if($customTo)<input type="hidden" name="to" value="{{ $customTo }}">@endif
+            <select name="category" class="form-select" style="height:36px;max-width:260px;" onchange="this.form.submit()">
+                <option value="">All categories</option>
+                @foreach($categories as $cat)
+                    <option value="{{ $cat->slug }}" {{ $categorySlug === $cat->slug ? 'selected' : '' }}>{{ $cat->name }}</option>
+                @endforeach
+            </select>
+            @if($categorySlug)
+                <a href="{{ route('admin.dashboard', $keepPeriod) }}" class="btn btn-sm btn-light"><i class="mdi mdi-close"></i> Clear</a>
+            @endif
+        </form>
+
+        {{-- Active summary --}}
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--line,#eee);font-size:13px;color:var(--t2);">
+            Showing <strong style="color:var(--t1,#141414);">{{ $periodLabel }}</strong>
+            @if($period==='custom' && ($from || $to))
+                <span>({{ $from ? $from->format('d M Y') : '…' }} – {{ $to ? $to->format('d M Y') : '…' }})</span>
+            @endif
+            @if($catName)
+                &middot; revenue for <strong style="color:var(--red);">{{ $catName }}</strong>
+            @endif
+        </div>
+    </div>
+</div>
 
 <div class="kpi-grid">
     <div>
@@ -21,7 +82,7 @@
             </div>
             <div class="stat-label">Total Orders</div>
             <div class="stat-value">{{ $order_count }}</div>
-            <div class="stat-sub">All time</div>
+            <div class="stat-sub">{{ $periodLabel }}</div>
         </div>
     </div>
     <div>
@@ -29,9 +90,9 @@
             <div class="stat-icon" style="background:rgba(16,185,129,.08);color:#10b981;">
                 <i class="mdi mdi-cash-multiple"></i>
             </div>
-            <div class="stat-label">Total Revenue</div>
+            <div class="stat-label">{{ $catName ? 'Revenue · '.$catName : 'Total Revenue' }}</div>
             <div class="stat-value">Rs. {{ number_format($total_revenue) }}</div>
-            <div class="stat-sub">Non-cancelled orders</div>
+            <div class="stat-sub">{{ $catName ? $periodLabel : $periodLabel.' · non-cancelled' }}</div>
         </div>
     </div>
     <div>
@@ -53,6 +114,34 @@
             <div class="stat-value">{{ $product_count }}</div>
             <div class="stat-sub">{{ $category_count }} categories</div>
         </div>
+    </div>
+</div>
+
+<div class="bcard" style="margin-bottom:18px;">
+    <div class="bcard-head">
+        <span class="bcard-title">Revenue by Category</span>
+        <span class="text-muted" style="font-size:12px;">{{ $periodLabel }} · goods revenue</span>
+    </div>
+    <div class="bcard-body">
+        @php $maxCat = collect($breakdown)->max('total') ?: 1; @endphp
+        @forelse($breakdown as $row)
+            <div style="margin-bottom:14px;">
+                <div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;margin-bottom:5px;">
+                    <a href="{{ route('admin.dashboard', array_filter(['period'=>$period,'from'=>$period==='custom' && $from ? $from->format('Y-m-d') : null,'to'=>$period==='custom' && $to ? $to->format('Y-m-d') : null,'category'=>$row['slug']==='__other' ? null : $row['slug']])) }}"
+                       class="table-link" style="{{ $categorySlug===$row['slug'] ? 'font-weight:700;color:var(--red);' : '' }}">{{ $row['name'] }}</a>
+                    <span class="text-strong">Rs. {{ number_format($row['total']) }}</span>
+                </div>
+                <div style="height:8px;background:#f1f1f4;border-radius:99px;overflow:hidden;">
+                    <div style="height:100%;width:{{ max(2, round($row['total'] / $maxCat * 100)) }}%;background:linear-gradient(90deg,var(--red),#f97316);border-radius:99px;"></div>
+                </div>
+            </div>
+        @empty
+            <div class="empty-state">
+                <i class="mdi mdi-chart-bar"></i>
+                <strong>No sales in this period</strong>
+                Revenue by category will appear once orders are placed in the selected range.
+            </div>
+        @endforelse
     </div>
 </div>
 

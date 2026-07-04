@@ -21,6 +21,7 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/settings', [ContentController::class, 'settings']);
     Route::post('/newsletter', [ContentController::class, 'subscribeNewsletter']);
+    Route::post('/contact', [ContentController::class, 'submitContact']);
     Route::get('/blog-posts', [ContentController::class, 'blogPosts']);
     Route::get('/blog-posts/{slug}', [ContentController::class, 'blogPost']);
 

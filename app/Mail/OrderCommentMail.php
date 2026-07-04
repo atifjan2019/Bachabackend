@@ -11,11 +11,11 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class NewOrderMail extends Mailable
+class OrderCommentMail extends Mailable
 {
     use Queueable, SerializesModels, HasBrandData;
 
-    public function __construct(public Order $order)
+    public function __construct(public Order $order, public string $comment)
     {
     }
 
@@ -25,15 +25,20 @@ class NewOrderMail extends Mailable
 
         return new Envelope(
             from: new Address(config('mail.from.address'), $brand['from_name']),
-            subject: 'New order ' . $this->order->ref . ' — Rs. ' . number_format((float) $this->order->total_amount),
+            replyTo: $brand['email'] ? [new Address($brand['email'], $brand['from_name'])] : [],
+            subject: 'A message about your order ' . ($this->order->reference ?: '#' . $this->order->id),
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            view: 'emails.new-order-admin',
-            with: ['order' => $this->order, 'brand' => $this->brand()],
+            view: 'emails.order-comment',
+            with: [
+                'order' => $this->order,
+                'brand' => $this->brand(),
+                'comment' => $this->comment,
+            ],
         );
     }
 }

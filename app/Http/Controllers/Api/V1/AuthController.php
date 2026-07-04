@@ -225,7 +225,11 @@ class AuthController extends Controller
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
 
-        $order = Order::where('customer_email', $customer->email)->where('id', $id)->first();
+        $order = Order::where('customer_email', $customer->email)
+            ->where(function ($q) use ($id) {
+                $q->where('reference', $id)->orWhere('id', $id);
+            })
+            ->first();
 
         if (!$order) {
             return response()->json(['message' => 'Order not found'], 404);

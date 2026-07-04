@@ -18,18 +18,26 @@
         <div class="bcard">
             <div class="bcard-head"><span class="bcard-title">Change Status</span></div>
             <div class="bcard-body">
-                <form action="{{ route('admin.orders.update', $order->id) }}" method="POST">
-                    @csrf @method('PUT')
-                    <div class="form-group">
-                        <label class="form-label">Order Status</label>
-                        <select name="status" class="form-select">
-                            @foreach($statuses as $s)
-                            <option value="{{ $s }}" {{ $order->status == $s ? 'selected' : '' }}>{{ $s }}</option>
-                            @endforeach
-                        </select>
+                @if($order->isLocked())
+                    <div class="alert alert-warning d-flex align-items-center gap-2 mb-0" role="alert">
+                        <i class="mdi mdi-lock-outline"></i>
+                        <span>This order is <strong>{{ $order->status }}</strong> and is permanently locked. Its status can no longer be changed.</span>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-lg w-100"><i class="mdi mdi-check"></i> Update Status</button>
-                </form>
+                @else
+                    <form action="{{ route('admin.orders.update', $order->id) }}" method="POST">
+                        @csrf @method('PUT')
+                        <div class="form-group">
+                            <label class="form-label">Order Status</label>
+                            <select name="status" class="form-select">
+                                @foreach($statuses as $s)
+                                <option value="{{ $s }}" {{ $order->status == $s ? 'selected' : '' }}>{{ $s }}</option>
+                                @endforeach
+                            </select>
+                            <div class="form-hint" style="margin-top:6px;">Marking an order <strong>Delivered</strong> or <strong>Cancelled</strong> will lock it permanently.</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg w-100"><i class="mdi mdi-check"></i> Update Status</button>
+                    </form>
+                @endif
             </div>
         </div>
     </div>

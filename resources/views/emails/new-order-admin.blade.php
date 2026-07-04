@@ -1,7 +1,7 @@
 @extends('emails.layout')
 
 @section('title', 'New Order')
-@section('preheader', 'New order #'.$order->id.' for Rs. '.number_format((float)$order->total_amount))
+@section('preheader', 'New order '.$order->ref.' for Rs. '.number_format((float)$order->total_amount))
 
 @section('content')
     @php
@@ -14,7 +14,7 @@
     @endphp
 
     <p style="margin:0 0 6px; font-size:11px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; color:#e81d25;">New Order</p>
-    <h1 class="h1" style="margin:0 0 14px; font-family:Georgia,'Times New Roman',serif; font-size:28px; line-height:1.2; color:#141414;">Order #{{ $order->id }} received</h1>
+    <h1 class="h1" style="margin:0 0 14px; font-family:Georgia,'Times New Roman',serif; font-size:28px; line-height:1.2; color:#141414;">Order {{ $order->ref }} received</h1>
     <p style="margin:0 0 24px; font-size:15px; line-height:1.7; color:#3d3d3d;">
         A new order has just been placed. Review the details below and process it from the dashboard.
     </p>

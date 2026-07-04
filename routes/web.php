@@ -34,6 +34,7 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
 
     Route::resource('products', ProductController::class);
     Route::resource('orders', OrderController::class)->except(['create', 'store']);
+    Route::post('orders/{id}/comments', [OrderController::class, 'addComment'])->name('orders.comments.store');
     Route::resource('categories', CategoryController::class);
     Route::resource('customers', CustomerController::class)->only(['index', 'show', 'destroy']);
     Route::get('newsletter', [\App\Http\Controllers\Admin\NewsletterController::class, 'index'])->name('newsletter.index');
@@ -42,6 +43,7 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
     Route::patch('reviews/{id}/toggle', [\App\Http\Controllers\Admin\ReviewController::class, 'toggle'])->name('reviews.toggle');
     Route::delete('reviews/{id}', [\App\Http\Controllers\Admin\ReviewController::class, 'destroy'])->name('reviews.destroy');
     Route::resource('abandoned-carts', \App\Http\Controllers\Admin\AbandonedCartController::class)->only(['index', 'destroy']);
+    Route::resource('contact-messages', \App\Http\Controllers\Admin\ContactMessageController::class)->only(['index', 'show', 'destroy']);
     Route::resource('blog', \App\Http\Controllers\Admin\BlogPostController::class);
     Route::resource('media', \App\Http\Controllers\Admin\MediaController::class)->only(['index', 'store', 'destroy']);
     Route::get('media-api/list', [\App\Http\Controllers\Admin\MediaController::class, 'apiList'])->name('media.api.list');

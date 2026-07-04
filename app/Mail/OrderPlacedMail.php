@@ -26,7 +26,7 @@ class OrderPlacedMail extends Mailable
         return new Envelope(
             from: new Address(config('mail.from.address'), $brand['from_name']),
             replyTo: $brand['email'] ? [new Address($brand['email'], $brand['from_name'])] : [],
-            subject: 'Your order #' . $this->order->id . ' is confirmed',
+            subject: 'Your order ' . ($this->order->reference ?: '#' . $this->order->id) . ' is confirmed',
         );
     }
 

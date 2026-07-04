@@ -14,9 +14,10 @@
         <table class="table table-stack mb-0">
             <thead>
                 <tr>
-                    <th>EMAIL</th>
+                    <th>CUSTOMER</th>
                     <th>PHONE</th>
                     <th>ITEMS</th>
+                    <th>TOTAL</th>
                     <th>DATE</th>
                     <th></th>
                 </tr>
@@ -24,16 +25,23 @@
             <tbody>
                 @forelse($carts as $cart)
                 @php
-                    $items = is_string($cart->cart_data) ? json_decode($cart->cart_data, true) : [];
-                    $count = is_array($items) ? count($items) : 0;
+                    // cart_data is cast to an array on the model.
+                    $items = is_array($cart->cart_data) ? $cart->cart_data : (json_decode((string) $cart->cart_data, true) ?: []);
+                    $count = is_array($items) ? array_sum(array_map(fn($i) => (int) ($i['quantity'] ?? 1), $items)) : 0;
+                    $names = is_array($items) ? array_slice(array_map(fn($i) => $i['name'] ?? 'Item', $items), 0, 3) : [];
                 @endphp
                 <tr>
-                    <td data-label="Email" class="text-strong">{{ $cart->email }}</td>
+                    <td data-label="Customer" class="text-strong">
+                        {{ $cart->name ?: 'Guest' }}
+                        <div class="entity-meta">{{ $cart->email }}</div>
+                    </td>
                     <td data-label="Phone" class="text-muted">{{ $cart->phone ?? '—' }}</td>
                     <td data-label="Items">
                         <span class="soft-badge">{{ $count }} item(s)</span>
+                        @if(!empty($names))<div class="entity-meta">{{ implode(', ', $names) }}{{ count($items) > 3 ? '…' : '' }}</div>@endif
                     </td>
-                    <td data-label="Date" class="text-muted">{{ \Carbon\Carbon::parse($cart->created_at)->format('d M Y, h:i A') }}</td>
+                    <td data-label="Total" class="text-strong text-nowrap">Rs. {{ number_format((float) $cart->total) }}</td>
+                    <td data-label="Date" class="text-muted">{{ \Carbon\Carbon::parse($cart->updated_at)->format('d M Y, h:i A') }}</td>
                     <td data-label="Actions">
                         <form action="{{ route('admin.abandoned-carts.destroy', $cart->id) }}" method="POST" onsubmit="return confirm('Delete?')">
                             @csrf @method('DELETE')
@@ -43,7 +51,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="empty-state">
+                    <td colspan="6" class="empty-state">
                         <i class="mdi mdi-cart-remove"></i>
                         <strong>No abandoned carts recorded</strong>
                         Recovery opportunities will appear here when carts are left behind.

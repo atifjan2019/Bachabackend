@@ -4,19 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class AbandonedCart extends Model
+class ContactMessage extends Model
 {
     protected $fillable = [
         'name',
         'email',
-        'phone',
-        'total',
-        'cart_data',
+        'subject',
+        'message',
+        'is_read',
     ];
 
     protected $casts = [
-        'cart_data' => 'array',
-        'total' => 'decimal:2',
+        'is_read' => 'boolean',
     ];
 }
-

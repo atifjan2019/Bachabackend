@@ -95,6 +95,10 @@ class CheckoutController extends Controller
         $customer->increment('orders_count');
         $customer->increment('total_spent', $totalAmount);
 
+        // The customer completed checkout — remove any abandoned cart for this
+        // email so it's no longer counted as a recovery opportunity.
+        AbandonedCart::where('email', strtolower(trim($validated['customer_email'])))->delete();
+
         // Send branded order emails (customer confirmation + admin notification).
         // Failures must never break order creation.
         try {
@@ -118,6 +122,7 @@ class CheckoutController extends Controller
             'message' => 'Order created successfully.',
             'data' => [
                 'id' => $order->id,
+                'reference' => $order->reference,
                 'status' => $order->status,
                 'shipping_fee' => $shippingFee,
                 'total_amount' => $totalAmount,
@@ -128,16 +133,23 @@ class CheckoutController extends Controller
     public function storeAbandonedCart(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'name' => 'nullable|string|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:50',
+            'total' => 'nullable|numeric|min:0',
             'cart_data' => 'required|array',
         ]);
 
-        $record = AbandonedCart::create([
-            'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? null,
-            'cart_data' => $validated['cart_data'],
-        ]);
+        // One row per email — keep it updated as the cart changes (no duplicates).
+        $record = AbandonedCart::updateOrCreate(
+            ['email' => strtolower(trim($validated['email']))],
+            [
+                'name' => $validated['name'] ?? null,
+                'phone' => $validated['phone'] ?? null,
+                'total' => $validated['total'] ?? 0,
+                'cart_data' => $validated['cart_data'],
+            ]
+        );
 
         return response()->json([
             'message' => 'Abandoned cart captured.',
@@ -147,7 +159,8 @@ class CheckoutController extends Controller
 
     public function getOrder(string $id): JsonResponse
     {
-        $order = Order::findOrFail($id);
+        // Accept either the public reference ("BS-482913") or the internal id.
+        $order = Order::where('reference', $id)->orWhere('id', $id)->firstOrFail();
         return response()->json(['data' => $order]);
     }
 }

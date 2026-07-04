@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ContactMessageMail;
 use App\Models\BlogPost;
+use App\Models\ContactMessage;
 use App\Models\NewsletterSubscriber;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class ContentController extends Controller
 {
@@ -24,6 +28,37 @@ class ContentController extends Controller
         return response()->json([
             'message' => 'Subscribed successfully.',
             'data' => ['email' => $subscriber->email],
+        ], 201);
+    }
+
+    public function submitContact(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'subject' => 'required|string|max:255',
+            'message' => 'required|string|max:5000',
+        ]);
+
+        $contact = ContactMessage::create($validated);
+
+        // Notify the admin. Failures must never block the submission.
+        try {
+            $adminEmail = config('mail.admin_address')
+                ?: Setting::where('setting_key', 'order_notification_email')->value('setting_value')
+                ?: Setting::where('setting_key', 'business_email')->value('setting_value')
+                ?: config('mail.from.address');
+
+            if ($adminEmail) {
+                Mail::to($adminEmail)->send(new ContactMessageMail($contact));
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Contact email failed for #' . $contact->id . ': ' . $e->getMessage());
+        }
+
+        return response()->json([
+            'message' => 'Message sent successfully.',
+            'data' => ['id' => $contact->id],
         ], 201);
     }
 
