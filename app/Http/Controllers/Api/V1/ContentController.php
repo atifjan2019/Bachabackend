@@ -8,6 +8,7 @@ use App\Models\BlogPost;
 use App\Models\ContactMessage;
 use App\Models\NewsletterSubscriber;
 use App\Models\Setting;
+use App\Models\TeamMember;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -119,6 +120,44 @@ class ContentController extends Controller
             });
 
         return response()->json(['data' => $settings]);
+    }
+
+    /**
+     * Dynamic content for the storefront About page: the team structure cards
+     * and the founder section.
+     */
+    public function about(): JsonResponse
+    {
+        $team = TeamMember::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get(['title', 'subtitle', 'bio', 'icon', 'image_url'])
+            ->map(fn ($m) => [
+                'title'    => $m->title,
+                'subtitle' => $m->subtitle,
+                'bio'      => $m->bio ?: null,
+                'icon'     => $m->icon,
+                'image'    => $m->image_url ?: null,
+            ]);
+
+        $f = Setting::whereIn('setting_key', [
+            'about_founder_name', 'about_founder_role', 'about_founder_bio',
+            'about_founder_image', 'about_founder_initials',
+        ])->pluck('setting_value', 'setting_key');
+
+        $founder = [
+            'name'     => $f['about_founder_name'] ?? '',
+            'role'     => $f['about_founder_role'] ?? '',
+            'bio'      => $f['about_founder_bio'] ?? '',
+            'image'    => ($f['about_founder_image'] ?? '') ?: null,
+            'initials' => $f['about_founder_initials'] ?? '',
+        ];
+
+        return response()->json(['data' => [
+            'team'    => $team,
+            'founder' => $founder,
+        ]]);
     }
 
     public function blogPosts(Request $request): JsonResponse

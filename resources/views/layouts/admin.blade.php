@@ -1048,6 +1048,11 @@
                     <i class="mdi mdi-star-outline"></i> Reviews
                 </a>
             </li>
+            <li class="sb-item">
+                <a href="{{ route('admin.team.index') }}" class="sb-link {{ request()->routeIs('admin.team*') ? 'active' : '' }}">
+                    <i class="mdi mdi-account-group-outline"></i> Team &amp; About
+                </a>
+            </li>
         </ul>
 
         <span class="sb-label">System</span>

@@ -20,6 +20,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/health', fn() => response()->json(['ok' => true]));
 
     Route::get('/settings', [ContentController::class, 'settings']);
+    Route::get('/about', [ContentController::class, 'about']);
     Route::post('/newsletter', [ContentController::class, 'subscribeNewsletter']);
     Route::post('/contact', [ContentController::class, 'submitContact']);
     Route::get('/blog-posts', [ContentController::class, 'blogPosts']);
