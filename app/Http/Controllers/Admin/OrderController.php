@@ -105,22 +105,56 @@ class OrderController extends Controller
         $order = Order::findOrFail($id);
         $comment = $order->comments()->create(['body' => $validated['body']]);
 
-        if ($order->customer_email) {
-            try {
-                Mail::to($order->customer_email)->send(new OrderCommentMail($order, $comment->body));
-                $comment->update(['emailed' => true]);
-            } catch (\Throwable $e) {
-                Log::warning('Comment email failed for order #' . $order->id . ': ' . $e->getMessage());
-                return redirect()->route('admin.orders.show', $id)
-                    ->with('success', 'Comment saved, but the email to the customer could not be sent.');
-            }
+        if (! $order->customer_email) {
+            return redirect()->route('admin.orders.show', $id)
+                ->with('success', 'Comment saved. This order has no customer email, so it was not sent.');
+        }
 
+        if ($this->emailComment($order, $comment)) {
             return redirect()->route('admin.orders.show', $id)
                 ->with('success', 'Comment added and emailed to the customer.');
         }
 
         return redirect()->route('admin.orders.show', $id)
-            ->with('success', 'Comment saved. This order has no customer email, so it was not sent.');
+            ->with('error', 'Comment saved, but the email to the customer could not be sent. You can retry with "Resend".');
+    }
+
+    /**
+     * Retry sending a previously-failed comment email to the customer.
+     */
+    public function resendComment(string $id, string $comment)
+    {
+        $order = Order::findOrFail($id);
+        $note = $order->comments()->findOrFail($comment);
+
+        if (! $order->customer_email) {
+            return redirect()->route('admin.orders.show', $id)
+                ->with('error', 'This order has no customer email, so the comment cannot be sent.');
+        }
+
+        if ($this->emailComment($order, $note)) {
+            return redirect()->route('admin.orders.show', $id)
+                ->with('success', 'Comment re-sent to the customer.');
+        }
+
+        return redirect()->route('admin.orders.show', $id)
+            ->with('error', 'Still could not send the email. Check the mail configuration and try again.');
+    }
+
+    /**
+     * Send an order comment to the customer by email.
+     * Marks the comment as emailed on success; returns false (and logs) on failure.
+     */
+    private function emailComment(Order $order, $comment): bool
+    {
+        try {
+            Mail::to($order->customer_email)->send(new OrderCommentMail($order, $comment->body));
+            $comment->update(['emailed' => true]);
+            return true;
+        } catch (\Throwable $e) {
+            Log::warning('Comment email failed for order #' . $order->id . ': ' . $e->getMessage());
+            return false;
+        }
     }
 
     public function destroy(string $id)

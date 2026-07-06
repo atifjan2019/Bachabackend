@@ -1053,6 +1053,11 @@
         <span class="sb-label">System</span>
         <ul class="sb-list">
             <li class="sb-item">
+                <a href="{{ route('admin.admin-users.index') }}" class="sb-link {{ request()->routeIs('admin.admin-users*') ? 'active' : '' }}">
+                    <i class="mdi mdi-account-key-outline"></i> Admin Users
+                </a>
+            </li>
+            <li class="sb-item">
                 <a href="{{ route('admin.settings.index') }}" class="sb-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
                     <i class="mdi mdi-cog-outline"></i> Settings
                 </a>

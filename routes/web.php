@@ -35,6 +35,7 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
     Route::resource('products', ProductController::class);
     Route::resource('orders', OrderController::class)->except(['create', 'store']);
     Route::post('orders/{id}/comments', [OrderController::class, 'addComment'])->name('orders.comments.store');
+    Route::post('orders/{id}/comments/{comment}/resend', [OrderController::class, 'resendComment'])->name('orders.comments.resend');
     Route::resource('categories', CategoryController::class);
     Route::resource('customers', CustomerController::class)->only(['index', 'show', 'destroy']);
     Route::get('newsletter', [\App\Http\Controllers\Admin\NewsletterController::class, 'index'])->name('newsletter.index');
@@ -50,6 +51,7 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
     Route::resource('media', \App\Http\Controllers\Admin\MediaController::class)->only(['index', 'store', 'destroy']);
     Route::get('media-api/list', [\App\Http\Controllers\Admin\MediaController::class, 'apiList'])->name('media.api.list');
     Route::post('media-api/delete-r2', [\App\Http\Controllers\Admin\MediaController::class, 'deleteR2'])->name('media.api.deleteR2');
+    Route::resource('admin-users', \App\Http\Controllers\Admin\AdminUserController::class)->except(['show']);
     Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
     Route::put('settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
     Route::get('seo', [\App\Http\Controllers\Admin\SeoController::class, 'index'])->name('seo.index');

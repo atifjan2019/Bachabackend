@@ -80,12 +80,20 @@
                 @forelse($order->comments as $c)
                     <div style="border-left:3px solid var(--red);background:var(--surf2,#f6f6f7);padding:10px 14px;border-radius:6px;margin-bottom:10px;">
                         <div style="white-space:pre-line;font-size:14px;color:var(--t1,#141414);">{{ $c->body }}</div>
-                        <div style="font-size:11px;color:var(--t2);margin-top:6px;">
-                            {{ \Carbon\Carbon::parse($c->created_at)->format('d M Y, h:i A') }}
+                        <div style="font-size:11px;color:var(--t2);margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                            <span>{{ \Carbon\Carbon::parse($c->created_at)->format('d M Y, h:i A') }}</span>
                             @if($c->emailed)
-                                &middot; <span style="color:#1f9d55;"><i class="mdi mdi-email-check-outline"></i> emailed to customer</span>
+                                <span style="color:#1f9d55;">&middot; <i class="mdi mdi-email-check-outline"></i> emailed to customer</span>
                             @else
-                                &middot; <span style="color:#b45309;">not emailed</span>
+                                <span style="color:#b45309;">&middot; <i class="mdi mdi-email-alert-outline"></i> not emailed</span>
+                                @if($order->customer_email)
+                                    <form method="POST" action="{{ route('admin.orders.comments.resend', [$order->id, $c->id]) }}" style="display:inline;">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" style="padding:2px 8px;font-size:11px;">
+                                            <i class="mdi mdi-refresh"></i> Resend
+                                        </button>
+                                    </form>
+                                @endif
                             @endif
                         </div>
                     </div>
@@ -96,7 +104,7 @@
                 <form method="POST" action="{{ route('admin.orders.comments.store', $order->id) }}">
                     @csrf
                     <label class="form-label">Add a comment @if($order->customer_email)<span class="text-muted" style="font-weight:400;">(emailed to {{ $order->customer_email }})</span>@endif</label>
-                    @php
+                    {{-- @php
                         $presets = [
                             'Payment not confirmed' => 'We could not confirm the payment for this order. Please complete your payment and re-share your payment receipt so we can process your order.',
                             'Invalid shipping address' => 'The shipping address on your order appears to be incomplete or invalid. Please reply with your complete and correct delivery address so we can ship your order.',
@@ -107,7 +115,7 @@
                         @foreach($presets as $label => $text)
                             <button type="button" class="btn btn-sm btn-light" onclick="var t=document.getElementById('order_comment'); t.value=@js($text); t.focus();">{{ $label }}</button>
                         @endforeach
-                    </div>
+                    </div> --}}
                     <textarea id="order_comment" name="body" class="form-control" rows="3" required placeholder="Write a note to the customer…">{{ old('body') }}</textarea>
                     @error('body')<div class="text-danger" style="font-size:12px;margin-top:4px;">{{ $message }}</div>@enderror
                     <button type="submit" class="btn btn-primary mt-2"><i class="mdi mdi-send-outline"></i> Send to customer</button>
