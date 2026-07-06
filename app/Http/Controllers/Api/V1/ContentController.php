@@ -141,22 +141,33 @@ class ContentController extends Controller
                 'image'    => $m->image_url ?: null,
             ]);
 
-        $f = Setting::whereIn('setting_key', [
+        $s = Setting::whereIn('setting_key', [
             'about_founder_name', 'about_founder_role', 'about_founder_bio',
             'about_founder_image', 'about_founder_initials',
+            'about_story_heading', 'about_story_accent', 'about_story_body',
+            'about_story_location', 'about_story_image',
         ])->pluck('setting_value', 'setting_key');
 
         $founder = [
-            'name'     => $f['about_founder_name'] ?? '',
-            'role'     => $f['about_founder_role'] ?? '',
-            'bio'      => $f['about_founder_bio'] ?? '',
-            'image'    => ($f['about_founder_image'] ?? '') ?: null,
-            'initials' => $f['about_founder_initials'] ?? '',
+            'name'     => $s['about_founder_name'] ?? '',
+            'role'     => $s['about_founder_role'] ?? '',
+            'bio'      => $s['about_founder_bio'] ?? '',
+            'image'    => ($s['about_founder_image'] ?? '') ?: null,
+            'initials' => $s['about_founder_initials'] ?? '',
+        ];
+
+        $story = [
+            'heading'  => $s['about_story_heading'] ?? '',
+            'accent'   => $s['about_story_accent'] ?? '',
+            'body'     => $s['about_story_body'] ?? '',
+            'location' => $s['about_story_location'] ?? '',
+            'image'    => ($s['about_story_image'] ?? '') ?: null,
         ];
 
         return response()->json(['data' => [
             'team'    => $team,
             'founder' => $founder,
+            'story'   => $story,
         ]]);
     }
 

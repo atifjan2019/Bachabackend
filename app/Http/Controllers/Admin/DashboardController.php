@@ -79,6 +79,19 @@ class DashboardController extends Controller
 
         $recent_orders = $scoped()->orderBy('id', 'desc')->limit(10)->get();
 
+        // ── Revenue & orders trend (time series) ───────────────────────────
+        $trendOrders = $scoped()->where('status', '!=', 'Cancelled')->get(['created_at', 'total_amount']);
+        [$mode, $start, $end] = $this->resolveTrendRange($from, $to, $period, $trendOrders);
+        [$trendLabels, $trendRevenue, $trendOrdersCount] = $this->buildTrend($trendOrders, $mode, $start, $end);
+
+        // ── Orders by status (for donut) ───────────────────────────────────
+        $statusCounts = $scoped()->get(['status'])
+            ->groupBy('status')
+            ->map->count()
+            ->sortDesc();
+        $statusLabels = $statusCounts->keys()->values();
+        $statusData = $statusCounts->values();
+
         return view('admin.dashboard', compact(
             'product_count',
             'order_count',
@@ -91,8 +104,96 @@ class DashboardController extends Controller
             'categories',
             'breakdown',
             'from',
-            'to'
+            'to',
+            'trendLabels',
+            'trendRevenue',
+            'trendOrdersCount',
+            'statusLabels',
+            'statusData'
         ));
+    }
+
+    /**
+     * Decide the bucketing granularity ('hour'|'day'|'month') and the
+     * [start, end] range to plot for the revenue trend chart.
+     */
+    private function resolveTrendRange($from, $to, string $period, $orders): array
+    {
+        $now = Carbon::now();
+        $end = $to ? $to->copy() : $now->copy();
+
+        if ($period === 'today') {
+            $mode = 'hour';
+        } elseif (in_array($period, ['yearly', 'all'], true)) {
+            $mode = 'month';
+        } elseif ($period === 'custom' && $from && $to) {
+            $mode = $from->diffInDays($to) > 92 ? 'month' : 'day';
+        } else {
+            $mode = 'day'; // weekly, monthly, unbounded custom
+        }
+
+        if ($from) {
+            $start = $from->copy();
+        } else {
+            // All time: begin at the first order, but cap month view to 12 months.
+            $min = $orders->min('created_at');
+            $start = $min ? Carbon::parse($min) : $now->copy()->subMonths(11);
+        }
+
+        if ($mode === 'month') {
+            $cap = $end->copy()->subMonths(11)->startOfMonth();
+            if (!$from && $start->lt($cap)) {
+                $start = $cap;
+            }
+        }
+
+        return [$mode, $start, $end];
+    }
+
+    /**
+     * Bucket orders into evenly-spaced time slots and return
+     * [labels[], revenue[], orderCounts[]] for charting.
+     */
+    private function buildTrend($orders, string $mode, Carbon $start, Carbon $end): array
+    {
+        $keyFmt = ['hour' => 'Y-m-d H', 'day' => 'Y-m-d', 'month' => 'Y-m'][$mode];
+        $labelFmt = ['hour' => 'g A', 'day' => 'd M', 'month' => 'M Y'][$mode];
+
+        $buckets = [];
+        $cursor = $start->copy();
+        $cursor = match ($mode) {
+            'hour'  => $cursor->startOfHour(),
+            'day'   => $cursor->startOfDay(),
+            'month' => $cursor->startOfMonth(),
+        };
+
+        $guard = 0;
+        while ($cursor->lte($end) && $guard < 400) {
+            $buckets[$cursor->format($keyFmt)] = ['label' => $cursor->format($labelFmt), 'rev' => 0, 'cnt' => 0];
+            match ($mode) {
+                'hour'  => $cursor->addHour(),
+                'day'   => $cursor->addDay(),
+                'month' => $cursor->addMonth(),
+            };
+            $guard++;
+        }
+
+        foreach ($orders as $o) {
+            $key = Carbon::parse($o->created_at)->format($keyFmt);
+            if (isset($buckets[$key])) {
+                $buckets[$key]['rev'] += (float) $o->total_amount;
+                $buckets[$key]['cnt'] += 1;
+            }
+        }
+
+        $labels = $revenue = $counts = [];
+        foreach ($buckets as $b) {
+            $labels[] = $b['label'];
+            $revenue[] = round($b['rev']);
+            $counts[] = $b['cnt'];
+        }
+
+        return [$labels, $revenue, $counts];
     }
 
     /**

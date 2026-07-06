@@ -21,7 +21,12 @@ class TeamController extends Controller
             'about_founder_image', 'about_founder_initials',
         ])->pluck('setting_value', 'setting_key');
 
-        return view('admin.team.index', compact('members', 'founder'));
+        $story = Setting::whereIn('setting_key', [
+            'about_story_heading', 'about_story_accent', 'about_story_body',
+            'about_story_location', 'about_story_image',
+        ])->pluck('setting_value', 'setting_key');
+
+        return view('admin.team.index', compact('members', 'founder', 'story'));
     }
 
     public function create()
@@ -64,6 +69,23 @@ class TeamController extends Controller
     }
 
     /**
+     * Persist a new drag-and-drop order. Expects an ordered array of member IDs.
+     */
+    public function reorder(Request $request)
+    {
+        $data = $request->validate([
+            'ids'   => ['required', 'array'],
+            'ids.*' => ['integer'],
+        ]);
+
+        foreach (array_values($data['ids']) as $position => $id) {
+            TeamMember::where('id', $id)->update(['sort_order' => $position]);
+        }
+
+        return response()->json(['ok' => true]);
+    }
+
+    /**
      * Update the founder block (stored as settings).
      */
     public function updateFounder(Request $request)
@@ -88,6 +110,33 @@ class TeamController extends Controller
         }
 
         return redirect()->route('admin.team.index')->with('success', 'Founder details updated.');
+    }
+
+    /**
+     * Update the "Our Story" block (stored as settings).
+     */
+    public function updateStory(Request $request)
+    {
+        $validated = $request->validate([
+            'about_story_heading'  => 'nullable|string|max:255',
+            'about_story_accent'   => 'nullable|string|max:255',
+            'about_story_body'     => 'nullable|string|max:5000',
+            'about_story_location' => 'nullable|string|max:255',
+            'about_story_image'    => 'nullable|string|max:2000',
+        ]);
+
+        // Optional image upload overrides the pasted/library URL.
+        if ($request->hasFile('about_story_image_file')) {
+            $validated['about_story_image'] = $this->storeUpload($request->file('about_story_image_file'), 'story');
+        } elseif (!empty($validated['about_story_image'])) {
+            $validated['about_story_image'] = $this->absolutize(trim($validated['about_story_image']));
+        }
+
+        foreach ($validated as $key => $value) {
+            Setting::updateOrCreate(['setting_key' => $key], ['setting_value' => $value ?? '']);
+        }
+
+        return redirect()->route('admin.team.index')->with('success', 'Our Story section updated.');
     }
 
     private function validateMember(Request $request): array

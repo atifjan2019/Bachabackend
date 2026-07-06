@@ -1,5 +1,15 @@
 @extends('layouts.admin')
 @section('title', 'Dashboard')
+
+@push('styles')
+<style>
+    @media (max-width: 900px) {
+        .dash-charts { grid-template-columns: 1fr !important; }
+    }
+    .apexcharts-tooltip { font-family: 'Poppins', sans-serif !important; }
+</style>
+@endpush
+
 @section('content')
 
 @php
@@ -117,31 +127,71 @@
     </div>
 </div>
 
+@php
+    $catNames  = array_map(fn($r) => $r['name'], $breakdown);
+    $catTotals = array_map(fn($r) => round($r['total']), $breakdown);
+    $catSlugs  = array_map(fn($r) => $r['slug'] === '__other' ? '' : $r['slug'], $breakdown);
+    $hasTrend  = array_sum($trendRevenue) > 0;
+    // Keep the category chart compact: ~44px per bar so a single category
+    // doesn't balloon to full height.
+    $catChartHeight = max(120, min(360, count($breakdown) * 44 + 48));
+@endphp
+
+{{-- ─── REVENUE & ORDERS TREND ──────────────────────────── --}}
 <div class="bcard" style="margin-bottom:18px;">
     <div class="bcard-head">
-        <span class="bcard-title">Revenue by Category</span>
-        <span class="text-muted" style="font-size:12px;">{{ $periodLabel }} · goods revenue</span>
+        <span class="bcard-title"><i class="mdi mdi-chart-areaspline"></i> Revenue &amp; Orders Trend</span>
+        <span class="text-muted" style="font-size:12px;">{{ $periodLabel }}</span>
     </div>
     <div class="bcard-body">
-        @php $maxCat = collect($breakdown)->max('total') ?: 1; @endphp
-        @forelse($breakdown as $row)
-            <div style="margin-bottom:14px;">
-                <div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;margin-bottom:5px;">
-                    <a href="{{ route('admin.dashboard', array_filter(['period'=>$period,'from'=>$period==='custom' && $from ? $from->format('Y-m-d') : null,'to'=>$period==='custom' && $to ? $to->format('Y-m-d') : null,'category'=>$row['slug']==='__other' ? null : $row['slug']])) }}"
-                       class="table-link" style="{{ $categorySlug===$row['slug'] ? 'font-weight:700;color:var(--red);' : '' }}">{{ $row['name'] }}</a>
-                    <span class="text-strong">Rs. {{ number_format($row['total']) }}</span>
-                </div>
-                <div style="height:8px;background:#f1f1f4;border-radius:99px;overflow:hidden;">
-                    <div style="height:100%;width:{{ max(2, round($row['total'] / $maxCat * 100)) }}%;background:linear-gradient(90deg,var(--red),#f97316);border-radius:99px;"></div>
-                </div>
-            </div>
-        @empty
+        @if($hasTrend)
+            <div id="trendChart" style="min-height:320px;"></div>
+        @else
             <div class="empty-state">
-                <i class="mdi mdi-chart-bar"></i>
+                <i class="mdi mdi-chart-areaspline"></i>
                 <strong>No sales in this period</strong>
-                Revenue by category will appear once orders are placed in the selected range.
+                The revenue trend will appear once orders are placed in the selected range.
             </div>
-        @endforelse
+        @endif
+    </div>
+</div>
+
+{{-- ─── CATEGORY BAR + STATUS DONUT ─────────────────────── --}}
+<div class="dash-charts" style="display:grid;grid-template-columns:1.6fr 1fr;gap:18px;margin-bottom:18px;align-items:start;">
+    <div class="bcard" style="margin-bottom:0;">
+        <div class="bcard-head">
+            <span class="bcard-title">Revenue by Category</span>
+            <span class="text-muted" style="font-size:12px;">{{ $periodLabel }} · goods revenue</span>
+        </div>
+        <div class="bcard-body">
+            @if(count($breakdown))
+                <div id="categoryChart"></div>
+            @else
+                <div class="empty-state">
+                    <i class="mdi mdi-chart-bar"></i>
+                    <strong>No sales in this period</strong>
+                    Revenue by category will appear once orders are placed.
+                </div>
+            @endif
+        </div>
+    </div>
+
+    <div class="bcard" style="margin-bottom:0;">
+        <div class="bcard-head">
+            <span class="bcard-title">Orders by Status</span>
+            <span class="text-muted" style="font-size:12px;">{{ $order_count }} total</span>
+        </div>
+        <div class="bcard-body">
+            @if($statusData->sum() > 0)
+                <div id="statusChart" style="min-height:300px;"></div>
+            @else
+                <div class="empty-state">
+                    <i class="mdi mdi-chart-donut"></i>
+                    <strong>No orders</strong>
+                    Status breakdown appears once orders exist.
+                </div>
+            @endif
+        </div>
     </div>
 </div>
 
@@ -206,4 +256,110 @@
         </table>
     </div>
 </div>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.1/dist/apexcharts.min.js"></script>
+<script>
+(function () {
+    if (typeof ApexCharts === 'undefined') return;
+
+    var RED = '#d92d20', ORANGE = '#f97316', INDIGO = '#6366f1';
+    function rs(v) { return 'Rs. ' + Math.round(v).toLocaleString('en-US'); }
+
+    /* ── Revenue & Orders trend ─────────────────────────── */
+    var trendEl = document.getElementById('trendChart');
+    if (trendEl) {
+        new ApexCharts(trendEl, {
+            chart: { type: 'area', height: 320, fontFamily: 'Poppins, sans-serif', toolbar: { show: false }, zoom: { enabled: false } },
+            series: [
+                { name: 'Revenue', type: 'area', data: @json($trendRevenue) },
+                { name: 'Orders',  type: 'line', data: @json($trendOrdersCount) }
+            ],
+            labels: @json($trendLabels),
+            colors: [RED, INDIGO],
+            stroke: { curve: 'smooth', width: [3, 2.5] },
+            fill: {
+                type: ['gradient', 'solid'],
+                gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 90] }
+            },
+            dataLabels: { enabled: false },
+            markers: { size: 0, hover: { size: 5 } },
+            grid: { borderColor: 'rgba(15,23,42,.06)', strokeDashArray: 4 },
+            xaxis: {
+                categories: @json($trendLabels),
+                tickAmount: 8,
+                labels: { style: { colors: '#94a3b8', fontSize: '11px' }, rotate: 0, hideOverlappingLabels: true },
+                axisBorder: { show: false }, axisTicks: { show: false }
+            },
+            yaxis: [
+                { seriesName: 'Revenue', labels: { style: { colors: '#94a3b8', fontSize: '11px' }, formatter: function (v) { return v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v; } } },
+                { seriesName: 'Orders', opposite: true, labels: { style: { colors: '#94a3b8', fontSize: '11px' }, formatter: function (v) { return Math.round(v); } } }
+            ],
+            legend: { position: 'top', horizontalAlign: 'right', fontWeight: 600, markers: { radius: 4 } },
+            tooltip: {
+                shared: true, intersect: false,
+                y: { formatter: function (v, opts) { return opts.seriesIndex === 0 ? rs(v) : Math.round(v) + ' orders'; } }
+            }
+        }).render();
+    }
+
+    /* ── Revenue by category (horizontal bar) ───────────── */
+    var catEl = document.getElementById('categoryChart');
+    if (catEl) {
+        var catSlugs = @json($catSlugs);
+        var catBase = '{{ route('admin.dashboard') }}';
+        var keep = @json($keepPeriod);
+        new ApexCharts(catEl, {
+            chart: {
+                type: 'bar', height: {{ $catChartHeight }}, fontFamily: 'Poppins, sans-serif', toolbar: { show: false },
+                events: {
+                    dataPointSelection: function (e, ctx, cfg) {
+                        var slug = catSlugs[cfg.dataPointIndex];
+                        if (!slug) return;
+                        var p = new URLSearchParams(keep);
+                        p.set('category', slug);
+                        window.location = catBase + '?' + p.toString();
+                    }
+                }
+            },
+            series: [{ name: 'Revenue', data: @json($catTotals) }],
+            xaxis: {
+                categories: @json($catNames),
+                labels: { style: { colors: '#94a3b8', fontSize: '11px' }, formatter: function (v) { return v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v; } },
+                axisBorder: { show: false }, axisTicks: { show: false }
+            },
+            yaxis: { labels: { style: { colors: '#334155', fontSize: '12px', fontWeight: 600 } } },
+            plotOptions: { bar: { horizontal: true, borderRadius: 5, barHeight: '46%', distributed: true } },
+            colors: ['#d92d20', '#f97316', '#6366f1', '#10b981', '#06b6d4', '#8b5cf6', '#ec4899', '#f59e0b'],
+            dataLabels: { enabled: true, textAnchor: 'start', offsetX: 0, formatter: function (v) { return rs(v); }, style: { fontSize: '11px', fontWeight: 700, colors: ['#fff'] } },
+            grid: { borderColor: 'rgba(15,23,42,.06)', strokeDashArray: 4 },
+            legend: { show: false },
+            tooltip: { y: { formatter: function (v) { return rs(v); } } }
+        }).render();
+    }
+
+    /* ── Orders by status (donut) ───────────────────────── */
+    var statusEl = document.getElementById('statusChart');
+    if (statusEl) {
+        var statusColorMap = {
+            'Pending': '#f59e0b', 'Paid': '#3b82f6', 'Processing': '#6366f1',
+            'Shipped': '#06b6d4', 'Delivered': '#10b981', 'Cancelled': '#ef4444'
+        };
+        var statusLabels = @json($statusLabels);
+        var colors = statusLabels.map(function (s) { return statusColorMap[s] || '#94a3b8'; });
+        new ApexCharts(statusEl, {
+            chart: { type: 'donut', height: 300, fontFamily: 'Poppins, sans-serif' },
+            series: @json($statusData),
+            labels: statusLabels,
+            colors: colors,
+            stroke: { width: 2, colors: ['#fff'] },
+            plotOptions: { pie: { donut: { size: '68%', labels: { show: true, total: { show: true, label: 'Orders', fontSize: '13px', color: '#94a3b8', formatter: function (w) { return w.globals.seriesTotals.reduce(function (a, b) { return a + b; }, 0); } } } } } },
+            dataLabels: { enabled: true, formatter: function (v) { return Math.round(v) + '%'; }, style: { fontSize: '11px', fontWeight: 700 } },
+            legend: { position: 'bottom', fontWeight: 600, markers: { radius: 4 } },
+            tooltip: { y: { formatter: function (v) { return v + ' orders'; } } }
+        }).render();
+    }
+})();
+</script>
+@endpush
 @endsection
