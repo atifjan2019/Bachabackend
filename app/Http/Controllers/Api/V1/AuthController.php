@@ -99,7 +99,7 @@ class AuthController extends Controller
 
         $frontend = config('app.frontend_url')
             ?: (Setting::where('setting_key', 'canonical_base_url')->value('setting_value')
-                ?: config('app.url'));
+                ?: 'https://www.bachastylo.com');
         // FRONTEND_URL may hold a comma-separated CORS allow-list; use the first origin.
         $base = rtrim(trim(explode(',', (string) $frontend)[0]), '/');
         $resetUrl = $base . '/reset-password?token=' . $token . '&email=' . urlencode($customer->email);

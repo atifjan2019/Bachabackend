@@ -2,12 +2,18 @@
 
 namespace App\Mail;
 
+use App\Mail\Concerns\HasBrandData;
+use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Queue\SerializesModels;
 
 class NewsletterMail extends Mailable
 {
+    use Queueable, SerializesModels, HasBrandData;
+
     public $emailSubject;
     public $bodyContent;
     public $subscriberEmail;
@@ -27,7 +33,11 @@ class NewsletterMail extends Mailable
      */
     public function envelope(): Envelope
     {
+        $brand = $this->brand();
+
         return new Envelope(
+            from: new Address(config('mail.from.address'), $brand['from_name']),
+            replyTo: $brand['email'] ? [new Address($brand['email'], $brand['from_name'])] : [],
             subject: $this->emailSubject,
         );
     }
@@ -37,11 +47,17 @@ class NewsletterMail extends Mailable
      */
     public function content(): Content
     {
+        $brand = $this->brand();
+
         return new Content(
             view: 'emails.newsletter',
             with: [
-                'bodyContent' => $this->bodyContent,
-                'email' => $this->subscriberEmail,
+                'subject'        => $this->emailSubject,
+                'bodyContent'    => $this->bodyContent,
+                'email'          => $this->subscriberEmail,
+                'brand'          => $brand,
+                // Unsubscribe is a customer-facing action → frontend, not the admin domain.
+                'unsubscribeUrl' => $brand['site'] . '/newsletter/unsubscribe?email=' . urlencode($this->subscriberEmail),
             ],
         );
     }

@@ -74,6 +74,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Admin Panel URL
+    |--------------------------------------------------------------------------
+    |
+    | Public URL of this admin backend. Used to build staff-facing links in
+    | emails (e.g. the "View in Dashboard" button). Falls back to APP_URL.
+    |
+    */
+
+    'admin_url' => env('ADMIN_URL'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

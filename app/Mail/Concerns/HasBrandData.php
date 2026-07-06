@@ -25,7 +25,15 @@ trait HasBrandData
 
         $s = Setting::whereIn('setting_key', $keys)->pluck('setting_value', 'setting_key');
 
-        $site = $s['canonical_base_url'] ?? 'https://bachastylo.com';
+        // Frontend (customer-facing) base URL — e.g. https://www.bachastylo.com.
+        // Prefer FRONTEND_URL, then the canonical_base_url admin setting.
+        $frontend = config('app.frontend_url')
+            ?: ($s['canonical_base_url'] ?? 'https://www.bachastylo.com');
+        // FRONTEND_URL may hold a comma-separated CORS allow-list; use the first origin.
+        $frontend = rtrim(trim(explode(',', (string) $frontend)[0]), '/');
+
+        // Backend (admin panel) base URL — e.g. https://admin.bachastylo.com.
+        $admin = rtrim((string) (config('app.admin_url') ?: config('app.url') ?: 'https://admin.bachastylo.com'), '/');
 
         return [
             'name' => $s['business_name'] ?? 'Bacha Stylo',
@@ -36,8 +44,10 @@ trait HasBrandData
             'address' => $s['business_address'] ?? '',
             'admin_email' => config('mail.admin_address')
                 ?: ($s['order_notification_email'] ?? ($s['business_email'] ?? config('mail.from.address'))),
-            'site' => rtrim($site, '/'),
-            'admin_url' => rtrim((string) config('app.url'), '/') . '/admin/orders',
+            // Frontend storefront base (store links, unsubscribe, password reset).
+            'site' => $frontend,
+            // Admin dashboard order-view base (staff-facing "View in Dashboard").
+            'admin_url' => $admin . '/admin/orders',
         ];
     }
 }

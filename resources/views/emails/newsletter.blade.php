@@ -1,38 +1,20 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>{{ $subject ?? 'Newsletter' }}</title>
-    <style>
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f9f9f9; }
-        .container { max-width: 600px; margin: 30px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .header { background: #1a1a1a; padding: 20px; text-align: center; }
-        .header img { max-height: 50px; }
-        .content { padding: 30px; }
-        .footer { background: #f1f1f1; padding: 20px; text-align: center; font-size: 12px; color: #777; }
-        .footer a { color: #d32f2f; text-decoration: none; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <!-- Using a fallback text or logo -->
-            <h2 style="color: white; margin: 0; text-transform: uppercase; letter-spacing: 2px;">Bacha Stylo</h2>
-        </div>
-        
-        <div class="content">
-            {!! $bodyContent !!}
-        </div>
+@extends('emails.layout')
 
-        <div class="footer">
-            <p>You are receiving this email because you subscribed to our newsletter.</p>
-            <p>
-                <a href="{{ url('/') }}">Visit our store</a> | 
-                <!-- This unsubscribe link can be wired up later to remove the subscriber -->
-                <a href="{{ url('/newsletter/unsubscribe?email=' . urlencode($email)) }}">Unsubscribe</a>
-            </p>
-            <p>&copy; {{ date('Y') }} Bacha Stylo. All rights reserved.</p>
-        </div>
+@section('title', $subject ?? 'Newsletter')
+@section('preheader', $subject ?? ('An update from '.($brand['name'] ?? 'Bacha Stylo')))
+
+@section('content')
+    <div style="font-size:15px; line-height:1.7; color:#3d3d3d;">
+        {!! $bodyContent !!}
     </div>
-</body>
-</html>
+
+    {{-- Subscription footer note --}}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:30px 0 0; border-top:1px solid #e6e6e8;">
+        <tr>
+            <td style="padding:18px 0 0; font-size:12px; line-height:1.7; color:#9a9a9a;">
+                You're receiving this email because you subscribed to the {{ $brand['name'] ?? 'Bacha Stylo' }} newsletter.
+                <a href="{{ $unsubscribeUrl }}" style="color:#e81d25;">Unsubscribe</a>
+            </td>
+        </tr>
+    </table>
+@endsection
