@@ -20,6 +20,7 @@ class OrderController extends Controller
         $status = in_array($status, $statuses, true) ? $status : null;
 
         $q = trim((string) $request->input('q', ''));
+        $product = trim((string) $request->input('product', ''));
 
         // Reusable search filter — reference, customer name/phone/email (and id).
         $applySearch = function ($query) use ($q) {
@@ -37,19 +38,32 @@ class OrderController extends Controller
             return $query;
         };
 
+        // Product-name filter — matches orders whose line items include the
+        // searched product. Items are stored as a JSON array in the `items`
+        // TEXT column, where product names are the only free-text content, so a
+        // LIKE on the raw JSON reliably (and case-insensitively) matches names.
+        $applyProduct = function ($query) use ($product) {
+            if ($product !== '') {
+                $query->where('items', 'like', '%' . $product . '%');
+            }
+            return $query;
+        };
+
         $query = Order::orderBy('id', 'desc');
         $applySearch($query);
+        $applyProduct($query);
         if ($status) {
             $query->where('status', $status);
         }
         $orders = $query->paginate(20)->appends($request->query());
 
-        // Per-status counts for the filter tabs (respecting the search).
-        $counts = $applySearch(Order::query())
+        // Per-status counts for the filter tabs (respecting both searches so the
+        // tab counts always match what a status filter would actually show).
+        $counts = $applyProduct($applySearch(Order::query()))
             ->selectRaw('status, COUNT(*) as c')->groupBy('status')->pluck('c', 'status');
-        $totalCount = $applySearch(Order::query())->count();
+        $totalCount = $applyProduct($applySearch(Order::query()))->count();
 
-        return view('admin.orders.index', compact('orders', 'statuses', 'status', 'counts', 'totalCount', 'q'));
+        return view('admin.orders.index', compact('orders', 'statuses', 'status', 'counts', 'totalCount', 'q', 'product'));
     }
 
     public function show(string $id)

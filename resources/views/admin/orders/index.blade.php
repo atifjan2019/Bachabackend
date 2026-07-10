@@ -5,7 +5,7 @@
 <div class="ph">
     <div>
         <h4>Orders</h4>
-        <div class="ph-sub">{{ $orders->total() }} {{ $status ? $status.' ' : '' }}order{{ $orders->total() === 1 ? '' : 's' }}@if($q) matching &ldquo;{{ $q }}&rdquo;@endif</div>
+        <div class="ph-sub">{{ $orders->total() }} {{ $status ? $status.' ' : '' }}order{{ $orders->total() === 1 ? '' : 's' }}@if($product) with &ldquo;{{ $product }}&rdquo;@endif @if($q) matching &ldquo;{{ $q }}&rdquo;@endif</div>
     </div>
 </div>
 
@@ -14,18 +14,19 @@
 @endphp
 <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px;">
     <div style="display:flex;flex-wrap:wrap;gap:8px;">
-        <a href="{{ route('admin.orders.index', array_filter(['q'=>$q ?: null])) }}" class="btn btn-sm {{ !$status ? 'btn-primary' : 'btn-light' }}">All <span style="opacity:.65;">({{ $totalCount }})</span></a>
+        <a href="{{ route('admin.orders.index', array_filter(['q'=>$q ?: null,'product'=>$product ?: null])) }}" class="btn btn-sm {{ !$status ? 'btn-primary' : 'btn-light' }}">All <span style="opacity:.65;">({{ $totalCount }})</span></a>
         @foreach($statuses as $s)
-            <a href="{{ route('admin.orders.index', array_filter(['status'=>$s,'q'=>$q ?: null])) }}" class="btn btn-sm {{ $status === $s ? 'btn-primary' : 'btn-light' }}">
+            <a href="{{ route('admin.orders.index', array_filter(['status'=>$s,'q'=>$q ?: null,'product'=>$product ?: null])) }}" class="btn btn-sm {{ $status === $s ? 'btn-primary' : 'btn-light' }}">
                 {{ $statusLabels[$s] ?? $s }} <span style="opacity:.65;">({{ $counts[$s] ?? 0 }})</span>
             </a>
         @endforeach
     </div>
-    <form method="GET" action="{{ route('admin.orders.index') }}" style="display:flex;gap:6px;align-items:center;">
+    <form method="GET" action="{{ route('admin.orders.index') }}" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
         @if($status)<input type="hidden" name="status" value="{{ $status }}">@endif
+        <input type="text" name="product" value="{{ $product }}" class="form-control" placeholder="Search by product name…" style="height:36px;min-width:200px;">
         <input type="text" name="q" value="{{ $q }}" class="form-control" placeholder="Search reference, name, phone, email…" style="height:36px;min-width:240px;">
         <button type="submit" class="btn btn-sm btn-primary"><i class="mdi mdi-magnify"></i></button>
-        @if($q !== '')
+        @if($q !== '' || $product !== '')
             <a href="{{ route('admin.orders.index', array_filter(['status'=>$status])) }}" class="btn btn-sm btn-light" title="Clear search"><i class="mdi mdi-close"></i></a>
         @endif
     </form>
@@ -85,7 +86,7 @@
                 <tr>
                     <td colspan="7" class="empty-state">
                         <i class="mdi mdi-cart-off"></i>
-                        @if($q || $status)
+                        @if($q || $product || $status)
                             <strong>No matching orders</strong>
                             Try a different search term or filter.
                         @else

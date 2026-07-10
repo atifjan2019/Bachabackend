@@ -2,6 +2,27 @@
 @section('title', 'Settings')
 @section('content')
 
+<style>
+    /* Floating Save button — pinned to the viewport so it's reachable from
+       anywhere in the long settings form. */
+    .settings-fab {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        z-index: 1050;
+        min-width: 190px;
+        border-radius: 999px;
+        box-shadow: 0 10px 30px -6px rgba(0, 0, 0, 0.35);
+        font-weight: 600;
+        letter-spacing: .02em;
+    }
+    /* Keep the last card clear of the floating button so nothing hides behind it. */
+    #settingsForm { padding-bottom: 90px; }
+    @media (max-width: 575.98px) {
+        .settings-fab { right: 16px; bottom: 16px; left: 16px; min-width: 0; }
+    }
+</style>
+
 <div class="ph">
     <div>
         <h4>Settings</h4>
@@ -210,6 +231,87 @@
             </div>
 
             <div class="bcard">
+                <div class="bcard-head"><span class="bcard-title">Homepage — Promotional Popup</span></div>
+                <div class="bcard-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" role="switch" id="promo_enabled" name="promo_enabled" value="1" {{ !empty($settings['promo_enabled']) && $settings['promo_enabled'] === '1' ? 'checked' : '' }}>
+                                <label class="form-check-label" for="promo_enabled">Show promotional popup when visitors open the site</label>
+                            </div>
+                            <div class="form-hint">Appears automatically above the hero the first time a visitor opens the homepage each session. They can Skip to close it, or use the button to open your promo link.</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label d-block">Step 1 — What should the popup show?</label>
+                            @php $promoType = $settings['promo_media_type'] ?? 'image'; @endphp
+                            <div class="btn-group" role="group" aria-label="Promo type">
+                                <input type="radio" class="btn-check" name="promo_media_type" id="promo_type_image" value="image" {{ $promoType === 'image' ? 'checked' : '' }} onchange="togglePromoType()">
+                                <label class="btn btn-outline-primary" for="promo_type_image"><i class="mdi mdi-image"></i> Banner / Image</label>
+                                <input type="radio" class="btn-check" name="promo_media_type" id="promo_type_video" value="video" {{ $promoType === 'video' ? 'checked' : '' }} onchange="togglePromoType()">
+                                <label class="btn btn-outline-primary" for="promo_type_video"><i class="mdi mdi-video"></i> Video</label>
+                            </div>
+                            <div class="form-hint">Choose an animated banner/image or an uploaded/embedded video. Add a Watch/Open link below to redirect visitors to an external video (TikTok, YouTube, etc.).</div>
+                        </div>
+
+                        {{-- IMAGE / banner --}}
+                        <div class="col-12" id="promo-image-group">
+                            <label class="form-label">Banner Image</label>
+                            <input type="file" name="promo_image_file" class="form-control" accept="image/*" onchange="previewImg(this, 'promo-image-preview')">
+                            <div id="promo-image-preview" style="margin-top:8px;">
+                                @if(!empty($settings['promo_image']))
+                                    <img src="{{ $settings['promo_image'] }}" alt="Promo banner" style="max-height:120px; border-radius:6px;">
+                                @endif
+                            </div>
+                            <span class="btn-library" onclick="openMediaPicker('promo_image', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
+                            <input type="text" name="promo_image" class="form-control mt-2" value="{{ $settings['promo_image'] ?? '' }}" placeholder="…or paste an image / animated GIF URL">
+                            @if(!empty($settings['promo_image']))
+                                <div class="form-check mt-2">
+                                    <input type="checkbox" class="form-check-input" id="remove_promo_image" name="remove_promo_image" value="1">
+                                    <label class="form-check-label text-danger" for="remove_promo_image">Remove current image</label>
+                                </div>
+                            @endif
+                            <div class="form-hint">Upload a file, pick from the library, or paste an image / animated GIF URL.</div>
+                        </div>
+
+                        {{-- VIDEO --}}
+                        <div class="col-12" id="promo-video-group">
+                            <label class="form-label">Video</label>
+                            <input type="file" name="promo_video_file" class="form-control" accept="video/mp4,video/webm,video/ogg,video/quicktime">
+                            <input type="text" name="promo_video_url" class="form-control mt-2" value="{{ $settings['promo_video_url'] ?? '' }}" placeholder="…or paste a YouTube / Vimeo / .mp4 link">
+                            @if(!empty($settings['promo_video_url']))
+                                <div class="form-hint">Current: <a href="{{ $settings['promo_video_url'] }}" target="_blank">{{ $settings['promo_video_url'] }}</a></div>
+                                <div class="form-check mt-2">
+                                    <input type="checkbox" class="form-check-input" id="remove_promo_video" name="remove_promo_video" value="1">
+                                    <label class="form-check-label text-danger" for="remove_promo_video">Remove current video</label>
+                                </div>
+                            @endif
+                            <div class="form-hint">Upload a short MP4/WebM (max 50 MB), or paste a YouTube / Vimeo / video link. Plays muted inside the popup.</div>
+                        </div>
+
+                        {{-- Common: link + copy --}}
+                        <div class="col-12"><hr class="my-1"></div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Popup Heading <span class="text-muted fw-normal">(optional)</span></label>
+                            <input type="text" name="promo_title" class="form-control" value="{{ $settings['promo_title'] ?? '' }}" placeholder="Big Winter Sale">
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Button Text</label>
+                            <input type="text" name="promo_button_text" class="form-control" value="{{ $settings['promo_button_text'] ?? '' }}" placeholder="Watch Now">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Subtext <span class="text-muted fw-normal">(optional)</span></label>
+                            <input type="text" name="promo_subtitle" class="form-control" value="{{ $settings['promo_subtitle'] ?? '' }}" placeholder="Up to 50% off — this week only">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Watch / Open Link <span class="text-muted fw-normal">(external redirect)</span></label>
+                            <input type="text" name="promo_link" class="form-control" value="{{ $settings['promo_link'] ?? '' }}" placeholder="https://www.tiktok.com/@yourbrand or a YouTube link">
+                            <div class="form-hint">The Watch/Open button redirects visitors here (TikTok, YouTube, Instagram, or any URL). Required for the button; leave blank to hide it.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bcard">
                 <div class="bcard-head"><span class="bcard-title">Payment Methods (Checkout)</span></div>
                 <div class="bcard-body">
                     <p class="form-hint mb-3">These details are shown to customers on the checkout page for each online payment method. Cash on Delivery needs no details.</p>
@@ -337,7 +439,8 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 btn-lg">
+            {{-- Floating save button — stays visible while scrolling the long settings form --}}
+            <button type="submit" class="btn btn-primary btn-lg settings-fab">
                 <i class="mdi mdi-content-save-outline"></i> Save Settings
             </button>
 
@@ -371,6 +474,16 @@ function toggleIntroBg() {
     document.getElementById('intro-play-group').style.display = isVideo ? '' : 'none';
 }
 toggleIntroBg();
+
+// Promotional popup: show only the media fields for the selected type. The
+// Watch/Open link and copy apply to every type, so they stay visible.
+function togglePromoType() {
+    var type = document.querySelector('input[name="promo_media_type"]:checked');
+    type = type ? type.value : 'image';
+    document.getElementById('promo-image-group').style.display = type === 'image' ? '' : 'none';
+    document.getElementById('promo-video-group').style.display = type === 'video' ? '' : 'none';
+}
+togglePromoType();
 </script>
 @include('admin.partials.media-picker')
 @endsection

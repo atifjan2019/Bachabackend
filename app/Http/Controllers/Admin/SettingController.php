@@ -39,6 +39,14 @@ class SettingController extends Controller
         'intro_video_url',
         'intro_social_url',
         'intro_button_text',
+        'promo_enabled',
+        'promo_media_type',
+        'promo_title',
+        'promo_subtitle',
+        'promo_image',
+        'promo_video_url',
+        'promo_link',
+        'promo_button_text',
         'cod_enabled',
         'bank_transfer_enabled',
         'easypaisa_enabled',
@@ -90,6 +98,13 @@ class SettingController extends Controller
             'intro_video_url' => 'nullable|string|max:2000',
             'intro_social_url' => 'nullable|string|max:2000',
             'intro_button_text' => 'nullable|string|max:100',
+            'promo_media_type' => 'nullable|in:image,video',
+            'promo_title' => 'nullable|string|max:255',
+            'promo_subtitle' => 'nullable|string|max:2000',
+            'promo_image' => 'nullable|string|max:2000',
+            'promo_video_url' => 'nullable|string|max:2000',
+            'promo_link' => 'nullable|string|max:2000',
+            'promo_button_text' => 'nullable|string|max:100',
             'bank_name' => 'nullable|string|max:255',
             'bank_account_title' => 'nullable|string|max:255',
             'bank_account_number' => 'nullable|string|max:100',
@@ -105,6 +120,8 @@ class SettingController extends Controller
             'home_highlight_image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
             'intro_image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
             'intro_video_file' => 'nullable|file|mimes:mp4,webm,ogg,mov,m4v|max:51200',
+            'promo_image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
+            'promo_video_file' => 'nullable|file|mimes:mp4,webm,ogg,mov,m4v|max:51200',
         ]);
 
         // Handle logo file upload
@@ -161,6 +178,24 @@ class SettingController extends Controller
             $validated['intro_video_url'] = Storage::disk($disk)->url('branding/' . $filename);
         }
 
+        // Handle promo popup image upload
+        if ($request->hasFile('promo_image_file')) {
+            $file = $request->file('promo_image_file');
+            $filename = 'promo-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $disk = env('FILESYSTEM_DISK', 'public');
+            $file->storeAs('branding', $filename, $disk);
+            $validated['promo_image'] = Storage::disk($disk)->url('branding/' . $filename);
+        }
+
+        // Handle promo popup video upload (falls back to a pasted URL otherwise)
+        if ($request->hasFile('promo_video_file')) {
+            $file = $request->file('promo_video_file');
+            $filename = 'promo-video-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $disk = env('FILESYSTEM_DISK', 'public');
+            $file->storeAs('branding', $filename, $disk);
+            $validated['promo_video_url'] = Storage::disk($disk)->url('branding/' . $filename);
+        }
+
         // Remove buttons: clear the stored value unless a replacement was just
         // uploaded in the same request (upload wins).
         if ($request->boolean('remove_intro_image') && !$request->hasFile('intro_image_file')) {
@@ -169,10 +204,17 @@ class SettingController extends Controller
         if ($request->boolean('remove_intro_video') && !$request->hasFile('intro_video_file')) {
             $validated['intro_video_url'] = '';
         }
+        if ($request->boolean('remove_promo_image') && !$request->hasFile('promo_image_file')) {
+            $validated['promo_image'] = '';
+        }
+        if ($request->boolean('remove_promo_video') && !$request->hasFile('promo_video_file')) {
+            $validated['promo_video_url'] = '';
+        }
 
         // Checkbox: absent from the request means "disabled". Normalise to "1"/"0"
         // so the feature can be toggled off (unchecked inputs are never submitted).
         $validated['intro_enabled'] = $request->boolean('intro_enabled') ? '1' : '0';
+        $validated['promo_enabled'] = $request->boolean('promo_enabled') ? '1' : '0';
 
         // Payment method enable/disable switches (same unchecked-checkbox handling).
         foreach (['cod_enabled', 'bank_transfer_enabled', 'easypaisa_enabled', 'jazzcash_enabled'] as $flag) {
