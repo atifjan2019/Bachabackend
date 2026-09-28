@@ -25,7 +25,7 @@ class BlogPostController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
+            'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,avif|max:10240',
         ]);
         $data = $request->except(['_token', 'image_file']);
         $data['slug'] = $data['slug'] ?? Str::slug($data['title']);
@@ -53,7 +53,7 @@ class BlogPostController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
+            'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,avif|max:10240',
         ]);
         $post = BlogPost::findOrFail($id);
         $data = $request->except(['_token', '_method', 'image_file']);

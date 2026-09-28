@@ -50,6 +50,8 @@
 </div>
 
 <script>
+// uploadErrorMessage() lives in the admin layout so every upload form can use
+// it, not just the ones that include this partial.
 function initUploadProgress(formId, redirectUrl) {
     const form = document.getElementById(formId);
     if (!form) return;
@@ -108,7 +110,11 @@ function initUploadProgress(formId, redirectUrl) {
             } else {
                 overlay.classList.remove('active');
                 if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = origBtnText; }
-                alert('Upload failed. Please try again.');
+                // Laravel answers an XHR with the real validation errors (422).
+                // Showing "Upload failed. Please try again." instead hid which
+                // field was wrong and why — an unsupported file type looked
+                // identical to a network fault.
+                alert(uploadErrorMessage(xhr));
             }
         });
 

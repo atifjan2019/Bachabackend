@@ -323,7 +323,7 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
             overlay.classList.remove('active');
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="mdi mdi-content-save-outline"></i> Save Product';
-            alert('Upload failed. Please try again.');
+            alert(typeof uploadErrorMessage === 'function' ? uploadErrorMessage(xhr) : 'Upload failed. Please try again.');
         }
     });
 

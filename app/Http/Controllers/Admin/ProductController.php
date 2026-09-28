@@ -29,8 +29,8 @@ class ProductController extends Controller
         $request->validate([
             'name'  => 'required|string|max:255',
             'price' => 'required',
-            'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
-            'gallery_files.*' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
+            'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,avif|max:10240',
+            'gallery_files.*' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,avif|max:10240',
         ]);
 
         $data = $request->except(['_token', 'image_file', 'gallery_files']);
@@ -88,8 +88,8 @@ class ProductController extends Controller
         $request->validate([
             'name'  => 'required|string|max:255',
             'price' => 'required',
-            'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
-            'gallery_files.*' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
+            'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,avif|max:10240',
+            'gallery_files.*' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,avif|max:10240',
         ]);
 
         $product = Product::findOrFail($id);

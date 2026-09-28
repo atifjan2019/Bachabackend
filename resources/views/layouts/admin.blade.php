@@ -687,6 +687,18 @@
         height: 100%;
         object-fit: cover;
     }
+    /* An image whose file is missing: render a neutral tile with a small icon
+       instead of the browser's broken-file glyph and stretched alt text. */
+    img.img-missing {
+        object-fit: contain;
+        background: var(--surf3) center / 28px no-repeat
+            url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A3A3A3' stroke-width='1.6' stroke-linecap='round'><path d='M3 5h18v14H3z'/><path d='m3 16 5-5 4 4 3-3 6 6'/><path d='m4 4 16 16'/></svg>");
+        border: 1px solid var(--bd);
+        border-radius: 8px;
+        color: transparent;
+        font-size: 0;
+        min-height: 60px;
+    }
     .entity-copy {
         min-width: 0;
     }
@@ -1187,12 +1199,51 @@ function closeSB() {
 document.addEventListener('error', function (e) {
     var img = e.target;
     if (!img || img.tagName !== 'IMG') return;
+
     var thumb = img.closest('.entity-thumb, .entity-avatar');
-    if (!thumb || thumb.dataset.imgFailed) return;
-    thumb.dataset.imgFailed = '1';
-    thumb.title = 'Image not found: ' + img.getAttribute('src');
-    thumb.innerHTML = '<i class="mdi mdi-image-broken-variant"></i>';
+    if (thumb) {
+        if (thumb.dataset.imgFailed) return;
+        thumb.dataset.imgFailed = '1';
+        thumb.title = 'Image not found: ' + img.getAttribute('src');
+        thumb.innerHTML = '<i class="mdi mdi-image-broken-variant"></i>';
+        return;
+    }
+
+    // Anywhere else an image can fail — the media library grid, a category
+    // thumbnail, an order's payment receipt — mark the element itself so the
+    // browser stops drawing its broken-file icon and alt text.
+    if (img.dataset.imgFailed) return;
+    img.dataset.imgFailed = '1';
+    img.title = 'Image not found: ' + img.getAttribute('src');
+    img.classList.add('img-missing');
 }, true);
+
+/**
+ * Turn a failed upload response into something the admin can act on.
+ * Laravel answers an XHR with 422 and {message, errors:{field:[...]}}; PHP
+ * returns 413 when a file got past the form but not past its own upload limit.
+ * Showing one generic line instead made an unsupported file type look
+ * identical to a dropped connection.
+ */
+function uploadErrorMessage(xhr) {
+    if (xhr.status === 413) {
+        return 'That file is too large for the server to accept. Please upload a smaller file.';
+    }
+    try {
+        var body = JSON.parse(xhr.responseText);
+        if (body.errors) {
+            var lines = [];
+            Object.keys(body.errors).forEach(function (k) {
+                lines = lines.concat(body.errors[k]);
+            });
+            if (lines.length) return lines.join('\n');
+        }
+        if (body.message) return body.message;
+    } catch (err) {
+        // Not JSON — fall through to the generic message below.
+    }
+    return 'Upload failed (error ' + xhr.status + '). Please try again.';
+}
 </script>
 @stack('scripts')
 </body>

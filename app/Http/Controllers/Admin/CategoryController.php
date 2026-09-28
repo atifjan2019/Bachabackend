@@ -13,7 +13,17 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::withCount(['products', 'children'])->orderBy('name')->paginate(20);
+        $categories = Category::withCount('children')->orderBy('name')->paginate(20);
+
+        // withCount('products') only matches products filed under this exact
+        // slug, so every parent showed "0 products" while its children held the
+        // stock. Count the subtree instead, matching what the storefront API
+        // reports and what opening the category actually shows.
+        $counts = Category::subtreeProductCounts();
+        $categories->each(
+            fn (Category $c) => $c->setAttribute('products_count', $counts[$c->id] ?? 0)
+        );
+
         return view('admin.categories.index', compact('categories'));
     }
 
@@ -28,7 +38,7 @@ class CategoryController extends Controller
         $request->validate([
             'name' => 'required|string|max:100|unique:categories',
             'parent_id' => 'nullable|exists:categories,id',
-            'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
+            'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,avif|max:10240',
         ]);
         $data = $request->except(['_token', 'image_file']);
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
@@ -59,7 +69,7 @@ class CategoryController extends Controller
         $request->validate([
             'name' => 'required|string|max:100|unique:categories,name,'.$id,
             'parent_id' => 'nullable|exists:categories,id',
-            'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240',
+            'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,avif|max:10240',
         ]);
         $data = $request->except(['_token', '_method', 'image_file']);
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);

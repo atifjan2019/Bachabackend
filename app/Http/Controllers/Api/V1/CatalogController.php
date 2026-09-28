@@ -47,18 +47,15 @@ class CatalogController extends Controller
                 // actually returns. Products are filed under leaf slugs, so a
                 // parent counting only its own direct rows always reported 0
                 // while its children held the entire inventory.
-                $counts = $this->productCountsBySlug();
+                $counts = Category::subtreeProductCounts();
                 $tree->each(function (Category $parent) use ($counts) {
-                    $parent->children?->each(function (Category $child) use ($counts) {
-                        $child->setAttribute(
+                    $parent->children?->each(
+                        fn (Category $child) => $child->setAttribute(
                             'products_count',
-                            $this->subtreeCount($child->slug, $counts)
-                        );
-                    });
-                    $parent->setAttribute(
-                        'products_count',
-                        $this->subtreeCount($parent->slug, $counts)
+                            $counts[$child->id] ?? 0
+                        )
                     );
+                    $parent->setAttribute('products_count', $counts[$parent->id] ?? 0);
                 });
 
                 return $tree;
@@ -69,76 +66,6 @@ class CatalogController extends Controller
             ->header('Cache-Control', self::CATALOG_CACHE);
     }
 
-    /** Product totals keyed by the slug they are filed under. */
-    private function productCountsBySlug(): array
-    {
-        return Product::query()
-            ->selectRaw('category, COUNT(*) as aggregate')
-            ->whereNotNull('category')
-            ->groupBy('category')
-            ->pluck('aggregate', 'category')
-            ->all();
-    }
-
-    /** Products filed under this slug plus every slug beneath it. */
-    private function subtreeCount(string $slug, array $counts): int
-    {
-        $total = 0;
-        foreach ($this->descendantSlugs($slug) as $s) {
-            $total += (int) ($counts[$s] ?? 0);
-        }
-
-        return $total;
-    }
-
-    /**
-     * A category's own slug plus every descendant slug, at any depth.
-     *
-     * Products store a single category slug, so filtering by a parent has to
-     * expand to the whole subtree — otherwise "Waistcoats for Men & Boys"
-     * returns nothing while its child collections hold all 29 products, and the
-     * storefront is forced to fan out one request per child to compensate.
-     */
-    private function descendantSlugs(string $slug): array
-    {
-        $rows = Cache::remember('api.category.tree', 300, fn () => Category::query()
-            ->get(['id', 'parent_id', 'slug'])
-            ->all());
-
-        $byParent = [];
-        $idForSlug = null;
-        foreach ($rows as $row) {
-            $byParent[$row->parent_id][] = $row;
-            if ($row->slug === $slug) {
-                $idForSlug = $row->id;
-            }
-        }
-
-        // Unknown slug: pass it through so the query simply finds nothing,
-        // matching the old behaviour for a bad ?category= value.
-        if ($idForSlug === null) {
-            return [$slug];
-        }
-
-        $slugs = [$slug];
-        $queue = [$idForSlug];
-        // Iterative walk with a visited guard so a malformed parent_id cycle
-        // can't spin forever.
-        $seen = [$idForSlug => true];
-        while ($queue) {
-            $id = array_pop($queue);
-            foreach ($byParent[$id] ?? [] as $child) {
-                if (isset($seen[$child->id])) {
-                    continue;
-                }
-                $seen[$child->id] = true;
-                $slugs[] = $child->slug;
-                $queue[] = $child->id;
-            }
-        }
-
-        return $slugs;
-    }
 
     public function products(Request $request): JsonResponse
     {
@@ -173,7 +100,7 @@ class CatalogController extends Controller
             // so a parent category matched nothing on its own.
             $query->whereIn(
                 'category',
-                $this->descendantSlugs((string) $request->string('category'))
+                Category::descendantSlugs((string) $request->string('category'))
             );
         }
 
