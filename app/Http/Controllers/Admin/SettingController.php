@@ -128,7 +128,7 @@ class SettingController extends Controller
         if ($request->hasFile('logo_file')) {
             $file = $request->file('logo_file');
             $filename = 'logo-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = env('FILESYSTEM_DISK', 'public');
+            $disk = config('filesystems.default');
             $file->storeAs('branding', $filename, $disk);
             $validated['logo_url'] = Storage::disk($disk)->url('branding/' . $filename);
         }
@@ -137,7 +137,7 @@ class SettingController extends Controller
         if ($request->hasFile('footer_logo_file')) {
             $file = $request->file('footer_logo_file');
             $filename = 'footer-logo-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = env('FILESYSTEM_DISK', 'public');
+            $disk = config('filesystems.default');
             $file->storeAs('branding', $filename, $disk);
             $validated['footer_logo_url'] = Storage::disk($disk)->url('branding/' . $filename);
         }
@@ -146,7 +146,7 @@ class SettingController extends Controller
         if ($request->hasFile('favicon_file')) {
             $file = $request->file('favicon_file');
             $filename = 'favicon-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = env('FILESYSTEM_DISK', 'public');
+            $disk = config('filesystems.default');
             $file->storeAs('branding', $filename, $disk);
             $validated['favicon_url'] = Storage::disk($disk)->url('branding/' . $filename);
         }
@@ -155,7 +155,7 @@ class SettingController extends Controller
         if ($request->hasFile('home_highlight_image_file')) {
             $file = $request->file('home_highlight_image_file');
             $filename = 'highlight-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = env('FILESYSTEM_DISK', 'public');
+            $disk = config('filesystems.default');
             $file->storeAs('branding', $filename, $disk);
             $validated['home_highlight_image'] = Storage::disk($disk)->url('branding/' . $filename);
         }
@@ -164,7 +164,7 @@ class SettingController extends Controller
         if ($request->hasFile('intro_image_file')) {
             $file = $request->file('intro_image_file');
             $filename = 'intro-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = env('FILESYSTEM_DISK', 'public');
+            $disk = config('filesystems.default');
             $file->storeAs('branding', $filename, $disk);
             $validated['intro_image'] = Storage::disk($disk)->url('branding/' . $filename);
         }
@@ -173,7 +173,7 @@ class SettingController extends Controller
         if ($request->hasFile('intro_video_file')) {
             $file = $request->file('intro_video_file');
             $filename = 'intro-video-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = env('FILESYSTEM_DISK', 'public');
+            $disk = config('filesystems.default');
             $file->storeAs('branding', $filename, $disk);
             $validated['intro_video_url'] = Storage::disk($disk)->url('branding/' . $filename);
         }
@@ -182,7 +182,7 @@ class SettingController extends Controller
         if ($request->hasFile('promo_image_file')) {
             $file = $request->file('promo_image_file');
             $filename = 'promo-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = env('FILESYSTEM_DISK', 'public');
+            $disk = config('filesystems.default');
             $file->storeAs('branding', $filename, $disk);
             $validated['promo_image'] = Storage::disk($disk)->url('branding/' . $filename);
         }
@@ -191,7 +191,7 @@ class SettingController extends Controller
         if ($request->hasFile('promo_video_file')) {
             $file = $request->file('promo_video_file');
             $filename = 'promo-video-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = env('FILESYSTEM_DISK', 'public');
+            $disk = config('filesystems.default');
             $file->storeAs('branding', $filename, $disk);
             $validated['promo_video_url'] = Storage::disk($disk)->url('branding/' . $filename);
         }

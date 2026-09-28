@@ -14,7 +14,7 @@ class MediaController extends Controller
     {
         $r2Files = [];
         try {
-            $diskName = env('FILESYSTEM_DISK', 'public');
+            $diskName = config('filesystems.default');
             $disk = Storage::disk($diskName);
             $allFiles = $disk->allFiles();
 
@@ -40,7 +40,7 @@ class MediaController extends Controller
     {
         $r2Files = [];
         try {
-            $diskName = env('FILESYSTEM_DISK', 'public');
+            $diskName = config('filesystems.default');
             $disk = Storage::disk($diskName);
             $allFiles = $disk->allFiles();
 
@@ -66,7 +66,7 @@ class MediaController extends Controller
         $file = $request->file('file');
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
 
-        $diskName = env('FILESYSTEM_DISK', 'public');
+        $diskName = config('filesystems.default');
         $path = $file->storeAs('media', $filename, $diskName);
         $url = Storage::disk($diskName)->url($path);
 
@@ -89,14 +89,14 @@ class MediaController extends Controller
         $path = $request->input('path');
 
         try {
-            $diskName = env('FILESYSTEM_DISK', 'public');
+            $diskName = config('filesystems.default');
             Storage::disk($diskName)->delete($path);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to delete'], 500);
         }
 
         // Also remove from DB if tracked
-        $diskName = env('FILESYSTEM_DISK', 'public');
+        $diskName = config('filesystems.default');
         $url = Storage::disk($diskName)->url($path);
         Media::where('file_path', $url)->delete();
 
@@ -107,12 +107,12 @@ class MediaController extends Controller
     {
         $media = Media::findOrFail($id);
         if (!empty($media->file_path)) {
-            $diskName = env('FILESYSTEM_DISK', 'public');
+            $diskName = config('filesystems.default');
             $parsedUrl = parse_url($media->file_path, PHP_URL_PATH);
             $relativePath = ltrim(str_replace('/storage/', '', $parsedUrl), '/');
-            if (env('FILESYSTEM_DISK') === 's3' && env('AWS_URL')) {
-                $baseUrl = rtrim(env('AWS_URL', ''), '/');
-                $relativePath = str_replace($baseUrl . '/', '', $media->file_path);
+            $diskUrl = config("filesystems.disks.{$diskName}.url");
+            if ($diskName === 's3' && $diskUrl) {
+                $relativePath = str_replace(rtrim($diskUrl, '/') . '/', '', $media->file_path);
             }
             if (!empty($relativePath)) {
                 try { Storage::disk($diskName)->delete($relativePath); } catch (\Exception $e) {}

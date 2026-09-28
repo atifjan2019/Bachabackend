@@ -37,6 +37,11 @@ class Product extends Model
         'accordions' => 'array',
         'gallery' => 'array',
         'sizes' => 'array',
+        // Stored in string columns, so without these the API serialised money
+        // as "6500" and every consumer had to parse it back. Cast keeps the
+        // JSON contract numeric; null stays null for products with no sale.
+        'price' => 'float',
+        'original_price' => 'float',
     ];
 }
 

@@ -159,7 +159,7 @@ export async function apiPost&lt;T&gt;(path: string, body: unknown): Promise&lt;
     </div>
     <div class="bcard-body">
         <p class="m-0" style="font-size:.8rem;color:var(--t2);">All media URLs (product images, category images, logo, favicon) are served from:</p>
-        <pre class="m-0 mt-2" style="background:var(--surf2);border:1px solid var(--bd);border-radius:10px;padding:12px;overflow:auto;">{{ env('MEDIA_URL', config('app.url').'/storage') }}</pre>
+        <pre class="m-0 mt-2" style="background:var(--surf2);border:1px solid var(--bd);border-radius:10px;padding:12px;overflow:auto;">{{ rtrim(config('filesystems.disks.'.config('filesystems.default').'.url') ?: config('app.url').'/storage', '/') }}</pre>
         <p class="m-0 mt-2 form-hint">These URLs are returned as absolute paths in all API responses — no need to prepend anything on the frontend.</p>
     </div>
 </div>

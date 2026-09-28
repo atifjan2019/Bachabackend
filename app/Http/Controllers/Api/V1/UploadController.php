@@ -20,7 +20,7 @@ class UploadController extends Controller
         $folder = $request->input('folder', 'products');
         $file = $request->file('file');
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-        $disk = env('FILESYSTEM_DISK', 'public');
+        $disk = config('filesystems.default');
         $path = $file->storeAs($folder, $filename, $disk);
 
         $url = Storage::disk($disk)->url($path);

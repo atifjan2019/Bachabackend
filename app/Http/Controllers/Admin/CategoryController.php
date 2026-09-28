@@ -36,7 +36,7 @@ class CategoryController extends Controller
         if ($request->hasFile('image_file')) {
             $file = $request->file('image_file');
             $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = env('FILESYSTEM_DISK', 'public');
+            $disk = config('filesystems.default');
             $file->storeAs('categories', $filename, $disk);
             $data['image'] = Storage::disk($disk)->url('categories/' . $filename);
         }
@@ -67,7 +67,7 @@ class CategoryController extends Controller
         if ($request->hasFile('image_file')) {
             $file = $request->file('image_file');
             $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = env('FILESYSTEM_DISK', 'public');
+            $disk = config('filesystems.default');
             $file->storeAs('categories', $filename, $disk);
             $data['image'] = Storage::disk($disk)->url('categories/' . $filename);
         }

@@ -34,7 +34,7 @@ class BlogPostController extends Controller
         if ($request->hasFile('image_file')) {
             $file = $request->file('image_file');
             $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = env('FILESYSTEM_DISK', 'public');
+            $disk = config('filesystems.default');
             $file->storeAs('blog', $filename, $disk);
             $data['image'] = Storage::disk($disk)->url('blog/' . $filename);
         }
@@ -63,7 +63,7 @@ class BlogPostController extends Controller
         if ($request->hasFile('image_file')) {
             $file = $request->file('image_file');
             $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = env('FILESYSTEM_DISK', 'public');
+            $disk = config('filesystems.default');
             $file->storeAs('blog', $filename, $disk);
             $data['image'] = Storage::disk($disk)->url('blog/' . $filename);
         }

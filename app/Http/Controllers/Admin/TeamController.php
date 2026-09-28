@@ -187,7 +187,7 @@ class TeamController extends Controller
     private function storeUpload($file, string $prefix): string
     {
         $filename = $prefix . '-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-        $disk = env('FILESYSTEM_DISK', 'public');
+        $disk = config('filesystems.default');
         $file->storeAs('team', $filename, $disk);
 
         return $this->absolutize(Storage::disk($disk)->url('team/' . $filename));

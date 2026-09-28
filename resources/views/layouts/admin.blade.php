@@ -1180,6 +1180,19 @@ function closeSB() {
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('overlay').classList.remove('show');
 }
+
+// Thumbnails point at the media CDN; when an object is missing the browser
+// renders a broken-image glyph. Swap in the placeholder icon instead.
+// `error` doesn't bubble, so listen during the capture phase.
+document.addEventListener('error', function (e) {
+    var img = e.target;
+    if (!img || img.tagName !== 'IMG') return;
+    var thumb = img.closest('.entity-thumb, .entity-avatar');
+    if (!thumb || thumb.dataset.imgFailed) return;
+    thumb.dataset.imgFailed = '1';
+    thumb.title = 'Image not found: ' + img.getAttribute('src');
+    thumb.innerHTML = '<i class="mdi mdi-image-broken-variant"></i>';
+}, true);
 </script>
 @stack('scripts')
 </body>
