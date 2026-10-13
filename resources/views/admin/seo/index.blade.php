@@ -52,7 +52,8 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label">Google Search Console Verification</label>
-                            <input type="text" name="google_site_verification" class="form-control" value="{{ $settings['google_site_verification'] ?? '' }}" placeholder="meta content value">
+                            <input type="text" name="google_site_verification" class="form-control" value="{{ $settings['google_site_verification'] ?? '' }}" placeholder="Paste only the content value">
+                            <div class="form-text">Paste only the content value from the Search Console meta tag, not the whole tag. If you paste the full tag, only the content value is kept.</div>
                         </div>
                     </div>
                 </div>

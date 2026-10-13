@@ -28,16 +28,24 @@ class SeoController extends Controller
 
     public function update(Request $request)
     {
+        $request->merge([
+            'google_analytics_id' => trim((string) $request->input('google_analytics_id')),
+            'facebook_pixel_id' => trim((string) $request->input('facebook_pixel_id')),
+            'google_site_verification' => Setting::verificationToken($request->input('google_site_verification')),
+        ]);
+
         $validated = $request->validate([
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string|max:2000',
             'meta_keywords' => 'nullable|string|max:1000',
             'og_image' => 'nullable|string|max:2000',
-            'google_analytics_id' => 'nullable|string|max:100',
+            'google_analytics_id' => ['nullable', 'string', 'max:100', 'regex:/^G-[A-Z0-9]+$/'],
             'facebook_pixel_id' => 'nullable|string|max:100',
             'google_site_verification' => 'nullable|string|max:500',
             'robots_meta' => 'nullable|string|max:100',
             'canonical_base_url' => 'nullable|string|max:2000',
+        ], [
+            'google_analytics_id.regex' => 'The Google Analytics ID must look like G-XXXXXXXXXX.',
         ]);
 
         foreach (self::ALLOWED_KEYS as $key) {

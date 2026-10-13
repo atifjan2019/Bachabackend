@@ -84,6 +84,10 @@ class ContentController extends Controller
             'meta_keywords',
             'og_image',
             'canonical_base_url',
+            'google_analytics_id',
+            'facebook_pixel_id',
+            'google_site_verification',
+            'robots_meta',
             'home_highlight_title',
             'home_highlight_description',
             'home_highlight_image',
@@ -124,6 +128,12 @@ class ContentController extends Controller
             ->whereIn('setting_key', $whitelist)
             ->pluck('setting_value', 'setting_key')
             ->map(function ($value, $key) {
+                // Older saves stored the full Search Console meta tag; the
+                // storefront only ever needs the content token.
+                if ($key === 'google_site_verification') {
+                    return Setting::verificationToken($value);
+                }
+
                 return $value;
             });
 
