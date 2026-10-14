@@ -21,8 +21,10 @@ class ProductController extends Controller
         if ($q !== '') {
             $query->where(function ($sub) use ($q) {
                 $sub->where('name', 'like', "%{$q}%")
-                    ->orWhere('sku', 'like', "%{$q}%")
                     ->orWhere('slug', 'like', "%{$q}%");
+                if (Product::hasColumn('sku')) {
+                    $sub->orWhere('sku', 'like', "%{$q}%");
+                }
                 if (is_numeric($q)) {
                     $sub->orWhere('id', (int) $q);
                 }
@@ -118,10 +120,10 @@ class ProductController extends Controller
         $request->validate([
             'name'  => 'required|string|max:255',
             'price' => 'required',
-            'sku'   => [
+            'sku'   => array_values(array_filter([
                 'nullable', 'string', 'max:64',
-                Rule::unique('products', 'sku')->ignore($product?->id),
-            ],
+                Product::hasColumn('sku') ? Rule::unique('products', 'sku')->ignore($product?->id) : null,
+            ])),
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string|max:500',
             'colors' => 'nullable|string|max:20000',

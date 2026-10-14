@@ -9,7 +9,6 @@ use App\Models\ProductReview;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Schema;
 
 class CatalogController extends Controller
 {
@@ -29,13 +28,7 @@ class CatalogController extends Controller
      */
     private static function column(string $name): ?string
     {
-        $present = Cache::remember(
-            'products.columns.' . $name,
-            300,
-            fn () => Schema::hasColumn('products', $name)
-        );
-
-        return $present ? $name : null;
+        return Product::hasColumn($name) ? $name : null;
     }
 
     public function categories(Request $request): JsonResponse

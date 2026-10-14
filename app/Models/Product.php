@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class Product extends Model
@@ -49,6 +51,20 @@ class Product extends Model
         'price' => 'float',
         'original_price' => 'float',
     ];
+
+    /**
+     * Whether a column exists on products. Columns added by a release are
+     * only read or written once its database update has run, so the admin
+     * and the API keep working between the code pull and that update.
+     */
+    public static function hasColumn(string $name): bool
+    {
+        return (bool) Cache::remember(
+            'products.columns.' . $name,
+            300,
+            fn () => Schema::hasColumn('products', $name)
+        );
+    }
 
     /**
      * The product code used on orders and in admin search, e.g. "BS-00042".
@@ -138,13 +154,20 @@ class Product extends Model
         // A product always has a code. Admins can type their own; blank
         // means "generate one from the id" once the id is known.
         static::saving(function (Product $product) {
+            if (!static::hasColumn('sku')) {
+                unset($product->sku, $product->meta_title, $product->meta_description);
+                if (!static::hasColumn('colors')) {
+                    unset($product->colors);
+                }
+                return;
+            }
             if (array_key_exists('sku', $product->getAttributes())) {
                 $product->sku = static::normaliseSku($product->sku);
             }
         });
 
         static::created(function (Product $product) {
-            if (empty($product->sku)) {
+            if (static::hasColumn('sku') && empty($product->sku)) {
                 $product->forceFill(['sku' => static::defaultSku((int) $product->id)])->saveQuietly();
             }
         });

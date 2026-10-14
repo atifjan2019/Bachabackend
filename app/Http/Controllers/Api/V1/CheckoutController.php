@@ -171,8 +171,13 @@ class CheckoutController extends Controller
             $items
         ))));
 
+        $columns = array_values(array_filter([
+            'id', 'name', 'slug', 'image',
+            Product::hasColumn('sku') ? 'sku' : null,
+            Product::hasColumn('colors') ? 'colors' : null,
+        ]));
         $products = $ids
-            ? Product::whereIn('id', $ids)->get(['id', 'name', 'slug', 'sku', 'image', 'colors'])->keyBy('id')
+            ? Product::whereIn('id', $ids)->get($columns)->keyBy('id')
             : collect();
 
         $out = [];
