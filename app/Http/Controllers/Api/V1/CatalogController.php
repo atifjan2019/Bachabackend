@@ -9,6 +9,7 @@ use App\Models\ProductReview;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 
 class CatalogController extends Controller
 {
@@ -20,6 +21,22 @@ class CatalogController extends Controller
      * while it refreshes in the background.
      */
     private const CATALOG_CACHE = 'public, max-age=0, s-maxage=60, stale-while-revalidate=300';
+
+    /**
+     * A column name if it exists on products, else null. Columns added by a
+     * release are only selected once its database update has run, so the
+     * storefront keeps working between the code pull and that update.
+     */
+    private static function column(string $name): ?string
+    {
+        $present = Cache::remember(
+            'products.columns.' . $name,
+            300,
+            fn () => Schema::hasColumn('products', $name)
+        );
+
+        return $present ? $name : null;
+    }
 
     public function categories(Request $request): JsonResponse
     {
@@ -88,11 +105,11 @@ class CatalogController extends Controller
         // which is untouched; ?full=1 restores the old shape for any client
         // that still wants it.
         if (!$request->boolean('full')) {
-            $query->select([
-                'id', 'name', 'slug', 'sku', 'category', 'price', 'original_price',
-                'image', 'gallery', 'sizes', 'colors', 'is_new', 'is_featured',
+            $query->select(array_values(array_filter([
+                'id', 'name', 'slug', self::column('sku'), 'category', 'price', 'original_price',
+                'image', 'gallery', 'sizes', self::column('colors'), 'is_new', 'is_featured',
                 'is_best_seller', 'label', 'created_at',
-            ]);
+            ])));
         }
 
         if ($request->filled('category')) {
@@ -107,8 +124,10 @@ class CatalogController extends Controller
         if ($request->filled('search')) {
             $search = (string) $request->string('search');
             $query->where(function ($q) use ($search) {
+                if (self::column('sku')) {
+                    $q->orWhere('sku', 'like', "%{$search}%");
+                }
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('sku', 'like', "%{$search}%")
                     ->orWhere('slug', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");
             });
