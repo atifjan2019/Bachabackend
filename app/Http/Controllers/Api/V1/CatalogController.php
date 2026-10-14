@@ -124,12 +124,12 @@ class CatalogController extends Controller
         if ($request->filled('search')) {
             $search = (string) $request->string('search');
             $query->where(function ($q) use ($search) {
-                if (self::column('sku')) {
-                    $q->orWhere('sku', 'like', "%{$search}%");
-                }
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('slug', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");
+                if (self::column('sku')) {
+                    $q->orWhere('sku', 'like', "%{$search}%");
+                }
             });
         }
 
