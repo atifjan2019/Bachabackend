@@ -38,11 +38,34 @@
                         @if(is_array($items))
                             @foreach($items as $item)
                             <tr>
-                                <td data-label="Item" class="text-strong">
-                                    {{ $item['name'] ?? 'Product' }}
-                                    @if(!empty($item['size']))
-                                        <div class="entity-meta">Size: {{ $item['size'] }}</div>
-                                    @endif
+                                <td data-label="Item">
+                                    <div class="entity">
+                                        @if(!empty($item['image']))
+                                            <div class="entity-thumb"><img src="{{ $item['image'] }}" alt=""></div>
+                                        @else
+                                            <div class="entity-thumb"><i class="mdi mdi-image-outline"></i></div>
+                                        @endif
+                                        <div class="entity-copy">
+                                            <div class="entity-title">
+                                                @if(!empty($item['product_id']))
+                                                    <a href="{{ route('admin.products.edit', $item['product_id']) }}" class="table-link">{{ $item['name'] ?? 'Product' }}</a>
+                                                @else
+                                                    {{ $item['name'] ?? 'Product' }}
+                                                @endif
+                                            </div>
+                                            <div class="entity-meta">
+                                                @if(!empty($item['variant_sku']) || !empty($item['sku']))
+                                                    <span class="soft-badge" title="Product / variant code">{{ $item['variant_sku'] ?? $item['sku'] }}</span>
+                                                @endif
+                                                @if(!empty($item['size']))
+                                                    <span>Size: {{ $item['size'] }}</span>
+                                                @endif
+                                                @if(!empty($item['color']) && strtolower(trim($item['color'])) !== 'default')
+                                                    <span>&middot; Colour: {{ $item['color'] }}</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td data-label="Price" class="text-end text-nowrap">Rs. {{ number_format($item['price'] ?? 0) }}</td>
                                 <td data-label="Qty" class="text-center">{{ $item['quantity'] ?? 1 }}</td>

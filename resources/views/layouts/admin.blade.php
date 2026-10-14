@@ -1085,6 +1085,11 @@
                 </a>
             </li>
             <li class="sb-item">
+                <a href="{{ route('admin.maintenance.index') }}" class="sb-link {{ request()->routeIs('admin.maintenance*') ? 'active' : '' }}">
+                    <i class="mdi mdi-database-cog-outline"></i> Database Updates
+                </a>
+            </li>
+            <li class="sb-item">
                 <a href="{{ route('admin.api-reference.index') }}" class="sb-link {{ request()->routeIs('admin.api-reference*') ? 'active' : '' }}">
                     <i class="mdi mdi-api"></i> API Reference
                 </a>
@@ -1154,6 +1159,14 @@ function syncNow() {
     {{-- CONTENT --}}
     <main class="page-content">
         <div class="page-shell">
+            @php $pendingMigrations = \App\Http\Controllers\Admin\MaintenanceController::pendingMigrations(); @endphp
+            @if(count($pendingMigrations) > 0 && !request()->routeIs('admin.maintenance*'))
+                <div class="alert alert-warning d-flex align-items-center gap-2">
+                    <i class="mdi mdi-database-alert-outline"></i>
+                    <span>The latest deployment needs {{ count($pendingMigrations) }} database update{{ count($pendingMigrations) === 1 ? '' : 's' }} before new features work.</span>
+                    <a href="{{ route('admin.maintenance.index') }}" class="btn btn-sm btn-primary ms-auto">Run updates</a>
+                </div>
+            @endif
             @if(session('success'))
                 <div class="alert alert-success">
                     <i class="mdi mdi-check-circle-outline"></i>

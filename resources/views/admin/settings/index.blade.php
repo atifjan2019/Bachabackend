@@ -102,16 +102,29 @@
             </div>
 
             <div class="bcard">
-                <div class="bcard-head"><span class="bcard-title">Shipping</span></div>
+                <div class="bcard-head"><span class="bcard-title">Shipping &amp; Delivery</span></div>
                 <div class="bcard-body">
                     <div class="row g-3">
                         <div class="col-sm-6">
-                            <label class="form-label">Shipping Fee (Rs.)</label>
-                            <input type="number" name="shipping_fee" class="form-control" value="{{ $settings['shipping_fee'] ?? '250' }}">
+                            <label class="form-label">Delivery Charge (Rs.)</label>
+                            <input type="number" name="shipping_fee" class="form-control" value="{{ $settings['shipping_fee'] ?? '250' }}" min="0">
+                            <div class="form-hint">Charged on every order unless free shipping applies.</div>
                         </div>
                         <div class="col-sm-6">
                             <label class="form-label">Free Shipping Threshold (Rs.)</label>
-                            <input type="number" name="free_shipping_threshold" class="form-control" value="{{ $settings['free_shipping_threshold'] ?? '5000' }}">
+                            <input type="number" name="free_shipping_threshold" class="form-control" value="{{ $settings['free_shipping_threshold'] ?? '5000' }}" min="0">
+                            <div class="form-hint">Orders of this amount or more ship free while the switch below is ON.</div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" role="switch" id="free_shipping_enabled" name="free_shipping_enabled" value="1" {{ ($settings['free_shipping_enabled'] ?? '1') !== '0' ? 'checked' : '' }}>
+                                <label class="form-check-label" for="free_shipping_enabled"><strong>Free shipping offer</strong> &mdash; ON: orders at or above the threshold ship free. OFF: the delivery charge applies to every order.</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Delivery Policy</label>
+                            <textarea name="delivery_policy" class="form-control" rows="5" placeholder="e.g. Delivery charges: Rs. 250 nationwide. Orders are dispatched within 1-2 working days and delivered in 2-5 working days. Delivery charges are paid with the order for online payments; for Cash on Delivery the charge is collected at your door.">{{ $settings['delivery_policy'] ?? '' }}</textarea>
+                            <div class="form-hint">Shown to customers in the cart, at checkout and on product pages. Explain charges, timing and whether delivery is paid in advance. One paragraph per line.</div>
                         </div>
                     </div>
                 </div>

@@ -8,6 +8,7 @@ use App\Mail\OrderPlacedMail;
 use App\Models\AbandonedCart;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,6 +31,12 @@ class CheckoutController extends Controller
             'items.*.price' => 'required|numeric|min:0',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.size' => 'nullable|string|max:50',
+            'items.*.color' => 'nullable|string|max:60',
+            'items.*.product_id' => 'nullable|integer|min:1',
+            'items.*.slug' => 'nullable|string|max:255',
+            'items.*.image' => 'nullable|string|max:2000',
+            'items.*.sku' => 'nullable|string|max:64',
+            'items.*.variant_sku' => 'nullable|string|max:120',
             'payment_method' => 'nullable|string|max:255',
             'payment_receipt' => 'nullable|string|max:2000',
         ]);
@@ -44,20 +51,18 @@ class CheckoutController extends Controller
             ], 422);
         }
 
+        // Snapshot each line against the catalogue so the order records the
+        // exact product (code, image, chosen colour) as it was at purchase,
+        // even if the product is edited or deleted later.
+        $items = $this->snapshotItems($validated['items']);
+
         // Calculate totals on backend for accuracy
         $subtotal = 0;
-        foreach ($validated['items'] as $item) {
+        foreach ($items as $item) {
             $subtotal += $item['price'] * $item['quantity'];
         }
 
-        // Get shipping settings
-        $settings = Setting::whereIn('setting_key', ['shipping_fee', 'free_shipping_threshold'])
-            ->pluck('setting_value', 'setting_key');
-        
-        $baseFee = (float) ($settings['shipping_fee'] ?? 250);
-        $threshold = (float) ($settings['free_shipping_threshold'] ?? 5000);
-        
-        $shippingFee = ($subtotal >= $threshold) ? 0 : $baseFee;
+        $shippingFee = self::shippingFor($subtotal);
         $totalAmount = $subtotal + $shippingFee;
 
         // If authenticated customer, always use their email for order linking
@@ -74,7 +79,7 @@ class CheckoutController extends Controller
             'shipping_address' => $validated['shipping_address'],
             'city' => $validated['city'] ?? null,
             'country' => $validated['country'] ?? 'Pakistan',
-            'items' => $validated['items'],
+            'items' => $items,
             'subtotal' => $subtotal,
             'shipping_fee' => $shippingFee,
             'total_amount' => $totalAmount,
@@ -124,10 +129,118 @@ class CheckoutController extends Controller
                 'id' => $order->id,
                 'reference' => $order->reference,
                 'status' => $order->status,
+                'subtotal' => $subtotal,
                 'shipping_fee' => $shippingFee,
                 'total_amount' => $totalAmount,
+                'items' => $items,
             ],
         ], 201);
+    }
+
+    /**
+     * Delivery charge for a subtotal, from the admin's Shipping settings:
+     * the base charge, waived at or above the threshold while the
+     * free-shipping switch is ON. Also used by the storefront's quote endpoint
+     * so cart, checkout and the saved order always agree.
+     */
+    public static function shippingFor(float $subtotal): float
+    {
+        $settings = Setting::whereIn('setting_key', ['shipping_fee', 'free_shipping_threshold', 'free_shipping_enabled'])
+            ->pluck('setting_value', 'setting_key');
+
+        $baseFee = (float) ($settings['shipping_fee'] ?? 250);
+        $threshold = (float) ($settings['free_shipping_threshold'] ?? 5000);
+        $enabled = ($settings['free_shipping_enabled'] ?? '1') !== '0';
+
+        if ($subtotal <= 0) {
+            return 0.0;
+        }
+
+        return ($enabled && $subtotal >= $threshold) ? 0.0 : $baseFee;
+    }
+
+    /**
+     * Fill in product code, slug, image and colour for every line from the
+     * catalogue, keeping whatever the client already sent. The result is what
+     * gets stored on the order, so later product edits never change it.
+     */
+    private function snapshotItems(array $items): array
+    {
+        $ids = array_values(array_unique(array_filter(array_map(
+            fn ($i) => isset($i['product_id']) ? (int) $i['product_id'] : null,
+            $items
+        ))));
+
+        $products = $ids
+            ? Product::whereIn('id', $ids)->get(['id', 'name', 'slug', 'sku', 'image', 'colors'])->keyBy('id')
+            : collect();
+
+        $out = [];
+        foreach ($items as $item) {
+            $product = isset($item['product_id']) ? $products->get((int) $item['product_id']) : null;
+
+            $color = trim((string) ($item['color'] ?? ''));
+            if (strtolower($color) === 'default') {
+                $color = '';
+            }
+
+            $image = trim((string) ($item['image'] ?? ''));
+            $sku = trim((string) ($item['sku'] ?? ''));
+            $slug = trim((string) ($item['slug'] ?? ''));
+
+            if ($product) {
+                $sku = $sku !== '' ? $sku : (string) ($product->sku ?: Product::defaultSku((int) $product->id));
+                $slug = $slug !== '' ? $slug : (string) $product->slug;
+
+                // Prefer the chosen colour's own photo when the product has one.
+                if ($color !== '' && is_array($product->colors)) {
+                    foreach ($product->colors as $c) {
+                        if (strcasecmp((string) ($c['name'] ?? ''), $color) === 0 && !empty($c['image'])) {
+                            $image = $image !== '' ? $image : (string) $c['image'];
+                            break;
+                        }
+                    }
+                }
+                $image = $image !== '' ? $image : (string) $product->image;
+            }
+
+            $variantSku = trim((string) ($item['variant_sku'] ?? ''));
+            if ($variantSku === '' && $sku !== '') {
+                $parts = array_filter([
+                    $sku,
+                    $color !== '' ? strtoupper(preg_replace('/[^A-Za-z0-9]+/', '', $color) ?? '') : null,
+                    !empty($item['size']) ? strtoupper(preg_replace('/[^A-Za-z0-9]+/', '', (string) $item['size']) ?? '') : null,
+                ]);
+                $variantSku = implode('-', $parts);
+            }
+
+            $out[] = [
+                'product_id' => $product?->id ?? (isset($item['product_id']) ? (int) $item['product_id'] : null),
+                'name' => $item['name'],
+                'slug' => $slug !== '' ? $slug : null,
+                'sku' => $sku !== '' ? $sku : null,
+                'variant_sku' => $variantSku !== '' ? $variantSku : null,
+                'image' => $image !== '' ? $image : null,
+                'size' => $item['size'] ?? null,
+                'color' => $color !== '' ? $color : null,
+                'price' => (float) $item['price'],
+                'quantity' => (int) $item['quantity'],
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Delivery charge the storefront should show for a cart subtotal, using
+     * exactly the rule storeOrder() applies.
+     */
+    public function shippingQuote(Request $request): JsonResponse
+    {
+        $subtotal = (float) $request->query('subtotal', 0);
+        $fee = self::shippingFor($subtotal);
+
+        return response()->json(['data' => ['subtotal' => $subtotal, 'shipping_fee' => $fee, 'total' => $subtotal + $fee]]);
     }
 
     public function storeAbandonedCart(Request $request): JsonResponse

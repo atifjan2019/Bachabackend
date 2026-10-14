@@ -64,7 +64,7 @@
         <div class="ph-sub">Create a new product listing</div>
     </div>
     <div class="page-actions">
-        <a href="{{ route('admin.products.index') }}" class="btn btn-light"><i class="mdi mdi-arrow-left"></i> Back</a>
+        <a href="{{ $returnTo ?? route('admin.products.index') }}" class="btn btn-light"><i class="mdi mdi-arrow-left"></i> Back</a>
     </div>
 </div>
 
@@ -81,6 +81,7 @@
 
 <form id="productForm" action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
+    <input type="hidden" name="return_to" value="{{ $returnTo ?? '' }}">
     <div class="row g-4">
         <div class="col-lg-8">
             <div class="bcard">
@@ -94,6 +95,11 @@
                         <label class="form-label">URL Slug</label>
                         <input type="text" name="slug" class="form-control" value="{{ old('slug') }}" placeholder="auto-generated-from-name">
                         <div class="form-hint">Leave blank to auto-generate from name</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Product Code (SKU)</label>
+                        <input type="text" name="sku" class="form-control" value="{{ old('sku') }}" placeholder="Leave blank to generate, e.g. BS-00042" maxlength="64" style="text-transform:uppercase;">
+                        <div class="form-hint">Unique code printed on orders so the exact item is easy to find. Letters, numbers and dashes only.</div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
@@ -129,6 +135,9 @@
                     </div>
                 </div>
             </div>
+
+            @include('admin.products._colors')
+            @include('admin.products._seo')
         </div>
 
         <div class="col-lg-4">
@@ -275,6 +284,7 @@ function previewGallery(input, containerId) {
 document.getElementById('productForm').addEventListener('submit', function(e) {
     // Sync Quill content to hidden textarea
     document.getElementById('descriptionField').value = quill.root.innerHTML;
+    collectColors();
 
     const form = this;
     const fileInputs = form.querySelectorAll('input[type="file"]');
@@ -298,6 +308,7 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
     const formData = new FormData(form);
     // Ensure Quill content is in formData
     formData.set('description', quill.root.innerHTML);
+    formData.set('colors', collectColors());
 
     const xhr = new XMLHttpRequest();
 
@@ -342,6 +353,7 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
 // Also sync Quill on normal (non-AJAX) submit
 document.getElementById('productForm').addEventListener('formdata', function(e) {
     e.formData.set('description', quill.root.innerHTML);
+    e.formData.set('colors', collectColors());
 });
 </script>
 @include('admin.partials.media-picker')

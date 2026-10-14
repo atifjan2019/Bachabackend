@@ -89,8 +89,8 @@ class CatalogController extends Controller
         // that still wants it.
         if (!$request->boolean('full')) {
             $query->select([
-                'id', 'name', 'slug', 'category', 'price', 'original_price',
-                'image', 'gallery', 'sizes', 'is_new', 'is_featured',
+                'id', 'name', 'slug', 'sku', 'category', 'price', 'original_price',
+                'image', 'gallery', 'sizes', 'colors', 'is_new', 'is_featured',
                 'is_best_seller', 'label', 'created_at',
             ]);
         }
@@ -108,6 +108,7 @@ class CatalogController extends Controller
             $search = (string) $request->string('search');
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('sku', 'like', "%{$search}%")
                     ->orWhere('slug', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");
             });

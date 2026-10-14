@@ -58,6 +58,8 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
     Route::resource('admin-users', \App\Http\Controllers\Admin\AdminUserController::class)->except(['show']);
     Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
     Route::put('settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
+    Route::get('maintenance', [\App\Http\Controllers\Admin\MaintenanceController::class, 'index'])->name('maintenance.index');
+    Route::post('maintenance/migrate', [\App\Http\Controllers\Admin\MaintenanceController::class, 'migrate'])->name('maintenance.migrate');
     Route::get('seo', [\App\Http\Controllers\Admin\SeoController::class, 'index'])->name('seo.index');
     Route::put('seo', [\App\Http\Controllers\Admin\SeoController::class, 'update'])->name('seo.update');
     Route::get('api-reference', [ApiReferenceController::class, 'index'])->name('api-reference.index');

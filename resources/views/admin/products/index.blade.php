@@ -8,7 +8,14 @@
         <div class="ph-sub">{{ $products->total() }} total products</div>
     </div>
     <div class="page-actions">
-        <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
+        <form method="GET" action="{{ route('admin.products.index') }}" style="display:flex;gap:6px;align-items:center;">
+            <input type="text" name="q" value="{{ $q ?? '' }}" class="form-control" placeholder="Search name or product code…" style="height:36px;min-width:220px;">
+            <button type="submit" class="btn btn-sm btn-light"><i class="mdi mdi-magnify"></i></button>
+            @if(!empty($q))
+                <a href="{{ route('admin.products.index') }}" class="btn btn-sm btn-light" title="Clear search"><i class="mdi mdi-close"></i></a>
+            @endif
+        </form>
+        <a href="{{ route('admin.products.create', ['return_to' => request()->fullUrl()]) }}" class="btn btn-primary">
             <i class="mdi mdi-plus"></i> Add Product
         </a>
     </div>
@@ -39,7 +46,7 @@
                             @endif
                             <div class="entity-copy">
                                 <div class="entity-title">{{ Str::limit($product->name, 45) }}</div>
-                                <div class="entity-meta">{{ $product->slug }}</div>
+                                <div class="entity-meta"><span class="soft-badge" title="Product code">{{ $product->sku ?: \App\Models\Product::defaultSku($product->id) }}</span> {{ $product->slug }}</div>
                             </div>
                         </div>
                     </td>
@@ -61,9 +68,10 @@
                     </td>
                     <td data-label="Actions">
                         <div class="action-group">
-                            <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-sm btn-light btn-icon"><i class="mdi mdi-pencil-outline"></i></a>
+                            <a href="{{ route('admin.products.edit', [$product->id, 'return_to' => request()->fullUrl()]) }}" class="btn btn-sm btn-light btn-icon"><i class="mdi mdi-pencil-outline"></i></a>
                             <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" onsubmit="return confirm('Delete this product?')">
                                 @csrf @method('DELETE')
+                                <input type="hidden" name="return_to" value="{{ request()->fullUrl() }}">
                                 <button class="btn-ghost-del"><i class="mdi mdi-trash-can-outline" style="font-size:1.05rem;"></i></button>
                             </form>
                         </div>

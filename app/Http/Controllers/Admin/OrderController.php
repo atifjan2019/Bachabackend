@@ -38,10 +38,9 @@ class OrderController extends Controller
             return $query;
         };
 
-        // Product-name filter — matches orders whose line items include the
-        // searched product. Items are stored as a JSON array in the `items`
-        // TEXT column, where product names are the only free-text content, so a
-        // LIKE on the raw JSON reliably (and case-insensitively) matches names.
+        // Product filter — matches orders whose line items include the searched
+        // product name or product/variant code (both live in the `items` JSON
+        // column), so an admin can find every order for exactly one item.
         $applyProduct = function ($query) use ($product) {
             if ($product !== '') {
                 $query->where('items', 'like', '%' . $product . '%');

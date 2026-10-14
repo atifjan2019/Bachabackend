@@ -33,6 +33,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/products/{slugOrId}/reviews', [CatalogController::class, 'storeReview']);
 
     Route::post('/orders', [CheckoutController::class, 'storeOrder']);
+    Route::get('/shipping-quote', [CheckoutController::class, 'shippingQuote']);
     Route::get('/orders/{id}', [CheckoutController::class, 'getOrder']);
     Route::post('/abandoned-carts', [CheckoutController::class, 'storeAbandonedCart']);
 

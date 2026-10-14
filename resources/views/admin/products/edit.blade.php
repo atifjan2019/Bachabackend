@@ -64,7 +64,7 @@
         <div class="ph-sub">Modifying {{ $product->name }}</div>
     </div>
     <div class="page-actions">
-        <a href="{{ route('admin.products.index') }}" class="btn btn-light"><i class="mdi mdi-arrow-left"></i> Back</a>
+        <a href="{{ $returnTo ?? route('admin.products.index') }}" class="btn btn-light"><i class="mdi mdi-arrow-left"></i> Back</a>
     </div>
 </div>
 
@@ -81,6 +81,7 @@
 
 <form id="productForm" action="{{ route('admin.products.update', $product->id) }}" method="POST" enctype="multipart/form-data">
     @csrf @method('PUT')
+    <input type="hidden" name="return_to" value="{{ $returnTo ?? '' }}">
     <div class="row g-4">
         <div class="col-lg-8">
             <div class="bcard">
@@ -93,6 +94,11 @@
                     <div class="form-group">
                         <label class="form-label">URL Slug</label>
                         <input type="text" name="slug" class="form-control" value="{{ old('slug', $product->slug) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Product Code (SKU)</label>
+                        <input type="text" name="sku" class="form-control" value="{{ old('sku', $product->sku) }}" placeholder="Leave blank to generate, e.g. BS-00042" maxlength="64" style="text-transform:uppercase;">
+                        <div class="form-hint">Unique code printed on orders so the exact item is easy to find. Letters, numbers and dashes only.</div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
@@ -139,6 +145,9 @@
                     </div>
                 </div>
             </div>
+
+            @include('admin.products._colors')
+            @include('admin.products._seo')
         </div>
 
         <div class="col-lg-4">
@@ -282,6 +291,7 @@ function previewGallery(input, containerId) {
 // AJAX form submission with upload progress
 document.getElementById('productForm').addEventListener('submit', function(e) {
     document.getElementById('descriptionField').value = quill.root.innerHTML;
+    collectColors();
 
     const form = this;
     const fileInputs = form.querySelectorAll('input[type="file"]');
@@ -304,6 +314,7 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
 
     const formData = new FormData(form);
     formData.set('description', quill.root.innerHTML);
+    formData.set('colors', collectColors());
 
     const xhr = new XMLHttpRequest();
 
@@ -347,6 +358,7 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
 
 document.getElementById('productForm').addEventListener('formdata', function(e) {
     e.formData.set('description', quill.root.innerHTML);
+    e.formData.set('colors', collectColors());
 });
 </script>
 @include('admin.partials.media-picker')

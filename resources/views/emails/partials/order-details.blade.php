@@ -19,11 +19,17 @@
             $itemTotal = (float) ($item['price'] ?? 0) * $itemQty;
             $metaParts = [];
             if (! empty($item['size'])) { $metaParts[] = 'Size: ' . $item['size']; }
-            if (! empty($item['color']) && strtolower(trim($item['color'])) !== 'default') { $metaParts[] = $item['color']; }
+            if (! empty($item['color']) && strtolower(trim($item['color'])) !== 'default') { $metaParts[] = 'Colour: ' . $item['color']; }
+            $itemCode = $item['variant_sku'] ?? $item['sku'] ?? null;
+            if (! empty($itemCode)) { $metaParts[] = 'Code: ' . $itemCode; }
             $itemMeta = implode(' · ', $metaParts);
+            $itemImage = $item['image'] ?? null;
         @endphp
         <tr>
             <td style="padding:12px 0; border-bottom:1px solid #e6e6e8; font-size:14px; color:#141414;">
+                @if(! empty($itemImage))
+                    <img src="{{ $itemImage }}" alt="" width="48" height="60" style="width:48px; height:60px; object-fit:cover; border-radius:4px; border:1px solid #e6e6e8; vertical-align:middle; margin-right:10px;">
+                @endif
                 {{ $itemName }}
                 @if($itemMeta !== '')
                     <br><span style="font-size:12px; color:#6b6b6b;">{{ $itemMeta }}</span>

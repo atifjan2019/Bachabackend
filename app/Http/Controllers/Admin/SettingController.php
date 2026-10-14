@@ -19,7 +19,9 @@ class SettingController extends Controller
         'footer_logo_url',
         'favicon_url',
         'shipping_fee',
+        'free_shipping_enabled',
         'free_shipping_threshold',
+        'delivery_policy',
         'order_notification_email',
         'email_from_name',
         'facebook_url',
@@ -80,6 +82,7 @@ class SettingController extends Controller
             'favicon_url' => 'nullable|string|max:2000',
             'shipping_fee' => 'nullable|numeric|min:0',
             'free_shipping_threshold' => 'nullable|numeric|min:0',
+            'delivery_policy' => 'nullable|string|max:5000',
             'order_notification_email' => 'nullable|email|max:255',
             'email_from_name' => 'nullable|string|max:255',
             'facebook_url' => 'nullable|string|max:2000',
@@ -215,6 +218,8 @@ class SettingController extends Controller
         // so the feature can be toggled off (unchecked inputs are never submitted).
         $validated['intro_enabled'] = $request->boolean('intro_enabled') ? '1' : '0';
         $validated['promo_enabled'] = $request->boolean('promo_enabled') ? '1' : '0';
+        $validated['free_shipping_enabled'] = $request->boolean('free_shipping_enabled') ? '1' : '0';
+        $validated['delivery_policy'] = trim((string) $request->input('delivery_policy', ''));
 
         // Payment method enable/disable switches (same unchecked-checkbox handling).
         foreach (['cod_enabled', 'bank_transfer_enabled', 'easypaisa_enabled', 'jazzcash_enabled'] as $flag) {

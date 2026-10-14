@@ -23,7 +23,7 @@
     </div>
     <form method="GET" action="{{ route('admin.orders.index') }}" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
         @if($status)<input type="hidden" name="status" value="{{ $status }}">@endif
-        <input type="text" name="product" value="{{ $product }}" class="form-control" placeholder="Search by product name…" style="height:36px;min-width:200px;">
+        <input type="text" name="product" value="{{ $product }}" class="form-control" placeholder="Product name or code…" style="height:36px;min-width:200px;">
         <input type="text" name="q" value="{{ $q }}" class="form-control" placeholder="Search reference, name, phone, email…" style="height:36px;min-width:240px;">
         <button type="submit" class="btn btn-sm btn-primary"><i class="mdi mdi-magnify"></i></button>
         @if($q !== '' || $product !== '')
