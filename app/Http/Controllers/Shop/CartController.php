@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use Illuminate\Contracts\View\View;
 
 class CartController extends Controller
 {
-    public function index(Request $request)
+    /** The cart itself lives in the browser (localStorage); the page is the shell around it. */
+    public function index(): View
     {
-        abort(501, 'TODO: CartController::index');
+        return view('shop.cart.index');
     }
-
 }
