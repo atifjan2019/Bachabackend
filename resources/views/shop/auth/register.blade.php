@@ -5,7 +5,7 @@
 
 @section('content')
 <x-shop.auth-card title="Create account" subtitle="Save addresses, track orders, keep your favourites.">
-    <form method="post" action="{{ route('shop.register.store') }}" class="space-y-4" novalidate>
+    <form method="post" action="{{ route('shop.register.store') }}" class="space-y-4" novalidate x-data="{ s: false }" x-on:submit="s = true">
         @csrf
         <div>
             <x-shop.label for="name">Full name</x-shop.label>
@@ -27,7 +27,7 @@
             <x-shop.input id="password_confirmation" name="password_confirmation" type="password" class="mt-1.5" autocomplete="new-password" />
             <x-shop.field-error name="password_confirmation" />
         </div>
-        <x-shop.button type="submit" class="w-full" x-data="{ s: false }" x-on:click="s = true" ::disabled="s">
+        <x-shop.button type="submit" class="w-full" ::disabled="s">
             <span x-text="s ? 'Creating account...' : 'Create account'">Create account</span>
         </x-shop.button>
     </form>

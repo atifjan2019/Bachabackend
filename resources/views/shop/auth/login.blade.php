@@ -5,7 +5,7 @@
 
 @section('content')
 <x-shop.auth-card title="Welcome back" subtitle="Login to see your orders and save addresses.">
-    <form method="post" action="{{ route('shop.login.store') }}" class="space-y-4" novalidate>
+    <form method="post" action="{{ route('shop.login.store') }}" class="space-y-4" novalidate x-data="{ s: false }" x-on:submit="s = true">
         @csrf
         <div>
             <x-shop.label for="email">Email</x-shop.label>
@@ -24,7 +24,7 @@
             <input type="checkbox" name="remember" value="1" class="h-4 w-4 rounded border-border accent-brand-red" @checked(old('remember'))>
             Keep me signed in
         </label>
-        <x-shop.button type="submit" class="w-full" x-data="{ s: false }" x-on:click="s = true" ::disabled="s">
+        <x-shop.button type="submit" class="w-full" ::disabled="s">
             <span x-text="s ? 'Signing in...' : 'Login'">Login</span>
         </x-shop.button>
     </form>

@@ -13,7 +13,7 @@
             <x-shop.button href="{{ route('shop.password.request') }}" class="w-full">Request a new link</x-shop.button>
         </div>
     @else
-        <form method="post" action="{{ route('shop.password.update') }}" class="space-y-4" novalidate>
+        <form method="post" action="{{ route('shop.password.update') }}" class="space-y-4" novalidate x-data="{ s: false }" x-on:submit="s = true">
             @csrf
             <input type="hidden" name="token" value="{{ $token }}">
             <input type="hidden" name="email" value="{{ $email }}">
@@ -29,7 +29,7 @@
                 <x-shop.input id="password_confirmation" name="password_confirmation" type="password" class="mt-1.5" placeholder="Re-enter your password" autocomplete="new-password" />
                 <x-shop.field-error name="password_confirmation" />
             </div>
-            <x-shop.button type="submit" class="w-full" x-data="{ s: false }" x-on:click="s = true" ::disabled="s">
+            <x-shop.button type="submit" class="w-full" ::disabled="s">
                 <span x-text="s ? 'Updating...' : 'Reset password'">Reset password</span>
             </x-shop.button>
         </form>
