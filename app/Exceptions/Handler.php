@@ -3,6 +3,8 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -32,6 +34,14 @@ class Handler extends ExceptionHandler
      */
     public function register(): void
     {
-        //
+        // Storefront visitors get the shop's own "out of stock" page; the admin
+        // panel and the JSON API keep their existing 404 responses.
+        $this->renderable(function (NotFoundHttpException $e, Request $request) {
+            if ($request->expectsJson() || $request->is('admin', 'admin/*', 'api/*')) {
+                return null;
+            }
+
+            return response()->view('shop.errors.404', [], 404);
+        });
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Shop;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController;
@@ -18,9 +19,63 @@ Route::get('/clear', function () {
     return "All caches cleared!";
 });
 
-Route::get('/', function () {
-    // This backend doesn't have a storefront anymore
-    return redirect()->route('admin.login');
+/*
+|--------------------------------------------------------------------------
+| Storefront (customer-facing)
+|--------------------------------------------------------------------------
+| Server-rendered Blade + Alpine. Public catalogue/content pages carry
+| shared-cache headers; cart/checkout/auth/account pages never do.
+*/
+
+Route::middleware('shop.cache')->group(function () {
+    Route::get('/', [Shop\HomeController::class, 'index'])->name('shop.home');
+
+    Route::get('/products', [Shop\ProductController::class, 'index'])->name('shop.products');
+    Route::get('/products/{slug}', [Shop\ProductController::class, 'show'])->name('shop.product');
+
+    // Categories no longer have their own pages — funnel old links into the shop filter.
+    Route::redirect('/category', '/products', 301);
+    Route::get('/category/{slug}', fn (string $slug) => redirect()->to('/products?category='.rawurlencode($slug), 301));
+
+    Route::get('/about', [Shop\PageController::class, 'about'])->name('shop.about');
+    Route::get('/contact', [Shop\PageController::class, 'contact'])->name('shop.contact');
+    Route::get('/faq', [Shop\PageController::class, 'faq'])->name('shop.faq');
+    Route::get('/privacy', [Shop\PageController::class, 'privacy'])->name('shop.privacy');
+    Route::get('/terms', [Shop\PageController::class, 'terms'])->name('shop.terms');
+    Route::get('/refund', [Shop\PageController::class, 'refund'])->name('shop.refund');
+
+    Route::get('/blogs', [Shop\BlogController::class, 'index'])->name('shop.blogs');
+    Route::get('/blogs/{slug}', [Shop\BlogController::class, 'show'])->name('shop.blog');
+
+    Route::get('/sitemap.xml', [Shop\SeoController::class, 'sitemap'])->name('shop.sitemap');
+    Route::get('/robots.txt', [Shop\SeoController::class, 'robots'])->name('shop.robots');
+});
+
+Route::get('/cart', [Shop\CartController::class, 'index'])->name('shop.cart');
+
+Route::get('/checkout', [Shop\CheckoutController::class, 'index'])->name('shop.checkout');
+Route::post('/checkout', [Shop\CheckoutController::class, 'store'])->name('shop.checkout.store');
+Route::get('/checkout/success', [Shop\CheckoutController::class, 'success'])->name('shop.checkout.success');
+
+// Customer auth (session guard "customer"); the API token guard is untouched.
+Route::middleware('guest:customer')->group(function () {
+    Route::get('/login', [Shop\AuthController::class, 'showLogin'])->name('shop.login');
+    Route::post('/login', [Shop\AuthController::class, 'login'])->name('shop.login.store');
+    Route::get('/register', [Shop\AuthController::class, 'showRegister'])->name('shop.register');
+    Route::post('/register', [Shop\AuthController::class, 'register'])->name('shop.register.store');
+    Route::get('/forgot-password', [Shop\AuthController::class, 'showForgot'])->name('shop.password.request');
+    Route::post('/forgot-password', [Shop\AuthController::class, 'forgot'])->name('shop.password.email');
+    Route::get('/reset-password', [Shop\AuthController::class, 'showReset'])->name('shop.password.reset');
+    Route::post('/reset-password', [Shop\AuthController::class, 'reset'])->name('shop.password.update');
+});
+Route::post('/logout', [Shop\AuthController::class, 'logout'])->name('shop.logout');
+
+Route::middleware('auth:customer')->prefix('account')->group(function () {
+    Route::get('/', [Shop\AccountController::class, 'index'])->name('shop.account');
+    Route::get('/orders', [Shop\AccountController::class, 'orders'])->name('shop.account.orders');
+    Route::get('/orders/{reference}', [Shop\AccountController::class, 'order'])->name('shop.account.order');
+    Route::get('/profile', [Shop\AccountController::class, 'profile'])->name('shop.account.profile');
+    Route::put('/profile', [Shop\AccountController::class, 'updateProfile'])->name('shop.account.profile.update');
 });
 
 // Admin Auth Routes

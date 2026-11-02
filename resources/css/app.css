@@ -1,11 +1,412 @@
 @import 'tailwindcss';
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+/* Only the storefront is built with Tailwind; the admin panel uses Bootstrap via CDN. */
+@source '../views/shop';
+@source '../views/components';
+@source '../js';
+@source '../../app/Support/Storefront';
+@source '../../app/View';
+@source '../../app/Http/Controllers/Shop';
 
+/* Per-area component classes (each page group owns one file). */
+@import './pages/home.css';
+@import './pages/catalog.css';
+@import './pages/checkout.css';
+
+/* ------------------------------------------------------------------ */
+/* Design tokens — ported from Bachafrontend/tailwind.config.ts          */
+/* ------------------------------------------------------------------ */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Montserrat', system-ui, sans-serif;
+    --font-display: 'Montserrat', system-ui, sans-serif;
+    --font-serif: 'Montserrat', system-ui, sans-serif;
+
+    --color-brand-red: #e81d25;
+    --color-brand-red-dark: #b8141b;
+    --color-brand-red-soft: #ff3d45;
+    --color-brand-black: #141414;
+    --color-brand-black-soft: #1c1c1c;
+
+    --color-ink: #141414;
+    --color-ink-90: #1f1f1f;
+    --color-ink-80: #2a2a2a;
+    --color-ink-70: #3d3d3d;
+    --color-ink-50: #6b6b6b;
+    --color-ink-40: #8a8a8a;
+    --color-ink-30: #a3a3a3;
+    --color-ink-10: #e6e6e8;
+    --color-ink-5: #f3f3f4;
+
+    --color-surface: #ffffff;
+    --color-surface-soft: #f6f6f7;
+    --color-surface-sunken: #efeff1;
+
+    --color-cream: #ffffff;
+    --color-ivory: #ffffff;
+    --color-muted: #6b6b6b;
+    --color-muted-foreground: #6b6b6b;
+    --color-border: #e6e6e8;
+    --color-gold: #e81d25;
+    --color-background: #ffffff;
+    --color-foreground: #141414;
+    --color-input: #e6e6e8;
+    --color-ring: #e81d25;
+    --color-primary: #141414;
+    --color-primary-foreground: #ffffff;
+    --color-secondary: #f6f6f7;
+    --color-secondary-foreground: #141414;
+    --color-accent: #e81d25;
+    --color-accent-foreground: #ffffff;
+    --color-destructive: #e81d25;
+    --color-destructive-foreground: #ffffff;
+    --color-card: #ffffff;
+    --color-card-foreground: #141414;
+    --color-popover: #ffffff;
+    --color-popover-foreground: #141414;
+    --color-whatsapp: #25d366;
+    --color-whatsapp-dark: #1faa55;
+
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-card: 0 1px 2px rgba(20, 20, 20, 0.04);
+    --shadow-card-hover: 0 20px 40px -12px rgba(20, 20, 20, 0.18);
+    --shadow-red-glow: 0 10px 40px -10px rgba(232, 29, 37, 0.55);
+    --shadow-red-glow-lg: 0 20px 60px -12px rgba(232, 29, 37, 0.45);
+    --shadow-deep: 0 30px 60px -20px rgba(20, 20, 20, 0.35);
+    --shadow-inset-line: inset 0 -1px 0 0 rgba(232, 29, 37, 0.25);
+
+    --blur-sm: 4px;
+    --default-ring-width: 3px;
+
+    --tracking-tightest: -0.04em;
+    --tracking-tighter: -0.02em;
+
+    --animate-fade-in: fade-in 0.5s ease-out;
+    --animate-fade-up: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    --animate-slide-in-right: slide-in-right 0.3s ease-out;
+    --animate-slide-in-up: slide-in-up 0.3s ease-out;
+    --animate-marquee: marquee 30s linear infinite;
+    --animate-marquee-slow: marquee-slow 60s linear infinite;
+    --animate-pulse-red: pulse-red 2s infinite;
+    --animate-shimmer: shimmer 2.5s linear infinite;
+    --animate-scale-in: scale-in 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    --animate-float: float 4s ease-in-out infinite;
+    --animate-accordion-down: accordion-down 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    --animate-accordion-up: accordion-up 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    --animate-wa-bob: wa-bob 6s ease-in-out infinite;
+
+    @keyframes fade-in {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fade-up {
+        from { opacity: 0; transform: translateY(24px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slide-in-right {
+        from { transform: translateX(100%); }
+        to { transform: translateX(0); }
+    }
+    @keyframes slide-in-up {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+    @keyframes marquee {
+        from { transform: translateX(0); }
+        to { transform: translateX(-50%); }
+    }
+    @keyframes marquee-slow {
+        from { transform: translateX(0); }
+        to { transform: translateX(-50%); }
+    }
+    @keyframes pulse-red {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(232, 29, 37, 0.5); }
+        50% { box-shadow: 0 0 0 12px rgba(232, 29, 37, 0); }
+    }
+    @keyframes shimmer {
+        0% { background-position: -1000px 0; }
+        100% { background-position: 1000px 0; }
+    }
+    @keyframes scale-in {
+        from { opacity: 0; transform: scale(0.96); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    @keyframes accordion-down {
+        from { height: 0; }
+        to { height: var(--accordion-content-height, auto); }
+    }
+    @keyframes accordion-up {
+        from { height: var(--accordion-content-height, auto); }
+        to { height: 0; }
+    }
+    @keyframes wa-bob {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
+    }
+}
+
+/* Background images from the Tailwind 3 config (not a theme namespace in v4). */
+@utility bg-red-gradient { background-image: linear-gradient(135deg, #e81d25 0%, #b8141b 100%); }
+@utility bg-red-radial { background-image: radial-gradient(ellipse at top, rgba(232, 29, 37, 0.25) 0%, transparent 60%); }
+@utility bg-dark-gradient { background-image: linear-gradient(180deg, #141414 0%, #1c1c1c 100%); }
+@utility bg-dark-to-red { background-image: linear-gradient(135deg, #141414 0%, #e81d25 100%); }
+@utility bg-grid-pattern { background-image: linear-gradient(rgba(232, 29, 37, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(232, 29, 37, 0.08) 1px, transparent 1px); }
+@utility bg-noise { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.25'/%3E%3C/svg%3E"); }
+
+/* ------------------------------------------------------------------ */
+/* Base — ported from app/globals.css                                   */
+/* ------------------------------------------------------------------ */
+@layer base {
+    :root {
+        color-scheme: light;
+        --brand-red: #e81d25;
+        --brand-red-dark: #b8141b;
+        --brand-black: #141414;
+        --header-h: 4rem;
+    }
+    @media (min-width: 1280px) {
+        :root { --header-h: 5rem; }
+    }
+
+    /* Tailwind 3 default: borders are light grey unless a colour is given. */
+    *, ::before, ::after {
+        border-color: var(--color-border);
+    }
+
+    html {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        scroll-behavior: smooth;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(20, 20, 20, 0.25) transparent;
+    }
+    body {
+        @apply bg-surface text-brand-black font-sans;
+        font-feature-settings: "ss01", "cv11";
+    }
+    h1, h2, h3, h4 {
+        @apply font-display tracking-tightest;
+        font-weight: 700;
+    }
+    ::selection {
+        background-color: #e81d25;
+        color: #fff;
+    }
+    :focus-visible {
+        outline: 2px solid #e81d25;
+        outline-offset: 2px;
+        border-radius: 4px;
+    }
+    ::placeholder {
+        color: var(--color-ink-30);
+        opacity: 1;
+    }
+
+    /* Custom scrollbar — minimal luxury */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+        background-color: rgba(20, 20, 20, 0.22);
+        border-radius: 9999px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+        transition: background-color 0.2s ease;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: #e81d25;
+        background-clip: padding-box;
+    }
+    ::-webkit-scrollbar-corner { background: transparent; }
+
+    [x-cloak] { display: none !important; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Components — ported from app/globals.css @layer components            */
+/* ------------------------------------------------------------------ */
+@layer components {
+    .container-shop {
+        @apply mx-auto w-full max-w-[1360px] px-4 sm:px-6 lg:px-10 xl:px-20;
+    }
+
+    /* Typographic tokens */
+    .eyebrow,
+    .eyebrow-dark {
+        @apply text-[11px] uppercase tracking-[0.28em] text-brand-red font-semibold;
+    }
+    .hairline {
+        @apply block w-full h-px bg-ink-10;
+    }
+    .red-bar {
+        @apply inline-block h-[3px] w-10 bg-brand-red;
+    }
+
+    /* Buttons */
+    .btn-primary {
+        @apply relative inline-flex items-center justify-center gap-2 bg-brand-red text-white px-8 py-4 text-[13px] font-bold uppercase tracking-[0.18em] overflow-hidden transition-all duration-300 hover:bg-brand-black hover:shadow-red-glow disabled:opacity-50 disabled:cursor-not-allowed rounded-none;
+    }
+    .btn-primary::before {
+        content: "";
+        @apply absolute inset-0 bg-brand-black -translate-x-full transition-transform duration-500 ease-out -z-10;
+    }
+    .btn-primary:hover::before {
+        @apply translate-x-0;
+    }
+    .btn-outline {
+        @apply inline-flex items-center justify-center gap-2 border-2 border-brand-black bg-transparent px-8 py-4 text-[13px] font-bold uppercase tracking-[0.18em] text-brand-black transition-all duration-300 hover:bg-brand-red hover:border-brand-red hover:text-white;
+    }
+    .btn-ghost-red {
+        @apply inline-flex items-center gap-2 text-brand-red font-semibold text-sm uppercase tracking-[0.18em] transition-all hover:gap-3;
+    }
+
+    /* Cards */
+    .card-product {
+        @apply bg-surface overflow-hidden transition-all duration-500;
+    }
+    .pill {
+        @apply inline-flex items-center border border-brand-red/30 bg-brand-red/5 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-red;
+    }
+    .tag-red {
+        @apply inline-flex items-center bg-brand-red px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white;
+    }
+    .tag-dark {
+        @apply inline-flex items-center bg-brand-black px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white;
+    }
+
+    /* Link underline effect */
+    .link-underline {
+        @apply relative inline-block;
+    }
+    .link-underline::after {
+        content: "";
+        @apply absolute left-0 bottom-0 h-[2px] w-0 bg-brand-red transition-all duration-300;
+    }
+    .link-underline:hover::after {
+        @apply w-full;
+    }
+
+    /* Section headings */
+    .display-xl {
+        @apply font-display font-bold tracking-tightest leading-[0.95] text-[clamp(3rem,8vw,7rem)];
+    }
+    .display-lg {
+        @apply font-display font-bold tracking-tightest leading-[0.95] text-[clamp(2.5rem,6vw,5rem)];
+    }
+    .display-md {
+        @apply font-display font-bold tracking-tightest leading-[1.02] text-[clamp(2rem,4.5vw,3.5rem)];
+    }
+
+    /* Policy pages */
+    .prose-policy h2 {
+        @apply mt-10 mb-3 text-lg font-semibold text-brand-black;
+    }
+    .prose-policy h2:first-child {
+        @apply mt-0;
+    }
+    .prose-policy p {
+        @apply text-sm text-ink-70 leading-relaxed mb-4;
+    }
+    .prose-policy ul,
+    .prose-policy ol {
+        @apply text-sm text-ink-70 leading-relaxed mb-4 pl-5 space-y-1.5;
+    }
+    .prose-policy ul { @apply list-disc; }
+    .prose-policy ol { @apply list-decimal; }
+
+    /* Minimal rich-text styles for admin-authored product descriptions and
+       journal articles (no typography plugin is installed). */
+    .prose {
+        @apply text-[15px] leading-relaxed text-ink-70;
+    }
+    .prose > * + * { @apply mt-4; }
+    .prose h1, .prose h2, .prose h3, .prose h4 {
+        @apply text-brand-black font-bold tracking-tightest mt-8 mb-3 leading-tight;
+    }
+    .prose h1 { @apply text-3xl; }
+    .prose h2 { @apply text-2xl; }
+    .prose h3 { @apply text-xl; }
+    .prose h4 { @apply text-lg; }
+    .prose p { @apply mb-4; }
+    .prose a { @apply text-brand-red underline underline-offset-2 hover:text-brand-red-dark; }
+    .prose strong, .prose b { @apply font-semibold text-brand-black; }
+    .prose ul { @apply list-disc pl-5 mb-4 space-y-1.5; }
+    .prose ol { @apply list-decimal pl-5 mb-4 space-y-1.5; }
+    .prose blockquote { @apply border-l-2 border-brand-red pl-4 italic text-ink-50 my-6; }
+    .prose img { @apply my-6 w-full h-auto; }
+    .prose hr { @apply my-8 border-ink-10; }
+    .prose table { @apply w-full text-sm my-6 border-collapse; }
+    .prose th, .prose td { @apply border border-ink-10 px-3 py-2 text-left; }
+    .prose th { @apply bg-surface-soft font-semibold text-brand-black; }
+    .prose-sm { @apply text-sm; }
+    .prose-invert { @apply text-white/70; }
+    .prose-invert h1, .prose-invert h2, .prose-invert h3, .prose-invert h4, .prose-invert strong { @apply text-white; }
+
+    /* Grainy film overlay */
+    .noise-overlay {
+        position: relative;
+    }
+    .noise-overlay::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+        opacity: 0.06;
+        pointer-events: none;
+        mix-blend-mode: overlay;
+    }
+
+    /* Text stroke utility */
+    .text-stroke-white {
+        -webkit-text-stroke: 1.5px #fff;
+        color: transparent;
+    }
+    .text-stroke-red {
+        -webkit-text-stroke: 1.5px #e81d25;
+        color: transparent;
+    }
+
+    /* Diagonal line patterns */
+    .stripes-red {
+        background-image: repeating-linear-gradient(45deg, #e81d25, #e81d25 2px, transparent 2px, transparent 12px);
+    }
+
+    /* Form controls (components/ui/input.tsx) */
+    .input-shop {
+        @apply flex h-11 w-full rounded-md border border-border bg-ivory px-3 text-sm text-brand-black placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red/40 focus-visible:border-brand-red disabled:opacity-60;
+    }
+    .textarea-shop {
+        @apply flex min-h-[90px] w-full rounded-md border border-border bg-ivory px-3 py-2 text-sm text-brand-black placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red/40 focus-visible:border-brand-red disabled:opacity-60;
+    }
+    .label-shop {
+        @apply text-sm font-medium text-brand-black;
+    }
+
+    /* Branded fallback panel used when an <img> fails to load (SafeImage). */
+    .img-fallback {
+        @apply flex items-center justify-center overflow-hidden bg-gradient-to-br from-brand-black via-brand-black-soft to-[#2a1116];
+    }
+    .img-fallback::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at 30% 20%, rgba(232, 29, 37, 0.22) 0%, transparent 60%);
+    }
+    .img-fallback > span {
+        @apply relative font-display text-[3.5rem] font-bold leading-none text-white/[0.08] sm:text-[5rem];
+    }
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Marquee pauses when the visitor prefers reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+    .animate-marquee, .animate-marquee-slow, .animate-float, .animate-wa-bob { animation: none; }
 }

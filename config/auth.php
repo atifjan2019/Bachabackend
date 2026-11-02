@@ -51,6 +51,12 @@ return [
             'provider' => 'customers',
             'hash' => true,
         ],
+        // Storefront customers signing in through the Blade pages. The API
+        // token guard above stays for any remaining JSON clients.
+        'customer' => [
+            'driver' => 'session',
+            'provider' => 'customers',
+        ],
     ],
 
     /*

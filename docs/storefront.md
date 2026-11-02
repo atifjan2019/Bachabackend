@@ -1,0 +1,123 @@
+# Storefront (Blade + Alpine) — architecture and conventions
+
+The customer-facing site that used to live in `Bachafrontend/` (Next.js) is
+served by this Laravel app. Admin (`/admin`, Bootstrap via CDN) and the JSON
+API (`/api/v1`) are unchanged. Everything below applies to the storefront only.
+
+## Layout
+
+| Piece | Where |
+|---|---|
+| Layout | `resources/views/shop/layouts/app.blade.php` |
+| Header, footer, drawers, overlays, toasts | `resources/views/shop/partials/*.blade.php` |
+| Shared components | `resources/views/components/shop/*.blade.php` → `<x-shop.name>` |
+| Pages | `resources/views/shop/<area>/*.blade.php` |
+| Controllers | `app/Http/Controllers/Shop/*` |
+| Routes | `routes/web.php` (names `shop.*`) |
+| Tailwind 4 theme + component classes | `resources/css/app.css` (+ `resources/css/pages/*.css`) |
+| Alpine runtime | `resources/js/app.js`, `resources/js/shop/*.js` |
+| Page Alpine components | `resources/js/shop/pages/*.js` (auto-imported by glob) |
+
+A page extends the layout and fills sections:
+
+```blade
+@extends('shop.layouts.app')
+@section('title', 'Shop')                 {{-- rendered as "Shop | Bacha Stylo"; omit on home --}}
+@section('description', $description)
+@section('canonical', $settings->canonical('/products'))   {{-- defaults to the request URI on the primary host --}}
+@section('og_image', $url)  @section('og_type', 'product')  @section('robots', 'noindex, follow')
+@push('head') <script type="application/ld+json">{!! json_encode($ld) !!}</script> @endpush
+@section('content') ... @endsection
+```
+
+Every `shop.*` view and `components.shop.*` component receives (view composer):
+
+- `$settings` — `App\Support\Storefront\SiteSettings` (also `site()` helper). Cached admin settings:
+  `get('key')`, `enabled('cod_enabled')`, `businessName()`, `logoUrl()`, `shippingRule()`,
+  `shippingFor($subtotal)`, `remainingForFreeShipping()`, `deliveryPolicyParagraphs()`,
+  `whatsapp()` → `{number,digits,href}`, `whatsappHref($message)`, `socials()`, `siteOrigin()`,
+  `canonical($path)`, `supportEmail()`, `supportPhone()`, `supportHours()`, `enabledPaymentMethods()`,
+  `SiteSettings::PAYMENT_LABELS`.
+- `$categories` — top-level `Category` collection with `->children` and `products_count` (subtree).
+- `$customer` — signed-in `Customer` or null (session guard `customer`).
+
+## Products
+
+Never hand `Product` models to a view. Wrap them:
+
+```php
+use App\Support\Storefront\{StorefrontProduct, Catalog, Sizes};
+$p = StorefrontProduct::make($product);      // or StorefrontProduct::collection($models)
+$p->name, $p->slug, $p->sku, $p->price, $p->sale_price, $p->onSale(), $p->displayPrice(), $p->discountPercent(),
+$p->images[]{id,url,alt}, $p->sizes[], $p->colors[], $p->showColors(), $p->hasSizes(), $p->variants[],
+$p->in_stock, $p->category['slug'|'name'], $p->url(), $p->accordions[], $p->toArray() /* JSON for Alpine */
+Catalog::cards()            // slim query builder for grids (select only card columns)
+Catalog::featured(8), Catalog::bestSellers(8), Catalog::related($p, 4)   // cached presenters
+Catalog::categoryTree(), Catalog::flatCategories(), Catalog::findCategory($slug), Catalog::effectivePriceSql()
+Sizes::group($sizes) / Sizes::usesBands($sizes) / Sizes::BANDS   // Kids 14–26, Teens 28–32, Gen Z 34–42, Plus 44–50
+```
+
+Helpers: `pkr(12500)` → `Rs. 12,500`; `strip_html_excerpt($html, 160)`.
+
+## Components (`<x-shop.*>`)
+
+- `img` — SafeImage: `<x-shop.img :src="$url" :alt="$alt" :label="$name" fill sizes="…" class="object-cover" />`
+  props `fill`, `priority`, `fallback="none"`, `fallback-src`, `width`, `height`. Failed images become a
+  branded monogram panel (`bsfImgError` in `<head>`). For Alpine-bound images write a raw
+  `<img :src … data-bsf-img onerror="bsfImgError(this)" loading="lazy" decoding="async">`.
+- `button` (`variant` primary|outline|ghost|subtle, `size` sm|md|lg|icon, `href` → `<a>`, `type`),
+  `badge` (`tone` neutral|green|amber|gray|red|gold), `brand-mark`, `social-links`, `social-icon`,
+  `page-hero`, `section-heading`, `empty-state`, `product-card`, `product-grid`, `field-error name=`,
+  `input`, `textarea`, `label`, `delivery-policy`, `cart-summary :include-shipping`, `cart-line`,
+  `quantity-stepper`, `whatsapp-order-button`, `accordion title=`.
+- CSS classes from globals.css are available: `container-shop`, `eyebrow`, `btn-primary`, `btn-outline`,
+  `btn-ghost-red`, `pill`, `tag-red`, `tag-dark`, `link-underline`, `display-xl|lg|md`, `prose`,
+  `prose-policy`, `noise-overlay`, `stripes-red`, `no-scrollbar`, `input-shop`, `textarea-shop`, `label-shop`.
+- Icons: `<x-lucide-arrow-up-right class="h-4 w-4" stroke-width="2.5" />` for every lucide-react icon.
+- **Inside a `<x-shop.*>` tag** write Alpine as `x-on:click="…"` and `::class="…"` (`:` alone is PHP).
+
+## Alpine
+
+Globals from the layout: `window.BSF = {shipping:{fee,threshold,freeEnabled}, whatsapp:{digits,number},
+origin, apiBase, csrf, customer|null}` and `window.bsf` helpers: `pkr`, `shippingFor`,
+`remainingForFreeShipping`, `whatsappOrderHref`, `api(path,{method,body})` (same-origin `/api/v1`, throws
+`{status, errors}`), `captureAbandonedCart`, `debounce`, `copyText`, `stockStatus`, `PK_PHONE`.
+Magic: `$pkr(n)`.
+
+Stores:
+
+- `$store.cart` — `lines`, `count`, `subtotal`, `shipping`, `total`, `remainingForFreeShipping`,
+  `isOpen`, `open()`, `close()`, `add(line, {open, toast})`, `remove(id)`, `setQty(id, n)`,
+  `increment(id)`, `decrement(id)`, `clear()`, `whatsappHref()`, `toOrderItems()`.
+  Line shape (localStorage `bsf_cart`, same as the Next app):
+  `{id, product_id, variant_id, sku, variant_sku, slug, name, image, size, color, color_hex, unit_price, quantity, max_stock}`
+  with `id = \`${product_id}-${variant_id}-${size}-${color}\``.
+- `$store.ui` — `toast({title, description, tone: 'success'|'error'|'default'})`, `openMenu()`,
+  `openSearch()`, `closeAll()`.
+
+Server flash → toast: `redirect()->with('toast', ['title' => 'Welcome back', 'tone' => 'success'])`.
+
+Page components: `resources/js/shop/pages/<name>.js` with `document.addEventListener('alpine:init', () =>
+Alpine.data('productDetail', (cfg) => ({ ... })))`, used as `x-data="productDetail(@js($p->toArray()))"`.
+
+## Rules
+
+- Keep the admin and the API untouched. All user content escaped; `{!! !!}` only for product
+  `description` and blog `content`.
+- Links and forms work without JavaScript except cart/checkout interactivity.
+- Public GET pages are wrapped in the `shop.cache` middleware (see routes). Cache catalogue queries with
+  `Cache::remember` (the admin flushes the cache on save).
+- Build assets with `npm run build` (output `public/build`, gitignored).
+
+## Deploy (Cloudways)
+
+```
+composer install --no-dev --optimize-autoloader
+npm ci && npm run build
+php artisan migrate --force
+php artisan config:cache && php artisan route:cache && php artisan view:cache
+php artisan storage:link
+```
+
+Set `APP_URL` and `FRONTEND_URL` to `https://www.bachastylo.com` (FRONTEND_URL also feeds CORS and
+the password-reset links). Demo data: `php artisan db:seed --class=StorefrontDemoSeeder`.

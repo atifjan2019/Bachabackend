@@ -21,13 +21,42 @@ Laravel is a web application framework with expressive, elegant syntax. We belie
 
 Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Project API Notes
+## Bacha Stylo
 
-This project exposes storefront-ready JSON APIs under `/api/v1` for Next.js integration.
+One Laravel app serves the whole site:
 
-- Integration guide: `docs/nextjs-integration.md`
-- Example local base URL: `http://127.0.0.1:8000/api/v1`
-- Set `FRONTEND_URL` in `.env` to allow CORS from your Next.js app (for example `http://localhost:3000`).
+- **Storefront** (`/`, `/products`, `/cart`, `/checkout`, `/account`, …) — server-rendered Blade + Alpine.js,
+  Tailwind 4 via Vite. Architecture and conventions: `docs/storefront.md`.
+- **Admin panel** under `/admin` (Bootstrap via CDN).
+- **JSON API** under `/api/v1` (`routes/api.php`), still available to other clients; `docs/nextjs-integration.md`.
+
+### Local development
+
+```bash
+composer install
+cp .env.example .env && php artisan key:generate
+touch database/database.sqlite          # DB_CONNECTION=sqlite in .env
+php artisan migrate
+php artisan db:seed --class=StorefrontDemoSeeder   # demo catalogue, posts, settings
+npm install && npm run build            # or `npm run dev` while editing
+php artisan serve                       # http://127.0.0.1:8000
+```
+
+Set `MAIL_MAILER=log` locally; order and password-reset emails land in `storage/logs/laravel.log`.
+
+### Deploy (Cloudways, web root `public_html`)
+
+```bash
+composer install --no-dev --optimize-autoloader
+npm ci && npm run build
+php artisan migrate --force
+php artisan config:cache && php artisan route:cache && php artisan view:cache
+php artisan storage:link
+```
+
+In the server `.env` set `APP_URL=https://www.bachastylo.com` and `FRONTEND_URL=https://www.bachastylo.com`
+once the storefront domain points at this app. `FRONTEND_URL` also feeds the CORS allow-list for `/api/*`
+and the customer password-reset links. `public/build` is a build artefact and is not committed.
 
 ## Learning Laravel
 

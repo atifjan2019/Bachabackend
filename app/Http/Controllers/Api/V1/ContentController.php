@@ -9,6 +9,7 @@ use App\Models\ContactMessage;
 use App\Models\NewsletterSubscriber;
 use App\Models\Setting;
 use App\Models\TeamMember;
+use App\Support\Storefront\SiteSettings;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -65,66 +66,9 @@ class ContentController extends Controller
 
     public function settings(): JsonResponse
     {
-        $whitelist = [
-            'business_name',
-            'business_email',
-            'business_phone',
-            'business_address',
-            'logo_url',
-            'footer_logo_url',
-            'favicon_url',
-            'facebook_url',
-            'instagram_url',
-            'tiktok_url',
-            'whatsapp_number',
-            'shipping_fee',
-            'free_shipping_enabled',
-            'free_shipping_threshold',
-            'delivery_policy',
-            'meta_title',
-            'meta_description',
-            'meta_keywords',
-            'og_image',
-            'canonical_base_url',
-            'google_analytics_id',
-            'facebook_pixel_id',
-            'google_site_verification',
-            'robots_meta',
-            'home_highlight_title',
-            'home_highlight_description',
-            'home_highlight_image',
-            'home_highlight_button',
-            'home_highlight_link',
-            'intro_enabled',
-            'intro_bg_type',
-            'intro_title',
-            'intro_subtitle',
-            'intro_image',
-            'intro_video_url',
-            'intro_social_url',
-            'intro_button_text',
-            'promo_enabled',
-            'promo_media_type',
-            'promo_title',
-            'promo_subtitle',
-            'promo_image',
-            'promo_video_url',
-            'promo_link',
-            'promo_button_text',
-            'cod_enabled',
-            'bank_transfer_enabled',
-            'easypaisa_enabled',
-            'jazzcash_enabled',
-            'bank_name',
-            'bank_account_title',
-            'bank_account_number',
-            'bank_iban',
-            'easypaisa_account_name',
-            'easypaisa_number',
-            'jazzcash_account_name',
-            'jazzcash_number',
-            'footer_about',
-        ];
+        // The storefront pages read the same keys through SiteSettings, so the
+        // two can never drift apart.
+        $whitelist = SiteSettings::WHITELIST;
 
         $settings = Setting::query()
             ->whereIn('setting_key', $whitelist)
