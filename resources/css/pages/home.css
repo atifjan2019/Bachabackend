@@ -1,1 +1,38 @@
-/* Page-specific component classes for the home pages. Utilities first; add @layer components here only when a class is reused. */
+/* Page-specific component classes for the home + content pages. */
+
+/* 404 page (app/not-found.tsx inline keyframes) */
+@keyframes nf-float-slow {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+}
+@keyframes nf-float-medium {
+    0%, 100% { transform: translateY(0) rotate(45deg); }
+    50% { transform: translateY(-15px) rotate(50deg); }
+}
+@keyframes nf-float-fast {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+}
+@keyframes nf-glitch-1 {
+    0%, 100% { clip-path: inset(0 0 0 0); transform: translate(0); }
+    20% { clip-path: inset(20% 0 60% 0); transform: translate(-3px, 2px); }
+    40% { clip-path: inset(40% 0 30% 0); transform: translate(3px, -1px); }
+    60% { clip-path: inset(60% 0 10% 0); transform: translate(-2px, 1px); }
+    80% { clip-path: inset(10% 0 80% 0); transform: translate(2px, -2px); }
+}
+@utility animate-float-slow { animation: nf-float-slow 6s ease-in-out infinite; }
+@utility animate-float-medium { animation: nf-float-medium 5s ease-in-out infinite; }
+@utility animate-float-fast { animation: nf-float-fast 4s ease-in-out infinite; }
+@utility animate-glitch-1 { animation: nf-glitch-1 5s ease-in-out infinite; }
+
+/* Contact hero grid texture */
+@utility bg-contact-grid {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.6) 1px, transparent 1px);
+    background-size: 80px 80px;
+}
+
+/* Journal article body (prose-brand prose-lg in the Next app) */
+@layer components {
+    .prose-lg { font-size: 1.125rem; line-height: 1.8; }
+    .prose-brand a { @apply text-brand-red; }
+}
