@@ -227,14 +227,30 @@ class ProductQuery
         return $this->url(['page' => $page > 1 ? $page : null], false);
     }
 
-    /** Canonical: a single category is a landing page; everything else is /products. */
-    public function canonical(): string
+    /** Canonical path: a single category is a landing page; everything else is /products. */
+    public function canonicalPath(): string
     {
         if (count($this->categories) === 1 && $this->search === '') {
-            return self::buildUrl(['category' => $this->categories]);
+            return '/products?category='.rawurlencode($this->categories[0]);
         }
 
-        return route('shop.products');
+        return '/products';
+    }
+
+    /** Hidden inputs that carry the current params through a GET form. */
+    public function hiddenParams(array $except = []): array
+    {
+        $out = [];
+        foreach ($this->params() as $key => $value) {
+            if (in_array($key, $except, true) || $key === 'page') {
+                continue;
+            }
+            foreach ((array) $value as $v) {
+                $out[] = [is_array($value) ? $key.'[]' : $key, (string) $v];
+            }
+        }
+
+        return $out;
     }
 
     /* ------------------------------------------------------------------ */
@@ -413,7 +429,8 @@ class ProductQuery
                     }
                 });
 
-            return self::sortSizes(array_keys($set));
+            // Array keys turn "38" into 38; the URL params are strings.
+            return self::sortSizes(array_map('strval', array_keys($set)));
         });
     }
 

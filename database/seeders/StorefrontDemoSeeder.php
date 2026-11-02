@@ -292,9 +292,11 @@ class StorefrontDemoSeeder extends Seeder
         ];
 
         foreach ($products as $row) {
-            $row['colors'] = $row['colors'] === [] ? null : json_encode($row['colors']);
-            $row['gallery'] = $row['gallery'] === [] ? null : json_encode($row['gallery']);
-            $row['sizes'] = $row['sizes'] === [] ? null : json_encode($row['sizes']);
+            // Arrays, as the admin panel saves them: the model's array casts
+            // encode once (a pre-encoded string would be double-encoded).
+            $row['colors'] = $row['colors'] === [] ? null : $row['colors'];
+            $row['gallery'] = $row['gallery'] === [] ? null : $row['gallery'];
+            $row['sizes'] = $row['sizes'] === [] ? null : $row['sizes'];
             $product = Product::updateOrCreate(['slug' => $row['slug']], $row);
 
             if ($product->reviews()->count() === 0 && in_array($row['slug'], ['royal-maroon-karandi-waistcoat', 'ruby-winter-shawl'], true)) {

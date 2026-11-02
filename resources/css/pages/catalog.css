@@ -1,1 +1,43 @@
-/* Page-specific component classes for the catalog pages. Utilities first; add @layer components here only when a class is reused. */
+/* Shop listing + product page. Utilities first; only the dual range slider needs CSS. */
+@layer components {
+    /* Two overlaid native range inputs: the tracks ignore the pointer, the thumbs take it. */
+    .price-range .price-thumb {
+        pointer-events: none;
+        height: 100%;
+        margin: 0;
+    }
+    .price-range .price-thumb::-webkit-slider-runnable-track {
+        background: transparent;
+        height: 100%;
+    }
+    .price-range .price-thumb::-moz-range-track {
+        background: transparent;
+        height: 100%;
+    }
+    .price-range .price-thumb::-webkit-slider-thumb {
+        pointer-events: auto;
+        -webkit-appearance: none;
+        appearance: none;
+        height: 16px;
+        width: 16px;
+        border-radius: 9999px;
+        border: 1px solid var(--color-brand-red);
+        background: var(--color-ivory);
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        cursor: pointer;
+    }
+    .price-range .price-thumb::-moz-range-thumb {
+        pointer-events: auto;
+        height: 16px;
+        width: 16px;
+        border-radius: 9999px;
+        border: 1px solid var(--color-brand-red);
+        background: var(--color-ivory);
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        cursor: pointer;
+    }
+    .price-range .price-thumb:focus-visible::-webkit-slider-thumb {
+        outline: 2px solid var(--color-brand-red);
+        outline-offset: 2px;
+    }
+}
