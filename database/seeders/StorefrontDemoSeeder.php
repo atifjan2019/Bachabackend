@@ -25,6 +25,13 @@ class StorefrontDemoSeeder extends Seeder
 
     public function run(): void
     {
+        // Demo data overwrites settings and slugs: never on the live store.
+        if (app()->isProduction()) {
+            $this->command?->error('StorefrontDemoSeeder is for local development only and will not run in production.');
+
+            return;
+        }
+
         $this->settings();
         $categories = $this->categories();
         $this->products($categories);
