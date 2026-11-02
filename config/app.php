@@ -72,6 +72,9 @@ return [
 
     'frontend_url' => env('FRONTEND_URL'),
 
+    // Canonical storefront host; the bare domain 301s here (see RedirectToPrimaryHost).
+    'primary_host' => env('PRIMARY_HOST', 'www.bachastylo.com'),
+
     /*
     |--------------------------------------------------------------------------
     | Admin Panel URL
