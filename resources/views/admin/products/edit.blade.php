@@ -122,7 +122,6 @@
                                 @endif
                             </div>
                             <input type="hidden" name="image" value="{{ old('image', $product->image) }}">
-                        </div>
                             <div class="form-group mt-2 mb-0">
                                 <label class="form-label">Main Image ALT Text</label>
                                 <input type="text" name="image_alt" class="form-control" maxlength="255" value="{{ old('image_alt', $product->image_alt) }}" placeholder="e.g. Maroon Karandi waistcoat for men, front view">
@@ -143,7 +142,6 @@
                             </div>
                             <span class="btn-library" onclick="openMediaPicker('gallery', true)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
                             <input type="hidden" name="gallery" value="{{ old('gallery', is_array($product->gallery) ? json_encode($product->gallery) : $product->gallery) }}">
-                        </div>
                             <div class="form-group mt-2 mb-0">
                                 <label class="form-label">Gallery ALT Texts</label>
                                 <textarea name="gallery_alts" class="form-control" rows="3" placeholder="One line per gallery image, in the same order">{{ old('gallery_alts', is_array($product->gallery_alts) ? implode("\n", $product->gallery_alts) : '') }}</textarea>
