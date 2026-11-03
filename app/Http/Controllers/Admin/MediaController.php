@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Media;
+use App\Support\MediaLibrary;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -12,22 +13,7 @@ class MediaController extends Controller
 {
     public function index()
     {
-        $r2Files = [];
-        try {
-            $diskName = config('filesystems.default');
-            $disk = Storage::disk($diskName);
-            $allFiles = $disk->allFiles();
-
-            foreach ($allFiles as $path) {
-                $r2Files[] = [
-                    'path' => $path,
-                    'url' => $disk->url($path),
-                    'name' => basename($path),
-                    'folder' => dirname($path) === '.' ? '' : dirname($path),
-                ];
-            }
-        } catch (\Exception $e) {}
-
+        $r2Files = MediaLibrary::files();
         $dbFiles = Media::orderBy('id', 'desc')->get();
 
         return view('admin.media.index', compact('r2Files', 'dbFiles'));
@@ -38,26 +24,7 @@ class MediaController extends Controller
      */
     public function apiList()
     {
-        $r2Files = [];
-        try {
-            $diskName = config('filesystems.default');
-            $disk = Storage::disk($diskName);
-            $allFiles = $disk->allFiles();
-
-            foreach ($allFiles as $path) {
-                $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-                if (in_array($ext, ['jpg','jpeg','png','gif','webp','svg'])) {
-                    $r2Files[] = [
-                        'path' => $path,
-                        'url' => $disk->url($path),
-                        'name' => basename($path),
-                        'folder' => dirname($path) === '.' ? '' : dirname($path),
-                    ];
-                }
-            }
-        } catch (\Exception $e) {}
-
-        return response()->json($r2Files);
+        return response()->json(MediaLibrary::files());
     }
 
     public function store(Request $request)
@@ -76,6 +43,8 @@ class MediaController extends Controller
             'file_type' => $file->getMimeType(),
             'file_size' => $file->getSize(),
         ]);
+
+        MediaLibrary::forget();
 
         return redirect()->route('admin.media.index')->with('success', 'File uploaded to cloud storage.');
     }
@@ -99,6 +68,7 @@ class MediaController extends Controller
         $diskName = config('filesystems.default');
         $url = Storage::disk($diskName)->url($path);
         Media::where('file_path', $url)->delete();
+        MediaLibrary::forget();
 
         return response()->json(['success' => true]);
     }
