@@ -18,7 +18,7 @@ class ImageController extends Controller
 {
     public const MAX_SOURCE_BYTES = 25 * 1024 * 1024;
 
-    public const QUALITY = 80;
+    public const QUALITY = 74;
 
     public function show(string $width, string $key): Response
     {

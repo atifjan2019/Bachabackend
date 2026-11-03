@@ -16,12 +16,12 @@ namespace App\Support\Storefront;
 class ImageVariant
 {
     /** Widths a variant may be requested at (anything else is a 404). */
-    public const WIDTHS = [96, 160, 240, 320, 480, 640, 768, 960, 1280, 1600];
+    public const WIDTHS = [96, 160, 240, 320, 360, 480, 640, 768, 960, 1280, 1600];
 
     public const FORMATS = ['webp', 'png', 'jpg'];
 
     /** Default srcset candidates for a fluid image. */
-    public const FLUID = [320, 480, 640, 960, 1280];
+    public const FLUID = [320, 360, 480, 640, 960, 1280];
 
     public const CACHE_CONTROL = 'public, max-age=31536000, immutable';
 

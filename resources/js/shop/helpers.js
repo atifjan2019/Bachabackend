@@ -175,7 +175,7 @@ export const PK_PHONE = /^(\+92|0)?3[0-9]{9}$/;
  * App\Support\Storefront\ImageVariant). Returns null for any other source,
  * which leaves the plain src in charge.
  */
-export function srcset(url, widths = [320, 480, 640, 960, 1280], format = 'webp') {
+export function srcset(url, widths = [320, 360, 480, 640, 960, 1280], format = 'webp') {
     const origin = (config().media || '').replace(/\/$/, '');
     const allowed = config().imgWidths || [];
     if (!url || !origin || typeof url !== 'string' || !url.startsWith(origin + '/')) return null;

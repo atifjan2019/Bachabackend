@@ -14,7 +14,7 @@
     <div class="mt-3 flex items-baseline gap-3">
         <span class="font-display text-2xl text-brand-red" x-text="$pkr(displayPrice)">{{ pkr($product->displayPrice()) }}</span>
         <span class="text-sm text-muted line-through" x-show="onSale" @unless($product->onSale()) x-cloak @endunless x-text="$pkr(product.price)">{{ pkr($product->price) }}</span>
-        <span class="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs font-medium bg-[#fdecec] text-brand-red border-[#f4c7ca]" x-show="onSale" @unless($product->onSale()) x-cloak @endunless
+        <span class="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs font-medium bg-[#fdecec] text-[#b3141a] border-[#f4c7ca]" x-show="onSale" @unless($product->onSale()) x-cloak @endunless
               x-text="`Save ${$pkr(product.price - product.sale_price)}`">Save {{ pkr($product->savings()) }}</span>
     </div>
     @if($config['description_excerpt'] !== '')
@@ -108,7 +108,7 @@
             <span x-text="stock <= 0 ? 'Out of Stock' : 'Add to Cart'">Add to Cart</span>
         </x-shop.button>
         <a :href="whatsappHref" href="{{ $settings->whatsappHref("Hi! I'd like to order:\n".$product->name) }}" target="_blank" rel="noopener noreferrer"
-           class="inline-flex w-full items-center justify-center gap-2 bg-[#25D366] px-6 text-sm font-bold text-white transition-opacity hover:opacity-90 sm:w-auto">
+           class="inline-flex w-full items-center justify-center gap-2 bg-[#0f7a60] px-6 text-sm font-bold text-white transition-colors hover:bg-[#0b5f4b] sm:w-auto">
             <x-shop.social-icon name="whatsapp" class="h-5 w-5" />
             Order on WhatsApp
         </a>
