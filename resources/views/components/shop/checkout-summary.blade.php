@@ -5,7 +5,7 @@
         <template x-for="l in $store.cart.lines" :key="l.id">
             <div class="flex gap-3">
                 <div class="relative h-16 w-14 flex-shrink-0 overflow-hidden rounded-md border border-border bg-cream">
-                    <img :src="l.image" :alt="l.name" :data-fallback-label="l.name" data-bsf-img data-fallback-class="absolute inset-0 h-full w-full"
+                    <img :src="l.image" :srcset="bsf.srcset(l.image, [96, 160, 240])" sizes="96px" :alt="l.name" :data-fallback-label="l.name" data-bsf-img data-fallback-class="absolute inset-0 h-full w-full"
                          onerror="bsfImgError(this)" loading="lazy" decoding="async" sizes="56px" class="absolute inset-0 h-full w-full object-cover">
                     <span class="absolute top-0 right-0 h-5 min-w-5 px-1 rounded-bl-md bg-brand-black text-white text-[10px] flex items-center justify-center" x-text="l.quantity"></span>
                 </div>

@@ -50,11 +50,7 @@ class CategoryController extends Controller
         $data = array_merge($data, $this->visibility($request));
 
         if ($request->hasFile('image_file')) {
-            $file = $request->file('image_file');
-            $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = config('filesystems.default');
-            $file->storeAs('categories', $filename, $disk);
-            $data['image'] = Storage::disk($disk)->url('categories/' . $filename);
+            $data['image'] = media_store($request->file('image_file'), 'categories');
         }
 
         Category::create($data);
@@ -83,11 +79,7 @@ class CategoryController extends Controller
         $data = array_merge($data, $this->visibility($request));
 
         if ($request->hasFile('image_file')) {
-            $file = $request->file('image_file');
-            $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = config('filesystems.default');
-            $file->storeAs('categories', $filename, $disk);
-            $data['image'] = Storage::disk($disk)->url('categories/' . $filename);
+            $data['image'] = media_store($request->file('image_file'), 'categories');
         }
 
         $category->update($data);

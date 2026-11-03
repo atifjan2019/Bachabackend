@@ -32,11 +32,7 @@ class BlogPostController extends Controller
         $data['status'] = $request->boolean('status');
 
         if ($request->hasFile('image_file')) {
-            $file = $request->file('image_file');
-            $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = config('filesystems.default');
-            $file->storeAs('blog', $filename, $disk);
-            $data['image'] = Storage::disk($disk)->url('blog/' . $filename);
+            $data['image'] = media_store($request->file('image_file'), 'blog');
         }
 
         BlogPost::create($data);
@@ -61,11 +57,7 @@ class BlogPostController extends Controller
         $data['status'] = $request->boolean('status');
 
         if ($request->hasFile('image_file')) {
-            $file = $request->file('image_file');
-            $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = config('filesystems.default');
-            $file->storeAs('blog', $filename, $disk);
-            $data['image'] = Storage::disk($disk)->url('blog/' . $filename);
+            $data['image'] = media_store($request->file('image_file'), 'blog');
         }
 
         $post->update($data);

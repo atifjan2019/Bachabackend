@@ -27,6 +27,19 @@ Route::get('/clear', function () {
 | shared-cache headers; cart/checkout/auth/account pages never do.
 */
 
+// Resized catalogue images (see ImageController). Outside the session
+// middleware so the response carries no cookies and caches cleanly.
+Route::get('img/{width}/{key}', [Shop\ImageController::class, 'show'])
+    ->where(['width' => '[0-9]+', 'key' => '.+'])
+    ->withoutMiddleware([
+        \Illuminate\Cookie\Middleware\EncryptCookies::class,
+        \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+        \Illuminate\Session\Middleware\StartSession::class,
+        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+    ])
+    ->name('shop.img');
+
 Route::middleware('shop.cache')->group(function () {
     Route::get('/', [Shop\HomeController::class, 'index'])->name('shop.home');
 

@@ -43,7 +43,7 @@
             <div class="mt-2 flex items-baseline gap-2">
                 <span class="text-[15px] font-bold {{ $onSale ? 'text-brand-red' : 'text-brand-black' }}">{{ pkr($product->displayPrice()) }}</span>
                 @if($onSale)
-                    <span class="text-xs text-ink-30 line-through">{{ pkr($product->price) }}</span>
+                    <span class="text-xs text-muted line-through">{{ pkr($product->price) }}</span>
                 @endif
             </div>
         </div>

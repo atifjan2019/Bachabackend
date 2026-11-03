@@ -2,7 +2,7 @@
 {{-- Must sit inside <template x-for="line in $store.cart.lines"> --}}
 <div class="flex gap-3 py-3 border-b border-border last:border-0">
     <a :href="`{{ url('/products') }}/${line.slug}`" class="relative h-20 w-16 sm:h-24 sm:w-20 flex-shrink-0 overflow-hidden rounded-md border border-border bg-cream">
-        <img :src="line.image" :alt="line.name" :data-fallback-label="line.name" data-bsf-img data-fallback-class="absolute inset-0 h-full w-full"
+        <img :src="line.image" :srcset="bsf.srcset(line.image, [96, 160, 240])" sizes="96px" :alt="line.name" :data-fallback-label="line.name" data-bsf-img data-fallback-class="absolute inset-0 h-full w-full"
              onerror="bsfImgError(this)" loading="lazy" decoding="async" sizes="80px" class="absolute inset-0 h-full w-full object-cover">
     </a>
     <div class="flex-1 min-w-0">

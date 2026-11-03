@@ -4,7 +4,7 @@
             <p class="mb-2 text-[11px] font-bold uppercase tracking-[0.28em] text-brand-red">Reviews</p>
             <h2 class="font-display text-2xl text-brand-black sm:text-3xl">Customer reviews</h2>
             <div class="mt-3 flex items-center gap-3">
-                <span class="inline-flex items-center gap-0.5" :aria-label="`${Math.round(average)} out of 5`">
+                <span class="inline-flex items-center gap-0.5" role="img" :aria-label="`${Math.round(average)} out of 5`">
                     @for($n = 1; $n <= 5; $n++)
                         <x-lucide-star class="h-4 w-4 {{ $n <= round($reviewAverage) ? 'fill-brand-red text-brand-red' : 'fill-transparent text-ink-30' }}" stroke-width="1.5"
                             ::class="{{ $n }} <= Math.round(average) ? 'fill-brand-red text-brand-red' : 'fill-transparent text-ink-30'" />
@@ -51,7 +51,7 @@
             <li class="border border-ink-10 p-5">
                 <div class="flex items-center justify-between gap-3">
                     <span class="font-semibold text-brand-black" x-text="r.author_name"></span>
-                    <span class="inline-flex items-center gap-0.5" :aria-label="`${r.rating} out of 5`">
+                    <span class="inline-flex items-center gap-0.5" role="img" :aria-label="`${r.rating} out of 5`">
                         <template x-for="n in 5" :key="n">
                             <x-lucide-star class="h-4 w-4" stroke-width="1.5" ::class="n <= r.rating ? 'fill-brand-red text-brand-red' : 'fill-transparent text-ink-30'" />
                         </template>
@@ -64,7 +64,7 @@
             <li class="border border-ink-10 p-5">
                 <div class="flex items-center justify-between gap-3">
                     <span class="font-semibold text-brand-black">{{ $r->author_name }}</span>
-                    <span class="inline-flex items-center gap-0.5" aria-label="{{ $r->rating }} out of 5">
+                    <span class="inline-flex items-center gap-0.5" role="img" aria-label="{{ $r->rating }} out of 5">
                         @for($n = 1; $n <= 5; $n++)
                             <x-lucide-star class="h-4 w-4 {{ $n <= $r->rating ? 'fill-brand-red text-brand-red' : 'fill-transparent text-ink-30' }}" stroke-width="1.5" />
                         @endfor

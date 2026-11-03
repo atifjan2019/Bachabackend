@@ -4,6 +4,17 @@
     $hasImage = $hero['hasImage'];
     $primaryCta = $hasVideo && $hero['socialUrl'];
 @endphp
+@php($heroSet = \App\Support\Storefront\ImageVariant::srcset($heroImage, [480, 768, 960, 1280, 1600]))
+@if(! $hasVideo && ! $hasImage)
+    @push('head')
+        {{-- The hero is the largest paint on the home page: fetch it before the parser reaches it. --}}
+        @if($heroSet)
+            <link rel="preload" as="image" imagesrcset="{{ $heroSet }}" imagesizes="100vw" fetchpriority="high">
+        @else
+            <link rel="preload" as="image" href="{{ $heroImage }}" fetchpriority="high">
+        @endif
+    @endpush
+@endif
 <section class="relative w-full overflow-hidden bg-brand-black text-white"
          x-data="heroBanner({ video: @js($hasVideo), image: @js($hasImage) })">
     {{-- Background: launch-banner media while active, else the default hero image --}}
@@ -21,7 +32,7 @@
              class="absolute inset-0 h-full w-full object-cover object-center">
     @endif
     <div class="absolute inset-0" x-show="showDefault">
-        <x-shop.img :src="$heroImage" alt="Bacha Style collection" fill priority sizes="100vw" fallback="none" class="object-cover object-center" />
+        <x-shop.img :src="$heroImage" alt="Bacha Style collection" fill priority sizes="100vw" :widths="[480, 768, 960, 1280, 1600]" fallback="none" class="object-cover object-center" />
     </div>
 
     <div class="absolute inset-0 bg-gradient-to-r from-brand-black/85 via-brand-black/55 to-brand-black/20"></div>

@@ -73,6 +73,23 @@ forms or inline on the admin lists (`PATCH admin/{categories,products}/{id}/quic
   both; price sorts on the listing ignore the manual order.
 - Counts: `Category::subtreeProductCounts(storefront: true)` for anything a shopper sees.
 
+### Images and caching
+
+- Catalogue images are admin uploads of 1–2k px on the media bucket (`https://media.bachastylo.com`, whose
+  CDN caches for only 4 h and whose API token can't change that). The storefront never shows them at full
+  size: `ImageVariant::url($src, $width, 'webp')` / `::srcset($src, $widths)` point at
+  `/img/{width}/{key}.webp`, which `Shop\ImageController` renders once (Imagick/GD, never upscaled) into
+  `public/img/…` (git-ignored) and the web server then serves as a static file with a one-year cache header.
+  Failures redirect to the original. Only the media bucket and `public/images` are accepted as sources;
+  widths are limited to `ImageVariant::WIDTHS`.
+- `<x-shop.img>` emits the srcset itself whenever it knows the slot size (`sizes`, `width` or `widths`);
+  Alpine-driven `<img>`s use `bsf.srcset(url, widths)` (same rules, from `window.BSF.media`).
+- New uploads go through `media_store($file, $dir)` so the object carries `Cache-Control: max-age=31536000`.
+- Guest storefront pages are cached whole for 5 min (`StorefrontCacheHeaders`, header `X-Storefront-Cache`);
+  the CSRF token is swapped per visitor. Admin saves `Cache::flush()`, which drops them. Keep anything
+  per-visitor out of server-rendered HTML (the cart lives in the browser; signed-in customers bypass it).
+- Fonts load via `preload as=style`; GA4 and the Meta pixel load on first interaction or 5 s after load.
+
 ## Components (`<x-shop.*>`)
 
 - `img` — SafeImage: `<x-shop.img :src="$url" :alt="$alt" :label="$name" fill sizes="…" class="object-cover" />`

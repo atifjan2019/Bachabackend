@@ -7,7 +7,7 @@
             <x-lucide-x class="h-4 w-4" />
         </button>
         <p class="text-[13px] leading-relaxed text-ink-70">Need help finding the perfect product? Chat with our team on WhatsApp.</p>
-        <a href="{{ $href }}" target="_blank" rel="noopener noreferrer" class="mt-2 inline-block text-[11px] font-bold uppercase tracking-[0.14em] text-[#25D366]">Chat now →</a>
+        <a href="{{ $href }}" target="_blank" rel="noopener noreferrer" class="mt-2 inline-block text-[11px] font-bold uppercase tracking-[0.14em] text-[#0a7a55]">Chat now →</a>
     </div>
 
     <a href="{{ $href }}" target="_blank" rel="noopener noreferrer" aria-label="Chat with us on WhatsApp" @mouseenter="if (!dismissed) open = true"

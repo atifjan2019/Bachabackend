@@ -268,9 +268,6 @@ class ProductController extends Controller
      */
     private function uploadToR2($file): string
     {
-        $disk = config('filesystems.default');
-        $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-        $file->storeAs('products', $filename, $disk);
-        return Storage::disk($disk)->url('products/' . $filename);
+        return media_store($file, 'products');
     }
 }

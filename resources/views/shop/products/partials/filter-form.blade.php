@@ -19,7 +19,7 @@
 
     {{-- Category --}}
     <div class="{{ $sectionClass }}">
-        <h4 class="{{ $headingClass }}">Category</h4>
+        <{{ $sheet ? 'h3' : 'h2' }} class="{{ $headingClass }}">Category</{{ $sheet ? 'h3' : 'h2' }}>
         <div class="space-y-2">
             @foreach($categories as $c)
                 <div class="space-y-2">
@@ -47,7 +47,7 @@
     {{-- Size (only the sizes carried by the products being browsed) --}}
     @if($sizeGroups)
         <div class="{{ $sectionClass }}">
-            <h4 class="{{ $headingClass }}">Size</h4>
+            <{{ $sheet ? 'h3' : 'h2' }} class="{{ $headingClass }}">Size</{{ $sheet ? 'h3' : 'h2' }}>
             <div class="space-y-4">
                 @foreach($sizeGroups as $group)
                     <div>
@@ -68,7 +68,7 @@
 
     {{-- Price range --}}
     <div>
-        <h4 class="{{ $headingClass }}">{{ $sheet ? 'Price Range' : 'Price range' }}</h4>
+        <{{ $sheet ? 'h3' : 'h2' }} class="{{ $headingClass }}">{{ $sheet ? 'Price Range' : 'Price range' }}</{{ $sheet ? 'h3' : 'h2' }}>
         <div class="space-y-3" x-data="priceRange({ min: {{ $q->min }}, max: {{ $q->max }}, floor: {{ \App\Support\Storefront\ProductQuery::PRICE_MIN }}, ceil: {{ \App\Support\Storefront\ProductQuery::PRICE_MAX }}, step: {{ \App\Support\Storefront\ProductQuery::PRICE_STEP }} })">
             <div class="price-range relative h-4 w-full select-none touch-none">
                 <div class="absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-border">

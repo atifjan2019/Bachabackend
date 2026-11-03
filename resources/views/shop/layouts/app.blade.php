@@ -13,6 +13,8 @@
         'whatsapp' => ['digits' => $whatsapp['digits'], 'number' => $whatsapp['number']],
         'origin' => request()->getSchemeAndHttpHost(),
         'apiBase' => url('/api/v1'),
+        'media' => \App\Support\Storefront\ImageVariant::mediaOrigin(),
+        'imgWidths' => \App\Support\Storefront\ImageVariant::WIDTHS,
         'csrf' => csrf_token(),
         'customer' => $customer ? ['name' => $customer->name, 'email' => $customer->email, 'phone' => $customer->phone] : null,
     ];
@@ -50,14 +52,22 @@
     <meta name="twitter:title" content="{{ $fullTitle }}">
     <meta name="twitter:description" content="{{ $metaDescription }}">
 
-    <link rel="icon" href="{{ $settings->faviconUrl() }}">
-    <link rel="shortcut icon" href="{{ $settings->faviconUrl() }}">
-    <link rel="apple-touch-icon" href="{{ $settings->faviconUrl() }}">
+    @php
+        $favicon = $settings->faviconUrl();
+        $faviconSmall = \App\Support\Storefront\ImageVariant::url($favicon, 96, 'png') ?? $favicon;
+        $faviconTouch = \App\Support\Storefront\ImageVariant::url($favicon, 240, 'png') ?? $favicon;
+        $fontsCss = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&display=swap';
+    @endphp
+    <link rel="icon" href="{{ $faviconSmall }}">
+    <link rel="shortcut icon" href="{{ $faviconSmall }}">
+    <link rel="apple-touch-icon" href="{{ $faviconTouch }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://media.bachastylo.com">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {{-- Fonts load without blocking first paint (display=swap keeps text visible meanwhile). --}}
+    <link rel="preload" as="style" href="{{ $fontsCss }}" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="{{ $fontsCss }}"></noscript>
 
     @include('shop.partials.img-fallback')
     <script>window.BSF = @json($bsf);</script>

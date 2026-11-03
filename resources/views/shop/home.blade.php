@@ -162,7 +162,7 @@
                     ['icon' => 'feather', 'title' => 'Everyday Comfort', 'desc' => 'Tailored for ease of movement and all-day comfort, without compromise.'],
                 ] as $i => $item)
                     <div class="group relative bg-brand-black p-8 transition-colors duration-500 hover:bg-brand-black-soft sm:p-10 lg:p-12">
-                        <span class="absolute right-6 top-6 font-display text-sm italic text-white/20">0{{ $i + 1 }}</span>
+                        <span class="absolute right-6 top-6 font-display text-sm italic text-white/50">0{{ $i + 1 }}</span>
                         <div class="mb-6 flex h-14 w-14 items-center justify-center border border-brand-red/60 text-brand-red transition-colors duration-500 group-hover:bg-brand-red group-hover:text-white sm:h-16 sm:w-16">
                             <x-dynamic-component :component="'lucide-'.$item['icon']" class="h-6 w-6" stroke-width="1.5" />
                         </div>

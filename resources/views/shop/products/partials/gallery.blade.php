@@ -4,7 +4,9 @@
     <div class="group relative aspect-[4/5] w-full overflow-hidden rounded-lg border border-border bg-cream"
          x-on:touchstart.passive="touchStart($event)" x-on:touchend.passive="touchEnd($event)">
         @if($first)
+            @php($firstSet = \App\Support\Storefront\ImageVariant::srcset($first['url'], [480, 640, 768, 960, 1280]))
             <img src="{{ $first['url'] }}" :src="active.url" alt="{{ $first['alt'] }}" :alt="active.alt" data-bsf-img data-fallback-label="{{ $product->name }}"
+                 @if($firstSet) srcset="{{ $firstSet }}" @endif :srcset="bsf.srcset(active.url, [480, 640, 768, 960, 1280])"
                  data-fallback-class="absolute inset-0 h-full w-full" onerror="bsfImgError(this)" loading="eager" fetchpriority="high" decoding="async"
                  sizes="(max-width: 1024px) 100vw, 50vw" class="absolute inset-0 h-full w-full object-cover">
         @else
@@ -31,7 +33,7 @@
             <button type="button" x-on:click="go(i)" :aria-label="`View image ${i + 1}`"
                     class="relative h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 overflow-hidden rounded-md border transition"
                     :class="i === index ? 'border-brand-black' : 'border-border hover:border-ink-30'">
-                <img :src="img.url" :alt="img.alt" :data-fallback-label="name" data-bsf-img data-fallback-class="absolute inset-0 h-full w-full"
+                <img :src="img.url" :srcset="bsf.srcset(img.url, [96, 160])" :alt="img.alt" :data-fallback-label="name" data-bsf-img data-fallback-class="absolute inset-0 h-full w-full"
                      onerror="bsfImgError(this)" loading="lazy" decoding="async" sizes="80px" class="absolute inset-0 h-full w-full object-cover">
             </button>
         </template>

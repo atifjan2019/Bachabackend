@@ -9,12 +9,24 @@
     'width' => null,
     'height' => null,
     'sizes' => null,
+    'widths' => null,         // srcset candidates (variant widths); defaults from sizes/width
 ])
 @php
     $src = is_string($src) ? trim($src) : '';
     $label = trim((string) ($label ?? $alt));
     $classes = $attributes->get('class', '');
     $layout = $fill ? 'absolute inset-0 h-full w-full' : '';
+    // Resized variants (ImageVariant) when the slot size is known: fluid
+    // candidates for a `sizes` image, 1x/2x for a fixed-width one.
+    $srcset = null;
+    if ($src !== '' && ($widths || $sizes || $width)) {
+        $candidates = $widths ?: ($sizes ? \App\Support\Storefront\ImageVariant::FLUID : [(int) $width, (int) $width * 2]);
+        $candidates = array_values(array_filter($candidates, fn ($w) => in_array($w, \App\Support\Storefront\ImageVariant::WIDTHS, true)));
+        $srcset = $candidates ? \App\Support\Storefront\ImageVariant::srcset($src, $candidates) : null;
+        if ($srcset && ! $sizes) {
+            $sizes = $width.'px';
+        }
+    }
 @endphp
 @if($src === '')
     @if($fallback !== 'none')
@@ -36,7 +48,8 @@
         decoding="async"
         @if($width) width="{{ $width }}" @endif
         @if($height) height="{{ $height }}" @endif
-        @if($sizes) sizes="{{ $sizes }}" @endif
+        @if($srcset) srcset="{{ $srcset }}" @endif
+        @if($sizes && $srcset) sizes="{{ $sizes }}" @endif
         {{ $attributes->except('class')->merge(['class' => trim($layout.' '.$classes)]) }}
     >
 @endif

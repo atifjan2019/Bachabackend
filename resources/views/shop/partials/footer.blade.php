@@ -58,7 +58,7 @@
             <div>
                 <div class="mb-5 flex items-center gap-2">
                     <span class="h-[2px] w-5 bg-brand-red"></span>
-                    <h4 class="text-[11px] font-bold uppercase tracking-[0.28em] text-brand-red">{{ $title }}</h4>
+                    <h2 class="text-[11px] font-bold uppercase tracking-[0.28em] text-brand-red">{{ $title }}</h2>
                 </div>
                 <ul class="space-y-3 text-sm">
                     @foreach($links as $l)

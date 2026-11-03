@@ -67,8 +67,8 @@ class MediaController extends Controller
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
 
         $diskName = config('filesystems.default');
-        $path = $file->storeAs('media', $filename, $diskName);
-        $url = Storage::disk($diskName)->url($path);
+        $path = 'media/'.$filename;
+        $url = media_store($file, 'media', $filename);
 
         Media::create([
             'file_name' => $file->getClientOriginalName(),

@@ -170,6 +170,21 @@ export async function copyText(text) {
 export const PK_PHONE = /^(\+92|0)?3[0-9]{9}$/;
 
 /** Stock badge label/tone for a variant stock count. */
+/**
+ * srcset of resized variants for a media-bucket image (mirrors
+ * App\Support\Storefront\ImageVariant). Returns null for any other source,
+ * which leaves the plain src in charge.
+ */
+export function srcset(url, widths = [320, 480, 640, 960, 1280], format = 'webp') {
+    const origin = (config().media || '').replace(/\/$/, '');
+    const allowed = config().imgWidths || [];
+    if (!url || !origin || typeof url !== 'string' || !url.startsWith(origin + '/')) return null;
+    const path = url.slice(origin.length + 1);
+    if (/[?#]/.test(path) || path.includes('..') || !/^[A-Za-z0-9_\-./%]+\.(jpe?g|png|webp|avif|gif|jfif)$/i.test(path)) return null;
+    const parts = widths.filter((w) => allowed.includes(w)).map((w) => `/img/${w}/m/${path}.${format} ${w}w`);
+    return parts.length ? parts.join(', ') : null;
+}
+
 export function stockStatus(stock, lowThreshold = 3) {
     if (stock <= 0) return { label: 'Out of Stock', tone: 'gray' };
     if (stock <= lowThreshold) return { label: `Only ${stock} left`, tone: 'amber' };
@@ -177,6 +192,7 @@ export function stockStatus(stock, lowThreshold = 3) {
 }
 
 window.bsf = {
+    srcset,
     pkr,
     shippingRule,
     shippingFor,

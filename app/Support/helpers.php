@@ -1,6 +1,9 @@
 <?php
 
 use App\Support\Storefront\SiteSettings;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 if (! function_exists('pkr')) {
     /**
@@ -44,5 +47,23 @@ if (! function_exists('site')) {
     function site(): SiteSettings
     {
         return app(SiteSettings::class);
+    }
+}
+
+if (! function_exists('media_store')) {
+    /**
+     * Store an admin upload on the media disk and return its public URL.
+     *
+     * Files get a UUID name, so they never change once written: the one-year
+     * cache header lets browsers and the bucket's CDN keep them that long
+     * instead of re-fetching every few hours.
+     */
+    function media_store(UploadedFile $file, string $dir, ?string $filename = null): string
+    {
+        $disk = config('filesystems.default');
+        $filename = $filename ?: Str::uuid().'.'.$file->getClientOriginalExtension();
+        $file->storeAs($dir, $filename, ['disk' => $disk, 'CacheControl' => 'public, max-age=31536000, immutable']);
+
+        return Storage::disk($disk)->url(trim($dir, '/').'/'.$filename);
     }
 }

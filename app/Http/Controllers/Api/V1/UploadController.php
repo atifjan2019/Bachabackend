@@ -21,9 +21,8 @@ class UploadController extends Controller
         $file = $request->file('file');
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
         $disk = config('filesystems.default');
-        $path = $file->storeAs($folder, $filename, $disk);
-
-        $url = Storage::disk($disk)->url($path);
+        $path = trim($folder, '/').'/'.$filename;
+        $url = media_store($file, $folder, $filename);
 
         return response()->json([
             'url' => $url,

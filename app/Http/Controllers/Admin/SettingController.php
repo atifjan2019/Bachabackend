@@ -130,73 +130,49 @@ class SettingController extends Controller
         // Handle logo file upload
         if ($request->hasFile('logo_file')) {
             $file = $request->file('logo_file');
-            $filename = 'logo-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = config('filesystems.default');
-            $file->storeAs('branding', $filename, $disk);
-            $validated['logo_url'] = Storage::disk($disk)->url('branding/' . $filename);
+            $validated['logo_url'] = media_store($file, 'branding', 'logo-'.Str::uuid().'.'.$file->getClientOriginalExtension());
         }
 
         // Handle footer logo file upload
         if ($request->hasFile('footer_logo_file')) {
             $file = $request->file('footer_logo_file');
-            $filename = 'footer-logo-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = config('filesystems.default');
-            $file->storeAs('branding', $filename, $disk);
-            $validated['footer_logo_url'] = Storage::disk($disk)->url('branding/' . $filename);
+            $validated['footer_logo_url'] = media_store($file, 'branding', 'footer-logo-'.Str::uuid().'.'.$file->getClientOriginalExtension());
         }
 
         // Handle favicon file upload
         if ($request->hasFile('favicon_file')) {
             $file = $request->file('favicon_file');
-            $filename = 'favicon-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = config('filesystems.default');
-            $file->storeAs('branding', $filename, $disk);
-            $validated['favicon_url'] = Storage::disk($disk)->url('branding/' . $filename);
+            $validated['favicon_url'] = media_store($file, 'branding', 'favicon-'.Str::uuid().'.'.$file->getClientOriginalExtension());
         }
 
         // Handle homepage highlight image upload
         if ($request->hasFile('home_highlight_image_file')) {
             $file = $request->file('home_highlight_image_file');
-            $filename = 'highlight-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = config('filesystems.default');
-            $file->storeAs('branding', $filename, $disk);
-            $validated['home_highlight_image'] = Storage::disk($disk)->url('branding/' . $filename);
+            $validated['home_highlight_image'] = media_store($file, 'branding', 'highlight-'.Str::uuid().'.'.$file->getClientOriginalExtension());
         }
 
         // Handle intro banner image upload
         if ($request->hasFile('intro_image_file')) {
             $file = $request->file('intro_image_file');
-            $filename = 'intro-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = config('filesystems.default');
-            $file->storeAs('branding', $filename, $disk);
-            $validated['intro_image'] = Storage::disk($disk)->url('branding/' . $filename);
+            $validated['intro_image'] = media_store($file, 'branding', 'intro-'.Str::uuid().'.'.$file->getClientOriginalExtension());
         }
 
         // Handle intro video upload (falls back to a pasted URL otherwise)
         if ($request->hasFile('intro_video_file')) {
             $file = $request->file('intro_video_file');
-            $filename = 'intro-video-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = config('filesystems.default');
-            $file->storeAs('branding', $filename, $disk);
-            $validated['intro_video_url'] = Storage::disk($disk)->url('branding/' . $filename);
+            $validated['intro_video_url'] = media_store($file, 'branding', 'intro-video-'.Str::uuid().'.'.$file->getClientOriginalExtension());
         }
 
         // Handle promo popup image upload
         if ($request->hasFile('promo_image_file')) {
             $file = $request->file('promo_image_file');
-            $filename = 'promo-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = config('filesystems.default');
-            $file->storeAs('branding', $filename, $disk);
-            $validated['promo_image'] = Storage::disk($disk)->url('branding/' . $filename);
+            $validated['promo_image'] = media_store($file, 'branding', 'promo-'.Str::uuid().'.'.$file->getClientOriginalExtension());
         }
 
         // Handle promo popup video upload (falls back to a pasted URL otherwise)
         if ($request->hasFile('promo_video_file')) {
             $file = $request->file('promo_video_file');
-            $filename = 'promo-video-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $disk = config('filesystems.default');
-            $file->storeAs('branding', $filename, $disk);
-            $validated['promo_video_url'] = Storage::disk($disk)->url('branding/' . $filename);
+            $validated['promo_video_url'] = media_store($file, 'branding', 'promo-video-'.Str::uuid().'.'.$file->getClientOriginalExtension());
         }
 
         // Remove buttons: clear the stored value unless a replacement was just
