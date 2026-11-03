@@ -34,7 +34,7 @@ class PerformanceMarkupTest extends TestCase
             ->assertSee('srcset="/img/320/m/categories/c1.png.webp 320w, /img/360/m/categories/c1.png.webp 360w, /img/480/m/categories/c1.png.webp 480w', false);
         $this->get('/products')->assertOk()
             ->assertSee('/img/480/m/products/p1.jpg.webp 480w', false)
-            ->assertSee('sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"', false);
+            ->assertSee('sizes="(max-width: 640px) calc(50vw - 22px), (max-width: 1024px) calc(33vw - 16px), 300px"', false);
         $this->get('/products/ruby-shawl')->assertOk()
             ->assertSee('/img/768/m/products/p1.jpg.webp 768w', false);
     }

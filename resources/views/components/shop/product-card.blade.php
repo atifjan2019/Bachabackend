@@ -7,7 +7,7 @@
 <a href="{{ $product->url() }}" class="group relative block">
     <div class="relative aspect-[4/5] bg-surface-sunken overflow-hidden">
         <x-shop.img :src="$image['url'] ?? null" :alt="$image['alt'] ?? $product->name" :label="$product->name" fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            sizes="(max-width: 640px) calc(50vw - 22px), (max-width: 1024px) calc(33vw - 16px), 300px"
             class="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]" />
 
         <div class="absolute inset-0 bg-gradient-to-t from-brand-black/80 via-brand-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
