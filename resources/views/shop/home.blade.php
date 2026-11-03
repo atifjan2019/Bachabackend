@@ -52,17 +52,17 @@
                         </div>
                         <div class="pointer-events-none absolute inset-3 sm:inset-4 border border-white/0 transition-colors duration-500 group-hover:border-white/25"></div>
                         <div class="absolute left-0 top-0 h-0.5 w-0 bg-brand-red transition-all duration-500 ease-out group-hover:w-full"></div>
-                        <div class="absolute right-3 top-3 sm:right-4 sm:top-4 flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur-md transition-all duration-500 group-hover:border-brand-red group-hover:bg-brand-red sm:h-9 sm:w-9">
-                            <x-lucide-arrow-up-right class="h-4 w-4 transition-transform duration-500 group-hover:rotate-45" stroke-width="2" />
+                        <div class="absolute right-2.5 top-2.5 sm:right-4 sm:top-4 flex h-7 w-7 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur-md transition-all duration-500 group-hover:border-brand-red group-hover:bg-brand-red sm:h-9 sm:w-9">
+                            <x-lucide-arrow-up-right class="h-3.5 w-3.5 transition-transform duration-500 group-hover:rotate-45 sm:h-4 sm:w-4" stroke-width="2" />
                         </div>
-                        <div class="absolute inset-x-0 bottom-0 p-3.5 sm:p-4 lg:p-5">
-                            <div class="mb-1.5 flex items-center gap-2">
-                                <span class="font-display text-xs italic text-brand-red sm:text-sm">{{ str_pad($idx + 1, 2, "0", STR_PAD_LEFT) }}</span>
-                                <span class="h-px w-6 bg-gradient-to-r from-brand-red to-transparent sm:w-8"></span>
+                        <div class="absolute inset-x-0 bottom-0 p-3 sm:p-4 lg:p-5">
+                            <div class="mb-1 flex items-center gap-1.5 sm:mb-1.5 sm:gap-2">
+                                <span class="font-display text-[11px] italic text-brand-red sm:text-sm">{{ str_pad($idx + 1, 2, "0", STR_PAD_LEFT) }}</span>
+                                <span class="h-px w-5 bg-gradient-to-r from-brand-red to-transparent sm:w-8"></span>
                             </div>
-                            <h3 class="font-display text-base font-bold leading-tight text-white transition-transform duration-500 ease-out group-hover:-translate-y-0.5 sm:text-lg lg:text-xl">{{ $c->name }}</h3>
-                            <div class="mt-1.5 inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/70 transition-colors duration-300 group-hover:text-white sm:mt-2">
-                                <span class="h-px w-4 bg-brand-red transition-all duration-500 group-hover:w-7"></span>
+                            <h3 class="font-display text-[13px] font-bold leading-snug text-white transition-transform duration-500 ease-out group-hover:-translate-y-0.5 sm:text-lg sm:leading-tight lg:text-xl">{{ $c->name }}</h3>
+                            <div class="mt-1 inline-flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-white/70 transition-colors duration-300 group-hover:text-white sm:mt-2 sm:gap-2 sm:text-[10px] sm:tracking-[0.2em]">
+                                <span class="h-px w-3 bg-brand-red transition-all duration-500 group-hover:w-7 sm:w-4"></span>
                                 Shop Now
                             </div>
                         </div>
