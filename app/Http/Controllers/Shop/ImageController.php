@@ -101,18 +101,26 @@ class ImageController extends Controller
     {
         // Some uploads are AVIF behind a .png/.jpg name; whichever library
         // on this machine can decode the bytes wins.
+        // ImageMagick's HEIF decoder has dropped AVIF alpha channels (a logo
+        // came out on black), so AVIF goes to GD first; everything else to
+        // ImageMagick first, which resizes with better quality.
+        $isAvif = substr($bytes, 4, 8) === 'ftypavif' || substr($bytes, 4, 4) === 'ftyp';
+        $order = $isAvif ? ['gd', 'imagick'] : ['imagick', 'gd'];
         $errors = [];
-        if (class_exists(\Imagick::class)) {
+        foreach ($order as $engine) {
             try {
-                return self::renderImagick($bytes, $width, $format);
+                if ($engine === 'imagick') {
+                    if (! class_exists(\Imagick::class)) {
+                        continue;
+                    }
+
+                    return self::renderImagick($bytes, $width, $format);
+                }
+
+                return self::renderGd($bytes, $width, $format);
             } catch (\Throwable $e) {
-                $errors[] = 'imagick: '.$e->getMessage();
+                $errors[] = $engine.': '.$e->getMessage();
             }
-        }
-        try {
-            return self::renderGd($bytes, $width, $format);
-        } catch (\Throwable $e) {
-            $errors[] = 'gd: '.$e->getMessage();
         }
 
         throw new \RuntimeException(implode(' | ', $errors));

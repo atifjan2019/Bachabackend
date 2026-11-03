@@ -10,6 +10,7 @@
     'height' => null,
     'sizes' => null,
     'widths' => null,         // srcset candidates (variant widths); defaults from sizes/width
+    'variants' => true,       // false: always serve the original file (logos)
 ])
 @php
     $src = is_string($src) ? trim($src) : '';
@@ -19,7 +20,7 @@
     // Resized variants (ImageVariant) when the slot size is known: fluid
     // candidates for a `sizes` image, 1x/2x for a fixed-width one.
     $srcset = null;
-    if ($src !== '' && ($widths || $sizes || $width)) {
+    if ($variants && $src !== '' && ($widths || $sizes || $width)) {
         $candidates = $widths ?: ($sizes ? \App\Support\Storefront\ImageVariant::FLUID : [(int) $width, (int) $width * 2]);
         $candidates = array_values(array_filter($candidates, fn ($w) => in_array($w, \App\Support\Storefront\ImageVariant::WIDTHS, true)));
         $srcset = $candidates ? \App\Support\Storefront\ImageVariant::srcset($src, $candidates) : null;
