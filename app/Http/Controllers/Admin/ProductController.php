@@ -114,6 +114,31 @@ class ProductController extends Controller
     }
 
     /**
+     * Drag-and-drop from the list: the ids of the rows on the page in their
+     * new order, plus how many rows precede the page. Every dropped row gets
+     * an explicit position (offset + place), so the order holds across pages
+     * and the number boxes update to match.
+     */
+    public function reorder(Request $request)
+    {
+        $data = $request->validate([
+            'ids' => 'required|array|min:1|max:200',
+            'ids.*' => 'integer|distinct',
+            'offset' => 'nullable|integer|min:0|max:999000',
+        ]);
+        $offset = (int) ($data['offset'] ?? 0);
+
+        $positions = [];
+        foreach (array_values($data['ids']) as $index => $id) {
+            $positions[$id] = $offset + $index + 1;
+            Product::where('id', $id)->update(['sort_order' => $positions[$id]]);
+        }
+        Cache::flush();
+
+        return response()->json(['ok' => true, 'positions' => $positions]);
+    }
+
+    /**
      * Where to send the admin after saving: the product list page they came
      * from (page number and search kept), never page 1 by default. Only an
      * admin products-list URL is accepted so this can't redirect elsewhere.

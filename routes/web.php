@@ -88,11 +88,13 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::patch('products/{id}/quick', [ProductController::class, 'quick'])->name('products.quick');
+    Route::post('products/reorder', [ProductController::class, 'reorder'])->name('products.reorder');
     Route::resource('products', ProductController::class);
     Route::resource('orders', OrderController::class)->except(['create', 'store']);
     Route::post('orders/{id}/comments', [OrderController::class, 'addComment'])->name('orders.comments.store');
     Route::post('orders/{id}/comments/{comment}/resend', [OrderController::class, 'resendComment'])->name('orders.comments.resend');
     Route::patch('categories/{id}/quick', [CategoryController::class, 'quick'])->name('categories.quick');
+    Route::post('categories/reorder', [CategoryController::class, 'reorder'])->name('categories.reorder');
     Route::resource('categories', CategoryController::class);
     Route::resource('customers', CustomerController::class)->only(['index', 'show', 'destroy']);
     Route::get('newsletter', [\App\Http\Controllers\Admin\NewsletterController::class, 'index'])->name('newsletter.index');

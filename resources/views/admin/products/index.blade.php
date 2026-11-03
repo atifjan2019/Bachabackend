@@ -5,7 +5,7 @@
 <div class="ph">
     <div>
         <h4>Products</h4>
-        <div class="ph-sub">{{ $products->total() }} total products</div>
+        <div class="ph-sub">{{ $products->total() }} total products <span class="mx-1">&bull;</span> <i class="mdi mdi-drag-vertical"></i> {{ empty($q) ? 'Drag rows to reorder' : 'Clear the search to drag rows' }}</div>
     </div>
     <div class="page-actions">
         <form method="GET" action="{{ route('admin.products.index') }}" style="display:flex;gap:6px;align-items:center;">
@@ -26,6 +26,7 @@
         <table class="table table-stack mb-0">
             <thead>
                 <tr>
+                    <th></th>
                     <th>Product</th>
                     <th>Category</th>
                     <th>Price</th>
@@ -36,9 +37,10 @@
                     <th></th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody data-reorder-url="{{ route('admin.products.reorder') }}" data-reorder-offset="{{ ($products->currentPage() - 1) * $products->perPage() }}" @if(!empty($q)) data-reorder-disabled @endif>
                 @forelse($products as $product)
-                <tr>
+                <tr @if(empty($q)) draggable="true" @endif data-id="{{ $product->id }}">
+                    <td data-label="" class="drag-handle" title="{{ empty($q) ? 'Drag to reorder' : 'Clear the search to drag' }}"><i class="mdi mdi-drag-vertical"></i></td>
                     <td data-label="Product">
                         <div class="entity">
                             @if($product->image)
@@ -94,7 +96,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" class="empty-state">
+                    <td colspan="9" class="empty-state">
                         <i class="mdi mdi-package-variant"></i>
                         <strong>No products yet</strong>
                         Add your first product to start building the catalog.

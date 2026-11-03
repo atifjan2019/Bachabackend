@@ -4,6 +4,11 @@
     PATCHes just that field and flashes the control green or red.
 --}}
 <style>
+.drag-handle { cursor: grab; color: var(--t4); text-align: center; width: 36px; user-select: none; }
+.drag-handle i { font-size: 1.2rem; }
+tr.dragging { opacity: .45; }
+tr.drag-over td { box-shadow: inset 0 2px 0 var(--red); }
+tbody[data-reorder-url][data-reorder-disabled] .drag-handle { cursor: not-allowed; opacity: .35; }
 .quick-order { width: 72px; height: 32px; padding: 2px 8px; font-size: .8rem; text-align: center; }
 .quick-cell { display: flex; align-items: center; gap: 8px; }
 .quick-state { font-size: .68rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
@@ -30,6 +35,61 @@
             body: JSON.stringify(payload)
         }).then(function (r) { if (!r.ok) throw r; return r.json(); });
     }
+    /* ---------- Drag & drop reordering (tbody[data-reorder-url]) ---------- */
+    var tbody = document.querySelector('tbody[data-reorder-url]');
+    if (tbody && !tbody.hasAttribute('data-reorder-disabled')) {
+        var dragEl = null;
+        var rows = function () { return Array.from(tbody.querySelectorAll('tr[data-id]')); };
+
+        tbody.addEventListener('dragstart', function (e) {
+            var row = e.target.closest('tr[data-id]');
+            if (!row) return;
+            dragEl = row;
+            row.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            try { e.dataTransfer.setData('text/plain', row.dataset.id); } catch (err) {}
+        });
+        tbody.addEventListener('dragend', function () {
+            if (dragEl) dragEl.classList.remove('dragging');
+            rows().forEach(function (r) { r.classList.remove('drag-over'); });
+            dragEl = null;
+        });
+        tbody.addEventListener('dragover', function (e) {
+            if (!dragEl) return;
+            e.preventDefault();
+            var over = e.target.closest('tr[data-id]');
+            if (!over || over === dragEl) return;
+            rows().forEach(function (r) { r.classList.remove('drag-over'); });
+            over.classList.add('drag-over');
+            var rect = over.getBoundingClientRect();
+            var after = (e.clientY - rect.top) > rect.height / 2;
+            tbody.insertBefore(dragEl, after ? over.nextSibling : over);
+        });
+        tbody.addEventListener('drop', function (e) {
+            if (!dragEl) return;
+            e.preventDefault();
+            rows().forEach(function (r) { r.classList.remove('drag-over'); });
+            var ids = rows().map(function (r) { return r.dataset.id; });
+            fetch(tbody.dataset.reorderUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ ids: ids, offset: parseInt(tbody.dataset.reorderOffset || '0', 10) })
+            }).then(function (r) { if (!r.ok) throw r; return r.json(); }).then(function (d) {
+                rows().forEach(function (r) {
+                    var box = r.querySelector('[data-quick-field="sort_order"]');
+                    if (box && d.positions[r.dataset.id] !== undefined) { box.value = d.positions[r.dataset.id]; flash(box, 'quick-saved'); }
+                });
+            }).catch(function () {
+                alert('Could not save the new order. Please reload and try again.');
+            });
+        });
+    }
+
     document.addEventListener('change', function (e) {
         var el = e.target;
         if (!el.dataset || !el.dataset.quickUrl) return;

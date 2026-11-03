@@ -125,6 +125,31 @@ class CategoryController extends Controller
         return response()->json(['ok' => true, 'is_active' => $category->is_active, 'sort_order' => $category->sort_order]);
     }
 
+    /**
+     * Drag-and-drop from the list: the ids of the rows on the page in their
+     * new order, plus how many rows precede the page. Every dropped row gets
+     * an explicit position (offset + place), so the order holds across pages
+     * and the number boxes update to match.
+     */
+    public function reorder(Request $request)
+    {
+        $data = $request->validate([
+            'ids' => 'required|array|min:1|max:200',
+            'ids.*' => 'integer|distinct',
+            'offset' => 'nullable|integer|min:0|max:999000',
+        ]);
+        $offset = (int) ($data['offset'] ?? 0);
+
+        $positions = [];
+        foreach (array_values($data['ids']) as $index => $id) {
+            $positions[$id] = $offset + $index + 1;
+            Category::where('id', $id)->update(['sort_order' => $positions[$id]]);
+        }
+        Cache::flush();
+
+        return response()->json(['ok' => true, 'positions' => $positions]);
+    }
+
     /** Status switch (a checkbox only posts when ticked) and the order number (blank → none). */
     private function visibility(Request $request): array
     {

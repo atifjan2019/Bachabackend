@@ -75,4 +75,24 @@ class VisibilityQuickEditTest extends TestCase
         $this->actingAs($admin, 'admin')->get(route('admin.products.edit', Product::first()->id))->assertOk()
             ->assertSee('Active (shown on the website)');
     }
+
+    public function test_drag_reorder_numbers_the_dropped_rows_from_the_page_offset(): void
+    {
+        $admin = $this->admin();
+        $a = Category::create(['name' => 'A', 'slug' => 'a']);
+        $b = Category::create(['name' => 'B', 'slug' => 'b']);
+        $c = Category::create(['name' => 'C', 'slug' => 'c', 'sort_order' => 1]);
+
+        $this->actingAs($admin, 'admin')->postJson(route('admin.categories.reorder'), ['ids' => [$b->id, $a->id, $c->id]])
+            ->assertOk()->assertJson(['positions' => [$b->id => 1, $a->id => 2, $c->id => 3]]);
+        $this->assertSame(['b', 'a', 'c'], Category::query()->ordered()->pluck('slug')->all());
+
+        $p1 = Product::create(['name' => 'P1', 'slug' => 'p1', 'price' => '1']);
+        $p2 = Product::create(['name' => 'P2', 'slug' => 'p2', 'price' => '1']);
+        $this->actingAs($admin, 'admin')->postJson(route('admin.products.reorder'), ['ids' => [$p2->id, $p1->id], 'offset' => 20])
+            ->assertOk()->assertJson(['positions' => [$p2->id => 21, $p1->id => 22]]);
+        $this->assertDatabaseHas('products', ['id' => $p1->id, 'sort_order' => 22]);
+
+        $this->actingAs($admin, 'admin')->postJson(route('admin.products.reorder'), ['ids' => []])->assertStatus(422);
+    }
 }

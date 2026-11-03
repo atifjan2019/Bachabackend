@@ -5,7 +5,7 @@
 <div class="ph">
     <div>
         <h4>Categories</h4>
-        <div class="ph-sub">{{ $categories->total() }} total categories</div>
+        <div class="ph-sub">{{ $categories->total() }} total categories <span class="mx-1">&bull;</span> <i class="mdi mdi-drag-vertical"></i> Drag rows to reorder</div>
     </div>
     <div class="page-actions">
         <a href="{{ route('admin.categories.create') }}" class="btn btn-primary">
@@ -19,6 +19,7 @@
         <table class="table table-stack mb-0">
             <thead>
                 <tr>
+                    <th></th>
                     <th>Category</th>
                     <th>Slug</th>
                     <th>Status</th>
@@ -27,9 +28,10 @@
                     <th></th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody data-reorder-url="{{ route('admin.categories.reorder') }}" data-reorder-offset="{{ ($categories->currentPage() - 1) * $categories->perPage() }}">
                 @forelse($categories as $cat)
-                <tr>
+                <tr draggable="true" data-id="{{ $cat->id }}">
+                    <td data-label="" class="drag-handle" title="Drag to reorder"><i class="mdi mdi-drag-vertical"></i></td>
                     <td data-label="Category">
                         <div class="entity">
                             @if($cat->image)
@@ -81,7 +83,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="empty-state">
+                    <td colspan="7" class="empty-state">
                         <i class="mdi mdi-shape-outline"></i>
                         <strong>No categories yet</strong>
                         Create category groupings to keep the catalog organized.
