@@ -8,6 +8,7 @@ use App\Support\Storefront\Catalog;
 use App\Support\Storefront\ProductQuery;
 use App\Support\Storefront\Sizes;
 use App\Support\Storefront\StorefrontProduct;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
@@ -65,10 +66,19 @@ class ProductController extends Controller
     }
 
     /** Product detail page. */
-    public function show(string $slug): View
+    public function show(string $slug): View|RedirectResponse
     {
         $model = Cache::remember('storefront.product.'.md5($slug), Catalog::TTL, fn () => Product::query()->storefront()->where('slug', $slug)->first());
-        abort_unless($model, 404);
+        if (! $model) {
+            // The slug was renamed in the admin: send the old link to the new one.
+            $renamed = Product::hasColumn('previous_slug')
+                ? Product::query()->storefront()->where('previous_slug', $slug)->whereNotNull('slug')->first()
+                : null;
+            if ($renamed && $renamed->slug !== $slug) {
+                return redirect()->route('shop.product', $renamed->slug, 301);
+            }
+            abort(404);
+        }
 
         $product = StorefrontProduct::make($model);
         $settings = site();

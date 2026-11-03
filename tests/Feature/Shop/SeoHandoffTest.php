@@ -96,4 +96,22 @@ class SeoHandoffTest extends TestCase
         $this->assertMatchesRegularExpression('#href="[^"]*/shipping"[^>]*>[^<]*Shipping#', $this->get('/')->assertOk()->getContent());
         $this->get('/sitemap.xml')->assertOk()->assertSee('https://www.bachastylo.com/shipping');
     }
+
+    public function test_a_renamed_slug_redirects_the_old_url_to_the_new_one(): void
+    {
+        $product = Product::create(['name' => 'Kids Waistcoat', 'slug' => 'kids-waistcoat-black-red', 'price' => '1']);
+        $product->update(['slug' => 'kids-waistcoat-black-white']);
+        $this->assertSame('kids-waistcoat-black-red', $product->fresh()->previous_slug);
+
+        $this->get('/products/kids-waistcoat-black-red')
+            ->assertStatus(301)
+            ->assertRedirect('/products/kids-waistcoat-black-white');
+        $this->get('/products/kids-waistcoat-black-white')->assertOk();
+        $this->get('/products/never-existed')->assertNotFound();
+
+        // A hidden product's old link does not leak it.
+        $product->update(['is_active' => false]);
+        \Illuminate\Support\Facades\Cache::flush();
+        $this->get('/products/kids-waistcoat-black-red')->assertNotFound();
+    }
 }

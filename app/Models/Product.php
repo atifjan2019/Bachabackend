@@ -197,6 +197,15 @@ class Product extends Model
             if (array_key_exists('sku', $product->getAttributes())) {
                 $product->sku = static::normaliseSku($product->sku);
             }
+
+            // A renamed slug leaves its old URL behind: remember it so the
+            // product page can 301 visitors who still hold the old link.
+            if ($product->exists && $product->isDirty('slug') && static::hasColumn('previous_slug')) {
+                $old = trim((string) $product->getOriginal('slug'));
+                if ($old !== '' && $old !== trim((string) $product->slug)) {
+                    $product->previous_slug = $old;
+                }
+            }
         });
 
         static::created(function (Product $product) {

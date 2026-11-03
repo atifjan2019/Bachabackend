@@ -99,7 +99,9 @@ forms or inline on the admin lists (`PATCH admin/{categories,products}/{id}/quic
   are the /products listing. `SiteSettings::pageTitle()` strips a trailing "| Bacha Stylo" because the
   layout appends the business name. Inline `@section('title', $x)` values are HTML-escaped by Blade; the
   layout decodes them before escaping once (never pass pre-escaped strings as component attributes).
-- Admin product slugs must be unique (validation); blank slugs auto-suffix `-2`, `-3`.
+- Admin product slugs must be unique (validation); blank slugs auto-suffix `-2`, `-3`. Renaming a slug stores
+  the old one in `previous_slug`, and `/products/{old}` 301s to the new URL (not for the shared-slug
+  products of the SEO handoff, which were split by SQL and never had their own URL).
 
 ## Components (`<x-shop.*>`)
 
