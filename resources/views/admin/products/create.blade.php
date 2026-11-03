@@ -120,6 +120,12 @@
                             <div id="preview-main" class="preview-box" style="display:none; margin-top:8px;"><img src="" alt="Preview" style="max-height:160px; border-radius:6px;"></div>
                             <input type="hidden" name="image" value="{{ old('image') }}">
                         </div>
+                            <div class="form-group mt-2 mb-0">
+                                <label class="form-label">Main Image ALT Text</label>
+                                <input type="text" name="image_alt" class="form-control" maxlength="255" value="{{ old('image_alt') }}" placeholder="e.g. Maroon Karandi waistcoat for men, front view">
+                                <div class="form-hint">Describes the photo for search engines and screen readers. Leave blank to use the product name.</div>
+                            </div>
+                        </div>
 
                         <div class="col-12">
                             <label class="form-label">Gallery Images</label>
@@ -127,6 +133,12 @@
                             <span class="btn-library" onclick="openMediaPicker('gallery', true)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
                             <div id="preview-gallery" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;"></div>
                             <input type="hidden" name="gallery" value="{{ old('gallery') }}">
+                        </div>
+                            <div class="form-group mt-2 mb-0">
+                                <label class="form-label">Gallery ALT Texts</label>
+                                <textarea name="gallery_alts" class="form-control" rows="3" placeholder="One line per gallery image, in the same order">{{ old('gallery_alts') }}</textarea>
+                                <div class="form-hint">First line describes the first gallery image, and so on. Blank lines use the product name.</div>
+                            </div>
                         </div>
                         <div class="col-12">
                             <label class="form-label">Video URL</label>

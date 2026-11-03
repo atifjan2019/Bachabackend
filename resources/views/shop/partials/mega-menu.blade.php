@@ -69,7 +69,7 @@
             <a href="{{ route('shop.products', ['category' => $featured->slug]) }}" @click="shop = false"
                class="group/feat relative hidden md:flex flex-col justify-between overflow-hidden bg-brand-black p-6 text-white min-h-[340px]">
                 @if($featured->image)
-                    <x-shop.img :src="$featured->image" :alt="$featured->name" fill fallback="none" sizes="300px"
+                    <x-shop.img :src="$featured->image" :alt="$featured->image_alt ?: $featured->name" fill fallback="none" sizes="300px"
                         class="absolute inset-0 h-full w-full object-cover opacity-40 transition-all duration-700 group-hover/feat:opacity-60 group-hover/feat:scale-105" />
                 @endif
                 <div class="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/60 to-brand-black/30"></div>

@@ -44,6 +44,9 @@ class CategoryController extends Controller
             'parent_id' => 'nullable|exists:categories,id',
             'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,avif|max:10240',
             'sort_order' => self::SORT_ORDER_RULE,
+            'image_alt' => 'nullable|string|max:255',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string|max:500',
         ]);
         $data = $request->except(['_token', 'image_file']);
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
@@ -73,6 +76,9 @@ class CategoryController extends Controller
             'parent_id' => 'nullable|exists:categories,id',
             'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,avif|max:10240',
             'sort_order' => self::SORT_ORDER_RULE,
+            'image_alt' => 'nullable|string|max:255',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string|max:500',
         ]);
         $data = $request->except(['_token', '_method', 'image_file']);
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);

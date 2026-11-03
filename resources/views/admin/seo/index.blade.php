@@ -17,13 +17,13 @@
                 <div class="bcard-head"><span class="bcard-title">Homepage Meta Tags</span></div>
                 <div class="bcard-body">
                     <div class="form-group">
-                        <label class="form-label">Meta Title</label>
-                        <input type="text" name="meta_title" class="form-control" value="{{ $settings['meta_title'] ?? '' }}" placeholder="Bacha Stylo — Premium Shawls & Fabrics">
-                        <div class="form-hint">Recommended: 50–60 characters</div>
+                        <label class="form-label">Meta Title <span class="form-hint meta-count" data-for="meta_title" data-max="60"></span></label>
+                        <input type="text" name="meta_title" class="form-control" maxlength="255" value="{{ $settings['meta_title'] ?? '' }}" placeholder="Bacha Stylo — Premium Shawls & Fabrics">
+                        <div class="form-hint">Used on the homepage only. Recommended: 50–60 characters</div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Meta Description</label>
-                        <textarea name="meta_description" class="form-control" rows="3" placeholder="Shop premium quality shawls...">{{ $settings['meta_description'] ?? '' }}</textarea>
+                        <label class="form-label">Meta Description <span class="form-hint meta-count" data-for="meta_description" data-max="160"></span></label>
+                        <textarea name="meta_description" class="form-control" rows="3" maxlength="2000" placeholder="Shop premium quality shawls...">{{ $settings['meta_description'] ?? '' }}</textarea>
                         <div class="form-hint">Recommended: 150–160 characters</div>
                     </div>
                     <div class="form-group">
@@ -34,6 +34,22 @@
                         <label class="form-label">OG / Social Share Image URL</label>
                         <input type="text" name="og_image" class="form-control" value="{{ $settings['og_image'] ?? '' }}" placeholder="https://...">
                         <div class="form-hint">Used when your site is shared on social media (1200×630px recommended)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bcard">
+                <div class="bcard-head"><span class="bcard-title">Products Page Meta Tags</span></div>
+                <div class="bcard-body">
+                    <div class="form-group">
+                        <label class="form-label">Meta Title <span class="form-hint meta-count" data-for="products_meta_title" data-max="60"></span></label>
+                        <input type="text" name="products_meta_title" class="form-control" maxlength="255" value="{{ $settings['products_meta_title'] ?? '' }}" placeholder="Shop All Products">
+                        <div class="form-hint">Used on the all-products page (/products). Leave blank for "Shop". The site name is added automatically.</div>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Meta Description <span class="form-hint meta-count" data-for="products_meta_description" data-max="160"></span></label>
+                        <textarea name="products_meta_description" class="form-control" rows="3" maxlength="2000" placeholder="Browse every Bacha Stylo piece...">{{ $settings['products_meta_description'] ?? '' }}</textarea>
+                        <div class="form-hint">Recommended: 150–160 characters. Category pages use each category's own meta fields.</div>
                     </div>
                 </div>
             </div>
@@ -87,4 +103,20 @@
         </div>
     </div>
 </form>
+<script>
+(function () {
+    document.querySelectorAll('.meta-count').forEach(function (el) {
+        var field = document.querySelector('[name="' + el.dataset.for + '"]');
+        if (!field) return;
+        var max = parseInt(el.dataset.max, 10);
+        function update() {
+            var n = field.value.length;
+            el.textContent = n ? '(' + n + ' / ' + max + ')' : '';
+            el.style.color = n > max ? '#dc2626' : '';
+        }
+        field.addEventListener('input', update);
+        update();
+    });
+})();
+</script>
 @endsection

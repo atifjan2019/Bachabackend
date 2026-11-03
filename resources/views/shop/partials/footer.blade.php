@@ -8,7 +8,7 @@
         ],
         'Customer Care' => [
             ['href' => route('shop.faq'), 'label' => 'FAQ'],
-            ['href' => route('shop.contact'), 'label' => 'Shipping & Delivery'],
+            ['href' => route('shop.shipping'), 'label' => 'Shipping & Delivery'],
             ['href' => route('shop.refund'), 'label' => 'Returns & Exchanges'],
             ['href' => route('shop.contact'), 'label' => 'Contact Us'],
         ],

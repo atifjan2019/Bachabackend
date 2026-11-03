@@ -109,4 +109,13 @@ class PageController extends Controller
     {
         return view('shop.pages.refund');
     }
+
+    /** Shipping & delivery: the admin's delivery rule and policy paragraphs. */
+    public function shipping(SiteSettings $settings): View
+    {
+        return view('shop.pages.shipping', [
+            'shipping' => $settings->shippingRule(),
+            'policy' => $settings->deliveryPolicyParagraphs(),
+        ]);
+    }
 }

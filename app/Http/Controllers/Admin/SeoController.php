@@ -11,6 +11,8 @@ class SeoController extends Controller
     private const ALLOWED_KEYS = [
         'meta_title',
         'meta_description',
+        'products_meta_title',
+        'products_meta_description',
         'meta_keywords',
         'og_image',
         'google_analytics_id',
@@ -37,6 +39,8 @@ class SeoController extends Controller
         $validated = $request->validate([
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string|max:2000',
+            'products_meta_title' => 'nullable|string|max:255',
+            'products_meta_description' => 'nullable|string|max:2000',
             'meta_keywords' => 'nullable|string|max:1000',
             'og_image' => 'nullable|string|max:2000',
             'google_analytics_id' => ['nullable', 'string', 'max:100', 'regex:/^G-[A-Z0-9]+$/'],

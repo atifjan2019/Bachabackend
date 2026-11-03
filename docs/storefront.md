@@ -90,6 +90,17 @@ forms or inline on the admin lists (`PATCH admin/{categories,products}/{id}/quic
   per-visitor out of server-rendered HTML (the cart lives in the browser; signed-in customers bypass it).
 - Fonts load via `preload as=style`; GA4 and the Meta pixel load on first interaction or 5 s after load.
 
+### SEO fields
+
+- Products: `meta_title`, `meta_description`, `image_alt`, `gallery_alts` (JSON list aligned with `gallery`);
+  `StorefrontProduct::$images[*]['alt']` already resolves the fallback (name / "name image N").
+- Categories: `meta_title`, `meta_description`, `image_alt`; `Catalog::categoryTree()` carries them.
+- Settings: `meta_title`/`meta_description` are the homepage only; `products_meta_title`/`_description`
+  are the /products listing. `SiteSettings::pageTitle()` strips a trailing "| Bacha Stylo" because the
+  layout appends the business name. Inline `@section('title', $x)` values are HTML-escaped by Blade; the
+  layout decodes them before escaping once (never pass pre-escaped strings as component attributes).
+- Admin product slugs must be unique (validation); blank slugs auto-suffix `-2`, `-3`.
+
 ## Components (`<x-shop.*>`)
 
 - `img` — SafeImage: `<x-shop.img :src="$url" :alt="$alt" :label="$name" fill sizes="…" class="object-cover" />`

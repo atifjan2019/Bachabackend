@@ -48,7 +48,7 @@
                     Gentle machine wash in cold water. Turn inside out before washing embroidered pieces.
                     Do not bleach. Dry in shade. Warm iron on reverse.
                 </x-shop.accordion>
-                <x-shop.accordion title="Delivery &amp; Returns">
+                <x-shop.accordion title="Delivery & Returns">
                     <div class="space-y-2">
                         <p>
                             Delivery in 2 to 5 working days across Pakistan. Delivery charge {{ pkr($shipping['fee']) }}{{ $shipping['freeEnabled'] ? ', free on orders of '.pkr($shipping['threshold']).' or more.' : '.' }}

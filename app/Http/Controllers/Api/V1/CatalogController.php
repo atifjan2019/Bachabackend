@@ -39,7 +39,7 @@ class CatalogController extends Controller
         // on the storefront reads them, so they're opt-in via ?full=1.
         $slim = !$request->boolean('full');
         $columns = $slim
-            ? ['id', 'name', 'slug', 'image', 'parent_id']
+            ? ['id', 'name', 'slug', 'image', 'image_alt', 'parent_id']
             : ['*'];
 
         $categories = Cache::remember(
@@ -104,7 +104,7 @@ class CatalogController extends Controller
         if (!$request->boolean('full')) {
             $query->select(array_values(array_filter([
                 'id', 'name', 'slug', self::column('sku'), 'category', 'price', 'original_price',
-                'image', 'gallery', 'sizes', self::column('colors'), 'is_new', 'is_featured',
+                'image', self::column('image_alt'), 'gallery', self::column('gallery_alts'), 'sizes', self::column('colors'), 'is_new', 'is_featured',
                 'is_best_seller', 'label', 'created_at',
             ])));
         }

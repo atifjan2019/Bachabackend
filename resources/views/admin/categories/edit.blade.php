@@ -59,13 +59,8 @@
                     <div class="border-top pt-3 mt-3">
                         @include('admin.partials.visibility-fields', ['model' => $category, 'what' => 'category'])
                     </div>
-                    <div class="form-group border-top pt-3 mt-3">
-                        <label class="form-label">Meta Title (SEO)</label>
-                        <input type="text" name="meta_title" class="form-control" value="{{ old('meta_title', $category->meta_title) }}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Meta Description (SEO)</label>
-                        <textarea name="meta_description" class="form-control" rows="3">{{ old('meta_description', $category->meta_description) }}</textarea>
+                    <div class="border-top pt-3 mt-3">
+                        @include('admin.categories._seo', ['category' => $category])
                     </div>
                     <button type="submit" class="btn btn-primary w-100 mt-2">Update Category</button>
                 </div>

@@ -1,12 +1,15 @@
 @php
     /** @var \App\Support\Storefront\SiteSettings $settings */
-    $pageTitle = trim($__env->yieldContent('title'));
+    // Inline @section('x', $value) escapes its value, and the tags below
+    // escape again — so decode here or "&" becomes "&amp;amp;" in the title.
+    $yield = fn (string $name) => html_entity_decode(trim($__env->yieldContent($name)), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $pageTitle = $yield('title');
     $fullTitle = $pageTitle !== '' ? $pageTitle.' | '.$settings->businessName() : $settings->metaTitle();
-    $metaDescription = trim($__env->yieldContent('description')) ?: $settings->metaDescription();
-    $canonical = trim($__env->yieldContent('canonical')) ?: $settings->canonical(request()->getRequestUri());
-    $ogImage = trim($__env->yieldContent('og_image')) ?: $settings->get('og_image');
-    $ogType = trim($__env->yieldContent('og_type')) ?: 'website';
-    $robots = trim($__env->yieldContent('robots')) ?: $settings->robots();
+    $metaDescription = $yield('description') ?: $settings->metaDescription();
+    $canonical = $yield('canonical') ?: $settings->canonical(request()->getRequestUri());
+    $ogImage = $yield('og_image') ?: $settings->get('og_image');
+    $ogType = $yield('og_type') ?: 'website';
+    $robots = $yield('robots') ?: $settings->robots();
     $whatsapp = $settings->whatsapp();
     $bsf = [
         'shipping' => $settings->shippingRule(),

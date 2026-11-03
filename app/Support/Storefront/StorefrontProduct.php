@@ -120,9 +120,14 @@ class StorefrontProduct
             [trim((string) ($product->image ?? ''))],
             self::stringList($product->gallery)
         ), fn ($u) => $u !== ''));
+        // ALT text: the admin's words for the main image and each gallery
+        // image (aligned by position), else the product name.
+        $galleryAlts = is_array($product->gallery_alts ?? null) ? array_values($product->gallery_alts) : [];
+        $mainAlt = trim((string) ($product->image_alt ?? ''));
         $self->images = [];
         foreach ($urls as $i => $url) {
-            $self->images[] = ['id' => $i + 1, 'url' => $url, 'alt' => $self->name.' image '.($i + 1)];
+            $alt = $i === 0 ? $mainAlt : trim((string) ($galleryAlts[$i - 1] ?? ''));
+            $self->images[] = ['id' => $i + 1, 'url' => $url, 'alt' => $alt !== '' ? $alt : ($i === 0 ? $self->name : $self->name.' image '.($i + 1))];
         }
 
         $self->sizes = self::stringList($product->sizes);

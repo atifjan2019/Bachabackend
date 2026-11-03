@@ -27,7 +27,9 @@ class Product extends Model
         'price',
         'original_price',
         'image',
+        'image_alt',
         'gallery',
+        'gallery_alts',
         'sizes',
         'colors',
         'video_url',
@@ -48,6 +50,7 @@ class Product extends Model
         'sort_order' => 'integer',
         'accordions' => 'array',
         'gallery' => 'array',
+        'gallery_alts' => 'array',
         'sizes' => 'array',
         'colors' => 'array',
         // Stored in string columns, so without these the API serialised money

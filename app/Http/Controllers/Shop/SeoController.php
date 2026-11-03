@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Cache;
 class SeoController extends Controller
 {
     /** Public pages. Account, auth and checkout routes are deliberately absent. */
-    public const STATIC_PATHS = ['/', '/products', '/about', '/blogs', '/faq', '/contact', '/privacy', '/terms', '/refund'];
+    public const STATIC_PATHS = ['/', '/products', '/about', '/blogs', '/faq', '/contact', '/privacy', '/terms', '/refund', '/shipping'];
 
     public const PRIVATE_PATHS = [
         '/account', '/account/', '/cart', '/checkout', '/checkout/',

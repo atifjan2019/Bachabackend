@@ -57,6 +57,8 @@ class SiteSettings
         'delivery_policy',
         'meta_title',
         'meta_description',
+        'products_meta_title',
+        'products_meta_description',
         'meta_keywords',
         'og_image',
         'canonical_base_url',
@@ -181,6 +183,37 @@ class SiteSettings
     public function metaDescription(): string
     {
         return $this->get('meta_description', self::DEFAULT_META_DESCRIPTION);
+    }
+
+    /** Admin meta for the all-products listing (/products), blank when unset. */
+    public function productsMetaTitle(): ?string
+    {
+        return $this->pageTitle($this->get('products_meta_title'));
+    }
+
+    public function productsMetaDescription(): ?string
+    {
+        $v = trim((string) $this->get('products_meta_description', ''));
+
+        return $v !== '' ? $v : null;
+    }
+
+    /**
+     * An admin-entered page title without a trailing "| Bacha Stylo": the
+     * layout appends the business name itself, so a title saved with the
+     * brand (as the SEO sheets had it) would otherwise read "… | Bacha
+     * Stylo | Bacha Stylo". Null when blank.
+     */
+    public function pageTitle(?string $title): ?string
+    {
+        $title = trim((string) $title);
+        if ($title === '') {
+            return null;
+        }
+        $brand = preg_quote($this->businessName(), '/');
+        $title = trim(preg_replace('/\s*[|\-–—]\s*'.$brand.'(\s+Fashion(\s+Home)?)?\s*$/iu', '', $title) ?? $title);
+
+        return $title !== '' ? $title : null;
     }
 
     public function footerAbout(): string

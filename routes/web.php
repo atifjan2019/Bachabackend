@@ -56,6 +56,7 @@ Route::middleware('shop.cache')->group(function () {
     Route::get('/privacy', [Shop\PageController::class, 'privacy'])->name('shop.privacy');
     Route::get('/terms', [Shop\PageController::class, 'terms'])->name('shop.terms');
     Route::get('/refund', [Shop\PageController::class, 'refund'])->name('shop.refund');
+    Route::get('/shipping', [Shop\PageController::class, 'shipping'])->name('shop.shipping');
 
     Route::get('/blogs', [Shop\BlogController::class, 'index'])->name('shop.blogs');
     Route::get('/blogs/{slug}', [Shop\BlogController::class, 'show'])->name('shop.blog');

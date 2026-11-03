@@ -46,7 +46,7 @@
                     <a href="{{ route('shop.products', ['category' => $c->slug]) }}"
                        class="group relative block overflow-hidden bg-brand-black shadow-[0_2px_20px_-10px_rgba(20,20,20,0.25)] transition-all duration-500 ease-out hover:-translate-y-1.5 hover:shadow-[0_35px_60px_-20px_rgba(20,20,20,0.5)]">
                         <div class="relative aspect-[4/5] overflow-hidden">
-                            <x-shop.home-collection-image :src="$c->image" :alt="$c->name" :label="$c->name" sizes="(max-width: 640px) calc(50vw - 22px), (max-width: 1024px) calc(33vw - 16px), 290px" />
+                            <x-shop.home-collection-image :src="$c->image" :alt="$c->image_alt ?: $c->name" :label="$c->name" sizes="(max-width: 640px) calc(50vw - 22px), (max-width: 1024px) calc(33vw - 16px), 290px" />
                             <div class="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/30 to-transparent"></div>
                             <div class="absolute inset-0 bg-gradient-to-t from-brand-black/50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
                         </div>

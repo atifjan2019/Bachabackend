@@ -171,14 +171,18 @@ class ProductController extends Controller
                 'nullable', 'string', 'max:64',
                 Product::hasColumn('sku') ? Rule::unique('products', 'sku')->ignore($product?->id) : null,
             ])),
+            'slug'  => ['nullable', 'string', 'max:255', Rule::unique('products', 'slug')->ignore($product?->id)],
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string|max:500',
+            'image_alt' => 'nullable|string|max:255',
+            'gallery_alts' => 'nullable|string|max:5000',
             'colors' => 'nullable|string|max:20000',
             'sort_order' => CategoryController::SORT_ORDER_RULE,
             'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,avif|max:10240',
             'gallery_files.*' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,avif|max:10240',
         ], [
             'sku.unique' => 'That product code is already used by another product.',
+            'slug.unique' => 'That URL slug is already used by another product. Each product needs its own.',
         ]);
     }
 
@@ -187,8 +191,17 @@ class ProductController extends Controller
      */
     private function productData(Request $request, ?Product $product = null): array
     {
-        $data = $request->except(['_token', '_method', 'image_file', 'gallery_files', 'return_to']);
-        $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
+        $data = $request->except(['_token', '_method', 'image_file', 'gallery_files', 'return_to', 'gallery_alts']);
+        $data['slug'] = $this->uniqueSlug($request->input('slug'), $data['name'], $product);
+
+        // Image ALT text: main image field, gallery one line per image.
+        $data['image_alt'] = $request->filled('image_alt') ? trim((string) $request->input('image_alt')) : null;
+        $lines = preg_split('/\r?\n/', (string) $request->input('gallery_alts', '')) ?: [];
+        $lines = array_map(fn ($l) => Str::limit(trim($l), 255, ''), $lines);
+        while ($lines && end($lines) === '') {
+            array_pop($lines);
+        }
+        $data['gallery_alts'] = $lines ?: null;
 
         // Product code: admin-entered, or kept from the existing product, or
         // generated from the id once the row exists (model `created` hook).
@@ -239,6 +252,27 @@ class ProductController extends Controller
         $data['colors'] = Product::parseColors($request->input('colors'));
 
         return $data;
+    }
+
+    /**
+     * The product's URL slug: the admin's, or one made from the name. A
+     * generated slug that another product already uses gets a numeric
+     * suffix, so two products can never share a page (an entered duplicate
+     * is rejected by validation instead).
+     */
+    private function uniqueSlug(?string $entered, string $name, ?Product $product): string
+    {
+        $entered = trim((string) $entered);
+        if ($entered !== '') {
+            return $entered;
+        }
+        $base = Str::slug($name) ?: 'product';
+        $slug = $base;
+        for ($i = 2; Product::query()->where('slug', $slug)->when($product, fn ($q) => $q->where('id', '<>', $product->id))->exists(); $i++) {
+            $slug = $base.'-'.$i;
+        }
+
+        return $slug;
     }
 
     /**

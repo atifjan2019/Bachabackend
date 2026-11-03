@@ -23,10 +23,18 @@ class ProductController extends Controller
         $total = $results->total();
         $settings = site();
 
-        $title = $category ? trim($category->name) : 'Shop';
-        $description = $category
-            ? "Shop {$category->name} at Bacha Stylo. Nationwide delivery, Cash on Delivery, JazzCash and Easypaisa."
-            : 'Browse every Bacha Stylo piece — waistcoats, shawls, kurta sets, pakol caps and accessories. Nationwide delivery across Pakistan.';
+        // Titles: a category page uses the category's own meta fields, the
+        // plain listing the "Products page" meta from SEO settings; either
+        // falls back to the name. The layout appends " | Bacha Stylo".
+        if ($category) {
+            $title = $settings->pageTitle($category->meta_title) ?? trim($category->name);
+            $description = trim((string) $category->meta_description)
+                ?: "Shop {$category->name} at Bacha Stylo. Nationwide delivery, Cash on Delivery, JazzCash and Easypaisa.";
+        } else {
+            $title = $settings->productsMetaTitle() ?? 'Shop';
+            $description = $settings->productsMetaDescription()
+                ?? 'Browse every Bacha Stylo piece — waistcoats, shawls, kurta sets, pakol caps and accessories. Nationwide delivery across Pakistan.';
+        }
 
         $breadcrumbs = null;
         if ($category) {
@@ -77,8 +85,7 @@ class ProductController extends Controller
         // The layout appends " | {business}"; an admin meta_title that already
         // carries the brand suffix (the Next page used it as an absolute title)
         // would otherwise read "… | Bacha Stylo | Bacha Stylo".
-        $title = $product->meta_title ?? $product->name;
-        $title = trim(preg_replace('/\s*[|\-–—]\s*'.preg_quote($settings->businessName(), '/').'\s*$/iu', '', $title) ?? $title) ?: $product->name;
+        $title = $settings->pageTitle($product->meta_title) ?? $product->name;
         $description = $product->meta_description
             ?: (strip_html_excerpt($product->description) ?: "{$product->name} from Bacha Stylo. Nationwide delivery, Cash on Delivery, JazzCash and Easypaisa.");
         $image = $product->primaryImage();

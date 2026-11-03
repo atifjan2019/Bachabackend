@@ -20,7 +20,7 @@ class Catalog
     /** Columns a grid card needs; detail pages load the full row. */
     public const CARD_COLUMNS = [
         'id', 'name', 'slug', 'sku', 'category', 'price', 'original_price',
-        'image', 'gallery', 'sizes', 'colors', 'is_new', 'is_featured',
+        'image', 'image_alt', 'gallery', 'gallery_alts', 'sizes', 'colors', 'is_new', 'is_featured',
         'is_best_seller', 'label', 'created_at', 'updated_at',
     ];
 
@@ -33,7 +33,7 @@ class Catalog
     public static function categoryTree(): Collection
     {
         return Cache::remember('storefront.categories.tree', self::TTL, function () {
-            $columns = ['id', 'name', 'slug', 'image', 'parent_id'];
+            $columns = ['id', 'name', 'slug', 'image', 'image_alt', 'parent_id', 'meta_title', 'meta_description'];
             // Only active categories, in the admin's order; children of an
             // inactive parent are never loaded because the parent isn't.
             $tree = Category::query()
@@ -84,7 +84,7 @@ class Catalog
     public static function cardColumns(): array
     {
         return array_values(array_filter(self::CARD_COLUMNS, function ($column) {
-            return in_array($column, ['sku', 'colors'], true) ? Product::hasColumn($column) : true;
+            return in_array($column, ['sku', 'colors', 'image_alt', 'gallery_alts'], true) ? Product::hasColumn($column) : true;
         }));
     }
 
