@@ -31,6 +31,8 @@
                     <th>Price</th>
                     <th>Original</th>
                     <th>Badge</th>
+                    <th>Status</th>
+                    <th>Order</th>
                     <th></th>
                 </tr>
             </thead>
@@ -66,6 +68,19 @@
                             <span class="text-muted">—</span>
                         @endif
                     </td>
+                    <td data-label="Status">
+                        <div class="quick-cell">
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" title="Show on the website" {{ $product->is_active ? 'checked' : '' }}
+                                       data-quick-url="{{ route('admin.products.quick', $product->id) }}" data-quick-field="is_active">
+                            </div>
+                            <span class="quick-state {{ $product->is_active ? 'on' : 'off' }}">{{ $product->is_active ? 'Active' : 'Hidden' }}</span>
+                        </div>
+                    </td>
+                    <td data-label="Order">
+                        <input type="number" class="form-control quick-order" min="0" max="999999" step="1" placeholder="—" title="Lower numbers show first"
+                               value="{{ $product->sort_order }}" data-quick-url="{{ route('admin.products.quick', $product->id) }}" data-quick-field="sort_order">
+                    </td>
                     <td data-label="Actions">
                         <div class="action-group">
                             <a href="{{ route('admin.products.edit', [$product->id, 'return_to' => request()->fullUrl()]) }}" class="btn btn-sm btn-light btn-icon"><i class="mdi mdi-pencil-outline"></i></a>
@@ -79,7 +94,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="empty-state">
+                    <td colspan="8" class="empty-state">
                         <i class="mdi mdi-package-variant"></i>
                         <strong>No products yet</strong>
                         Add your first product to start building the catalog.
@@ -98,4 +113,5 @@
     </div>
     @endif
 </div>
+@include('admin.partials.quick-edit')
 @endsection

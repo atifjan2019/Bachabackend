@@ -221,6 +221,13 @@
                 </div>
             </div>
 
+            <div class="bcard">
+                <div class="bcard-head"><span class="bcard-title">Visibility</span></div>
+                <div class="bcard-body">
+                    @include('admin.partials.visibility-fields', ['model' => null, 'what' => 'product'])
+                </div>
+            </div>
+
             <button type="submit" class="btn btn-primary w-100 btn-lg" id="submitBtn">
                 <i class="mdi mdi-content-save-outline"></i> Save Product
             </button>

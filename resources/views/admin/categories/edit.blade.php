@@ -56,6 +56,9 @@
                         <span class="btn-library" onclick="openMediaPicker('image', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
                         <input type="hidden" name="image" value="{{ old('image', $category->image) }}">
                     </div>
+                    <div class="border-top pt-3 mt-3">
+                        @include('admin.partials.visibility-fields', ['model' => $category, 'what' => 'category'])
+                    </div>
                     <div class="form-group border-top pt-3 mt-3">
                         <label class="form-label">Meta Title (SEO)</label>
                         <input type="text" name="meta_title" class="form-control" value="{{ old('meta_title', $category->meta_title) }}">

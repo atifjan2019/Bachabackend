@@ -59,7 +59,7 @@ class ProductController extends Controller
     /** Product detail page. */
     public function show(string $slug): View
     {
-        $model = Cache::remember('storefront.product.'.md5($slug), Catalog::TTL, fn () => Product::query()->where('slug', $slug)->first());
+        $model = Cache::remember('storefront.product.'.md5($slug), Catalog::TTL, fn () => Product::query()->storefront()->where('slug', $slug)->first());
         abort_unless($model, 404);
 
         $product = StorefrontProduct::make($model);

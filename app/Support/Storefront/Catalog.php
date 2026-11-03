@@ -34,14 +34,17 @@ class Catalog
     {
         return Cache::remember('storefront.categories.tree', self::TTL, function () {
             $columns = ['id', 'name', 'slug', 'image', 'parent_id'];
+            // Only active categories, in the admin's order; children of an
+            // inactive parent are never loaded because the parent isn't.
             $tree = Category::query()
                 ->whereNull('parent_id')
+                ->active()
                 ->select($columns)
-                ->with(['children' => fn ($q) => $q->select($columns)->orderBy('id')])
-                ->orderBy('id')
+                ->with(['children' => fn ($q) => $q->select($columns)->active()->ordered()])
+                ->ordered()
                 ->get();
 
-            $counts = Category::subtreeProductCounts();
+            $counts = Category::subtreeProductCounts(storefront: true);
             $tree->each(function (Category $parent) use ($counts) {
                 $parent->children?->each(
                     fn (Category $child) => $child->setAttribute('products_count', $counts[$child->id] ?? 0)
@@ -85,10 +88,13 @@ class Catalog
         }));
     }
 
-    /** Query builder for grid cards: slim columns, newest first. */
+    /**
+     * Query builder for grid cards: slim columns, only what a shopper may see,
+     * in the admin's order (numbered first) then newest first.
+     */
     public static function cards(): Builder
     {
-        return Product::query()->select(self::cardColumns())->orderByDesc('id');
+        return Product::query()->select(self::cardColumns())->storefront()->ordered();
     }
 
     /**

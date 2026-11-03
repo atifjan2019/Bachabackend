@@ -59,6 +59,20 @@ Sizes::group($sizes) / Sizes::usesBands($sizes) / Sizes::BANDS   // Kids 14–26
 
 Helpers: `pkr(12500)` → `Rs. 12,500`; `strip_html_excerpt($html, 160)`.
 
+### Visibility and ordering
+
+Categories and products carry `is_active` (default true) and a nullable `sort_order`, set from the admin
+forms or inline on the admin lists (`PATCH admin/{categories,products}/{id}/quick`).
+
+- `Product::storefront()` — active products not filed under a hidden category (`Category::hiddenSlugs()`:
+  every inactive category plus its subtree). Uncategorised products stay visible. Use it on **every**
+  shopper-facing product read; `Catalog::cards()`, the product page, sitemap, `/api/v1/products*` and
+  `OrderService::assertPurchasable()` already do.
+- `Category::active()` + `Category::ordered()` / `Product::ordered()` — numbered rows first (lower first,
+  `NULL` last), then name (categories) or newest (products). `Catalog::categoryTree()` and the API apply
+  both; price sorts on the listing ignore the manual order.
+- Counts: `Category::subtreeProductCounts(storefront: true)` for anything a shopper sees.
+
 ## Components (`<x-shop.*>`)
 
 - `img` — SafeImage: `<x-shop.img :src="$url" :alt="$alt" :label="$name" fill sizes="…" class="object-cover" />`

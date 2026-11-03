@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Turns a validated checkout submission into an Order.
@@ -70,6 +71,7 @@ class OrderService
      */
     public function create(array $validated, ?Customer $authCustomer = null): Order
     {
+        $this->assertPurchasable($validated['items']);
         $items = $this->snapshotItems($validated['items']);
 
         $subtotal = 0.0;
@@ -139,6 +141,41 @@ class OrderService
         }
 
         return ($enabled && $subtotal >= $threshold) ? 0.0 : $baseFee;
+    }
+
+    /**
+     * A cart lives in the browser, so it can still hold a product the admin
+     * has since hidden. Refuse the order and name the item, rather than
+     * selling something that is no longer on the shop.
+     *
+     * @throws ValidationException
+     */
+    public function assertPurchasable(array $items): void
+    {
+        $ids = array_values(array_unique(array_filter(array_map(
+            fn ($i) => isset($i['product_id']) ? (int) $i['product_id'] : null,
+            $items
+        ))));
+        if ($ids === []) {
+            return;
+        }
+
+        $available = Product::query()->storefront()->whereIn('id', $ids)->pluck('id')->all();
+        $existing = Product::query()->whereIn('id', $ids)->pluck('id')->all();
+
+        foreach ($items as $index => $item) {
+            $id = isset($item['product_id']) ? (int) $item['product_id'] : 0;
+            // Unknown ids are left alone (old carts, deleted products) as before.
+            if ($id && in_array($id, $existing, true) && ! in_array($id, $available, true)) {
+                $message = "\"{$item['name']}\" is no longer available. Please remove it from your cart.";
+                // cart_json is what the web checkout page displays; the item
+                // key tells API clients which line to drop.
+                throw ValidationException::withMessages([
+                    'cart_json' => $message,
+                    "items.$index.product_id" => $message,
+                ]);
+            }
+        }
     }
 
     /**

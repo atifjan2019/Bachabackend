@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
@@ -15,7 +16,29 @@ class Category extends Model
         'meta_title',
         'meta_description',
         'parent_id',
+        'is_active',
+        'sort_order',
     ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'sort_order' => 'integer',
+    ];
+
+    /** Only categories the storefront may show. */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Admin-chosen order first (lower number first, blank last), then name.
+     * `IS NULL` sorts false before true on both MySQL and SQLite.
+     */
+    public function scopeOrdered(Builder $query): Builder
+    {
+        return $query->orderByRaw('sort_order IS NULL')->orderBy('sort_order')->orderBy('name')->orderBy('id');
+    }
 
     public function parent()
     {
@@ -77,11 +100,15 @@ class Category extends Model
      * Two queries for the entire tree, so a list of categories doesn't turn
      * into one count query per row.
      *
+     * With $storefront the totals count only what a shopper can actually see:
+     * active products inside categories that aren't hidden.
+     *
      * @return array<int,int>
      */
-    public static function subtreeProductCounts(): array
+    public static function subtreeProductCounts(bool $storefront = false): array
     {
         $perSlug = Product::query()
+            ->when($storefront, fn ($q) => $q->storefront())
             ->selectRaw('category, COUNT(*) as aggregate')
             ->whereNotNull('category')
             ->groupBy('category')
@@ -100,13 +127,36 @@ class Category extends Model
         return $counts;
     }
 
-    /** id/parent_id/slug for every category, cached for the request burst. */
+    /**
+     * Slugs the storefront must not show: every inactive category plus its
+     * whole subtree, since a child of a hidden parent has no way to be reached.
+     * Products filed under any of these slugs are hidden with them.
+     *
+     * @return list<string>
+     */
+    public static function hiddenSlugs(): array
+    {
+        return Cache::remember('categories.hidden', 300, function () {
+            $slugs = [];
+            foreach (self::rows() as $row) {
+                if (! $row->is_active && $row->slug !== null) {
+                    foreach (self::descendantSlugs($row->slug) as $slug) {
+                        $slugs[$slug] = true;
+                    }
+                }
+            }
+
+            return array_keys($slugs);
+        });
+    }
+
+    /** id/parent_id/slug/is_active for every category, cached for the request burst. */
     private static function rows(): array
     {
         return Cache::remember(
             'categories.tree',
             300,
-            fn () => self::query()->get(['id', 'parent_id', 'slug'])->all()
+            fn () => self::query()->get(['id', 'parent_id', 'slug', 'is_active'])->all()
         );
     }
 

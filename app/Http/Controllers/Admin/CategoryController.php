@@ -11,9 +11,13 @@ use Illuminate\Support\Facades\Cache;
 
 class CategoryController extends Controller
 {
+    public const SORT_ORDER_RULE = 'nullable|integer|min:0|max:999999';
+
     public function index()
     {
-        $categories = Category::withCount('children')->orderBy('name')->paginate(20);
+        // Listed in storefront order so the admin sees the effect of the
+        // numbers they type (numbered first, then alphabetical).
+        $categories = Category::withCount('children')->ordered()->paginate(20);
 
         // withCount('products') only matches products filed under this exact
         // slug, so every parent showed "0 products" while its children held the
@@ -39,9 +43,11 @@ class CategoryController extends Controller
             'name' => 'required|string|max:100|unique:categories',
             'parent_id' => 'nullable|exists:categories,id',
             'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,avif|max:10240',
+            'sort_order' => self::SORT_ORDER_RULE,
         ]);
         $data = $request->except(['_token', 'image_file']);
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
+        $data = array_merge($data, $this->visibility($request));
 
         if ($request->hasFile('image_file')) {
             $file = $request->file('image_file');
@@ -70,9 +76,11 @@ class CategoryController extends Controller
             'name' => 'required|string|max:100|unique:categories,name,'.$id,
             'parent_id' => 'nullable|exists:categories,id',
             'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,avif|max:10240',
+            'sort_order' => self::SORT_ORDER_RULE,
         ]);
         $data = $request->except(['_token', '_method', 'image_file']);
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
+        $data = array_merge($data, $this->visibility($request));
 
         if ($request->hasFile('image_file')) {
             $file = $request->file('image_file');
@@ -95,4 +103,34 @@ class CategoryController extends Controller
     }
 
     public function show(string $id) { return redirect()->route('admin.categories.edit', $id); }
+
+    /**
+     * Inline edit from the list: the status switch and the order box post
+     * just the field they changed, so the admin never leaves the page.
+     */
+    public function quick(Request $request, string $id)
+    {
+        $category = Category::findOrFail($id);
+        $data = $request->validate([
+            'is_active' => 'sometimes|boolean',
+            'sort_order' => 'sometimes|'.self::SORT_ORDER_RULE,
+        ]);
+        if (array_key_exists('sort_order', $data)) {
+            $data['sort_order'] = $data['sort_order'] === null || $data['sort_order'] === '' ? null : (int) $data['sort_order'];
+        }
+
+        $category->update($data);
+        Cache::flush();
+
+        return response()->json(['ok' => true, 'is_active' => $category->is_active, 'sort_order' => $category->sort_order]);
+    }
+
+    /** Status switch (a checkbox only posts when ticked) and the order number (blank → none). */
+    private function visibility(Request $request): array
+    {
+        return [
+            'is_active' => $request->boolean('is_active'),
+            'sort_order' => $request->filled('sort_order') ? (int) $request->input('sort_order') : null,
+        ];
+    }
 }

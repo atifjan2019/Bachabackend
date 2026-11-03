@@ -17,7 +17,8 @@ class ProductController extends Controller
     {
         $q = trim((string) $request->input('q', ''));
 
-        $query = Product::orderBy('id', 'desc');
+        // Storefront order: numbered products first, then newest.
+        $query = Product::query()->ordered();
         if ($q !== '') {
             $query->where(function ($sub) use ($q) {
                 $sub->where('name', 'like', "%{$q}%")
@@ -92,6 +93,27 @@ class ProductController extends Controller
     }
 
     /**
+     * Inline edit from the list: the status switch and the order box post
+     * just the field they changed, so the admin never leaves the page.
+     */
+    public function quick(Request $request, string $id)
+    {
+        $product = Product::findOrFail($id);
+        $data = $request->validate([
+            'is_active' => 'sometimes|boolean',
+            'sort_order' => 'sometimes|'.CategoryController::SORT_ORDER_RULE,
+        ]);
+        if (array_key_exists('sort_order', $data)) {
+            $data['sort_order'] = $data['sort_order'] === null || $data['sort_order'] === '' ? null : (int) $data['sort_order'];
+        }
+
+        $product->update($data);
+        Cache::flush();
+
+        return response()->json(['ok' => true, 'is_active' => $product->is_active, 'sort_order' => $product->sort_order]);
+    }
+
+    /**
      * Where to send the admin after saving: the product list page they came
      * from (page number and search kept), never page 1 by default. Only an
      * admin products-list URL is accepted so this can't redirect elsewhere.
@@ -127,6 +149,7 @@ class ProductController extends Controller
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string|max:500',
             'colors' => 'nullable|string|max:20000',
+            'sort_order' => CategoryController::SORT_ORDER_RULE,
             'image_file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,avif|max:10240',
             'gallery_files.*' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,avif|max:10240',
         ], [
@@ -158,6 +181,11 @@ class ProductController extends Controller
         $data['is_featured'] = $request->boolean('is_featured');
         $data['is_best_seller'] = $request->boolean('is_best_seller');
         $data['label'] = $request->filled('label') ? $request->input('label') : null;
+
+        // Visibility: hidden products stay in the admin and on past orders
+        // but never on the storefront; a blank order means "after the numbered ones".
+        $data['is_active'] = $request->boolean('is_active');
+        $data['sort_order'] = $request->filled('sort_order') ? (int) $request->input('sort_order') : null;
 
         // Upload main image
         if ($request->hasFile('image_file')) {

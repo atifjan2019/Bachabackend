@@ -21,6 +21,8 @@
                 <tr>
                     <th>Category</th>
                     <th>Slug</th>
+                    <th>Status</th>
+                    <th>Order</th>
                     <th>Meta Title</th>
                     <th></th>
                 </tr>
@@ -53,6 +55,19 @@
                         </div>
                     </td>
                     <td data-label="Slug" class="text-muted">{{ $cat->slug }}</td>
+                    <td data-label="Status">
+                        <div class="quick-cell">
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" title="Show on the website" {{ $cat->is_active ? 'checked' : '' }}
+                                       data-quick-url="{{ route('admin.categories.quick', $cat->id) }}" data-quick-field="is_active">
+                            </div>
+                            <span class="quick-state {{ $cat->is_active ? 'on' : 'off' }}">{{ $cat->is_active ? 'Active' : 'Hidden' }}</span>
+                        </div>
+                    </td>
+                    <td data-label="Order">
+                        <input type="number" class="form-control quick-order" min="0" max="999999" step="1" placeholder="—" title="Lower numbers show first"
+                               value="{{ $cat->sort_order }}" data-quick-url="{{ route('admin.categories.quick', $cat->id) }}" data-quick-field="sort_order">
+                    </td>
                     <td data-label="Meta Title" class="text-muted">{{ Str::limit($cat->meta_title, 40) }}</td>
                     <td data-label="Actions">
                         <div class="action-group">
@@ -66,7 +81,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="4" class="empty-state">
+                    <td colspan="6" class="empty-state">
                         <i class="mdi mdi-shape-outline"></i>
                         <strong>No categories yet</strong>
                         Create category groupings to keep the catalog organized.
@@ -85,4 +100,5 @@
     </div>
     @endif
 </div>
+@include('admin.partials.quick-edit')
 @endsection

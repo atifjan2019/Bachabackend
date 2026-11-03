@@ -46,18 +46,21 @@ class CatalogController extends Controller
             'api.categories.' . ($slim ? 'slim' : 'full'),
             300,
             function () use ($columns) {
+                // Hidden categories (and their subtrees) are left out, and
+                // the rest follow the admin's sort order.
                 $tree = Category::query()
                     ->whereNull('parent_id')
+                    ->active()
                     ->select($columns)
-                    ->with(['children' => fn ($q) => $q->select($columns)->orderBy('id')])
-                    ->orderBy('id')
+                    ->with(['children' => fn ($q) => $q->select($columns)->active()->ordered()])
+                    ->ordered()
                     ->get();
 
                 // products_count must describe what clicking the category
                 // actually returns. Products are filed under leaf slugs, so a
                 // parent counting only its own direct rows always reported 0
                 // while its children held the entire inventory.
-                $counts = Category::subtreeProductCounts();
+                $counts = Category::subtreeProductCounts(storefront: true);
                 $tree->each(function (Category $parent) use ($counts) {
                     $parent->children?->each(
                         fn (Category $child) => $child->setAttribute(
@@ -90,7 +93,8 @@ class CatalogController extends Controller
         ]);
 
         $perPage = (int) ($request->integer('per_page') ?: 20);
-        $query = Product::query()->orderByDesc('id');
+        // Hidden products never leave the admin; admin sort order first, then newest.
+        $query = Product::query()->storefront()->ordered();
 
         // A grid card needs a name, price, one image and the merchandising
         // flags. Shipping full descriptions and accordion content made them
@@ -151,8 +155,8 @@ class CatalogController extends Controller
     public function product(string $slugOrId): JsonResponse
     {
         $product = Product::query()
-            ->where('slug', $slugOrId)
-            ->orWhere('id', $slugOrId)
+            ->storefront()
+            ->where(fn ($q) => $q->where('slug', $slugOrId)->orWhere('id', $slugOrId))
             ->firstOrFail();
 
         return response()->json(['data' => $product])

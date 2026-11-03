@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
@@ -35,12 +36,16 @@ class Product extends Model
         'is_best_seller',
         'label',
         'accordions',
+        'is_active',
+        'sort_order',
     ];
 
     protected $casts = [
         'is_new' => 'boolean',
         'is_featured' => 'boolean',
         'is_best_seller' => 'boolean',
+        'is_active' => 'boolean',
+        'sort_order' => 'integer',
         'accordions' => 'array',
         'gallery' => 'array',
         'sizes' => 'array',
@@ -51,6 +56,31 @@ class Product extends Model
         'price' => 'float',
         'original_price' => 'float',
     ];
+
+    /**
+     * What a shopper may see: active products that aren't filed under a
+     * hidden category. Products with no category at all stay visible.
+     */
+    public function scopeStorefront(Builder $query): Builder
+    {
+        $query->where('is_active', true);
+
+        $hidden = Category::hiddenSlugs();
+        if ($hidden !== []) {
+            $query->where(fn (Builder $q) => $q->whereNull('category')->orWhereNotIn('category', $hidden));
+        }
+
+        return $query;
+    }
+
+    /**
+     * Admin-chosen order first (lower number first, blank last), then the
+     * given tie-breaker — newest first on the storefront.
+     */
+    public function scopeOrdered(Builder $query, string $thenBy = 'id', string $direction = 'desc'): Builder
+    {
+        return $query->orderByRaw('sort_order IS NULL')->orderBy('sort_order')->orderBy($thenBy, $direction);
+    }
 
     /**
      * Whether a column exists on products. Columns added by a release are

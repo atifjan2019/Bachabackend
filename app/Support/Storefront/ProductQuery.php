@@ -27,7 +27,8 @@ class ProductQuery
 
     public const COLLECTIONS = ['all' => 'All', 'featured' => 'Featured', 'best_seller' => 'Best Sellers', 'new' => 'New Arrivals'];
 
-    public const SORTS = ['newest' => 'Newest', 'price_asc' => 'Price: Low to High', 'price_desc' => 'Price: High to Low'];
+    /** `newest` is the default: the admin's sort order first, then newest. */
+    public const SORTS = ['newest' => 'Recommended', 'price_asc' => 'Price: Low to High', 'price_desc' => 'Price: High to Low'];
 
     public const CACHE_TTL = 60;
 
@@ -346,12 +347,12 @@ class ProductQuery
             });
         }
 
-        // Re-apply ordering: price sorts replace the default newest-first.
+        // Re-apply ordering: price sorts replace the default (admin order, then newest).
         $query->reorder();
         match ($this->sort) {
             'price_asc' => $query->orderByRaw("{$price} asc")->orderByDesc('id'),
             'price_desc' => $query->orderByRaw("{$price} desc")->orderByDesc('id'),
-            default => $query->orderByDesc('id'),
+            default => $query->ordered(),
         };
 
         return $query;

@@ -48,7 +48,7 @@ class SeoController extends Controller
                 ];
             }
 
-            Product::query()->whereNotNull('slug')->orderBy('id')
+            Product::query()->storefront()->whereNotNull('slug')->orderBy('id')
                 ->select(['slug', 'updated_at', 'created_at'])
                 ->chunk(500, function ($products) use (&$entries, $origin, $now) {
                     foreach ($products as $p) {
