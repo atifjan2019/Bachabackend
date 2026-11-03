@@ -16,7 +16,7 @@ class CategoryController extends Controller
     public function index()
     {
         // Listed in storefront order so the admin sees the effect of the
-        // numbers they type (numbered first, then alphabetical).
+        // numbers they type (numbered first, then creation order).
         $categories = Category::withCount('children')->ordered()->paginate(20);
 
         // withCount('products') only matches products filed under this exact

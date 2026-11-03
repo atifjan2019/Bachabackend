@@ -67,14 +67,16 @@ class VisibilityTest extends TestCase
 
     public function test_sort_order_puts_numbered_items_first_then_default_order(): void
     {
-        $a = Category::create(['name' => 'Alpha', 'slug' => 'alpha']);
-        $z = Category::create(['name' => 'Zulu', 'slug' => 'zulu', 'sort_order' => 1]);
+        Category::create(['name' => 'Zulu', 'slug' => 'zulu']);
+        Category::create(['name' => 'Alpha', 'slug' => 'alpha']);
         $m = Category::create(['name' => 'Mike', 'slug' => 'mike', 'sort_order' => 2]);
+        $z = Category::create(['name' => 'Last Made', 'slug' => 'last', 'sort_order' => 1]);
         Category::create(['name' => 'Sub Z', 'slug' => 'sub-z', 'parent_id' => $z->id, 'sort_order' => 5]);
         Category::create(['name' => 'Sub A', 'slug' => 'sub-a', 'parent_id' => $z->id, 'sort_order' => 1]);
 
         $json = $this->getJson('/api/v1/categories')->assertOk()->json('data');
-        $this->assertSame(['zulu', 'mike', 'alpha'], array_column($json, 'slug'));
+        // Numbered first; the unnumbered keep the order they were created in.
+        $this->assertSame(['last', 'mike', 'zulu', 'alpha'], array_column($json, 'slug'));
         $this->assertSame(['sub-a', 'sub-z'], array_column($json[0]['children'], 'slug'));
 
         $this->product('Oldest', 'alpha');

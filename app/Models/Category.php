@@ -32,12 +32,14 @@ class Category extends Model
     }
 
     /**
-     * Admin-chosen order first (lower number first, blank last), then name.
-     * `IS NULL` sorts false before true on both MySQL and SQLite.
+     * Admin-chosen order first (lower number first, blank last), then the
+     * order categories were created in — what the storefront always showed,
+     * so nothing moves until the admin numbers it. `IS NULL` sorts false
+     * before true on both MySQL and SQLite.
      */
     public function scopeOrdered(Builder $query): Builder
     {
-        return $query->orderByRaw('sort_order IS NULL')->orderBy('sort_order')->orderBy('name')->orderBy('id');
+        return $query->orderByRaw('sort_order IS NULL')->orderBy('sort_order')->orderBy('id');
     }
 
     public function parent()

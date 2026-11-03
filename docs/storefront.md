@@ -69,7 +69,7 @@ forms or inline on the admin lists (`PATCH admin/{categories,products}/{id}/quic
   shopper-facing product read; `Catalog::cards()`, the product page, sitemap, `/api/v1/products*` and
   `OrderService::assertPurchasable()` already do.
 - `Category::active()` + `Category::ordered()` / `Product::ordered()` — numbered rows first (lower first,
-  `NULL` last), then name (categories) or newest (products). `Catalog::categoryTree()` and the API apply
+  `NULL` last), then oldest first (categories) or newest first (products). `Catalog::categoryTree()` and the API apply
   both; price sorts on the listing ignore the manual order.
 - Counts: `Category::subtreeProductCounts(storefront: true)` for anything a shopper sees.
 
