@@ -40,27 +40,28 @@
                 </a>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 lg:gap-5">
+            {{-- Four-up on desktop at a fixed 4:5 ratio, so every card is the same size whatever its image. --}}
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-4">
                 @foreach($categories as $idx => $c)
                     <a href="{{ route('shop.products', ['category' => $c->slug]) }}"
                        class="group relative block overflow-hidden bg-brand-black shadow-[0_2px_20px_-10px_rgba(20,20,20,0.25)] transition-all duration-500 ease-out hover:-translate-y-1.5 hover:shadow-[0_35px_60px_-20px_rgba(20,20,20,0.5)]">
-                        <div class="relative aspect-[3/4] overflow-hidden">
-                            <x-shop.home-collection-image :src="$c->image" :alt="$c->name" :label="$c->name" sizes="(max-width: 768px) 50vw, 33vw" />
+                        <div class="relative aspect-[4/5] overflow-hidden">
+                            <x-shop.home-collection-image :src="$c->image" :alt="$c->name" :label="$c->name" sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" />
                             <div class="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/30 to-transparent"></div>
                             <div class="absolute inset-0 bg-gradient-to-t from-brand-black/50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
                         </div>
                         <div class="pointer-events-none absolute inset-3 sm:inset-4 border border-white/0 transition-colors duration-500 group-hover:border-white/25"></div>
                         <div class="absolute left-0 top-0 h-0.5 w-0 bg-brand-red transition-all duration-500 ease-out group-hover:w-full"></div>
-                        <div class="absolute right-3 top-3 sm:right-5 sm:top-5 flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur-md transition-all duration-500 group-hover:border-brand-red group-hover:bg-brand-red sm:h-11 sm:w-11">
+                        <div class="absolute right-3 top-3 sm:right-4 sm:top-4 flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur-md transition-all duration-500 group-hover:border-brand-red group-hover:bg-brand-red sm:h-9 sm:w-9">
                             <x-lucide-arrow-up-right class="h-4 w-4 transition-transform duration-500 group-hover:rotate-45" stroke-width="2" />
                         </div>
-                        <div class="absolute inset-x-0 bottom-0 p-4 sm:p-5 lg:p-7">
-                            <div class="mb-2 flex items-center gap-2.5">
-                                <span class="font-display text-sm italic text-brand-red sm:text-base">0{{ $idx + 1 }}</span>
-                                <span class="h-px w-8 bg-gradient-to-r from-brand-red to-transparent sm:w-10"></span>
+                        <div class="absolute inset-x-0 bottom-0 p-3.5 sm:p-4 lg:p-5">
+                            <div class="mb-1.5 flex items-center gap-2">
+                                <span class="font-display text-xs italic text-brand-red sm:text-sm">{{ str_pad($idx + 1, 2, "0", STR_PAD_LEFT) }}</span>
+                                <span class="h-px w-6 bg-gradient-to-r from-brand-red to-transparent sm:w-8"></span>
                             </div>
-                            <h3 class="font-display text-lg font-bold leading-tight text-white transition-transform duration-500 ease-out group-hover:-translate-y-0.5 sm:text-2xl lg:text-[1.7rem]">{{ $c->name }}</h3>
-                            <div class="mt-2 inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/70 transition-colors duration-300 group-hover:text-white sm:mt-2.5 sm:text-[11px]">
+                            <h3 class="font-display text-base font-bold leading-tight text-white transition-transform duration-500 ease-out group-hover:-translate-y-0.5 sm:text-lg lg:text-xl">{{ $c->name }}</h3>
+                            <div class="mt-1.5 inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/70 transition-colors duration-300 group-hover:text-white sm:mt-2">
                                 <span class="h-px w-4 bg-brand-red transition-all duration-500 group-hover:w-7"></span>
                                 Shop Now
                             </div>
