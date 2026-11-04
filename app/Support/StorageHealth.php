@@ -15,6 +15,8 @@ class StorageHealth
 {
     public const TTL = 600;
 
+    public const FAILURE_TTL = 60;
+
     public const KEY = 'admin.storage.health';
 
     /** @return array{ok: bool, error: ?string, checked_at: string} */
@@ -23,14 +25,24 @@ class StorageHealth
         // Kept in its own file rather than the application cache, which is
         // flushed after every admin write; otherwise each write would cost a
         // bucket round-trip on the next page.
+        // A good result is kept for TTL; a failure only for FAILURE_TTL, so
+        // a blip (a deploy rebuilding the config cache, a network hiccup)
+        // does not alarm the admin for ten minutes.
         $file = storage_path('framework/storage-health.json');
-        if (is_file($file) && filemtime($file) > time() - self::TTL) {
+        if (is_file($file)) {
             $cached = json_decode((string) file_get_contents($file), true);
-            if (is_array($cached) && array_key_exists('ok', $cached)) {
+            $age = time() - filemtime($file);
+            if (is_array($cached) && array_key_exists('ok', $cached) && $age < ($cached['ok'] ? self::TTL : self::FAILURE_TTL)) {
                 return $cached;
             }
         }
         $status = self::check();
+        if (! $status['ok']) {
+            // One retry before reporting: the first attempt may have hit a
+            // transient error rather than a bad key.
+            sleep(1);
+            $status = self::check();
+        }
         @file_put_contents($file, json_encode($status));
 
         return $status;
