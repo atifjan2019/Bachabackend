@@ -12,6 +12,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        // Resized copies for every catalogue image, so the storefront never
+        // depends on the media CDN at request time (see MediaWarmCommand).
+        $schedule->command('media:warm')->dailyAt('03:30')->withoutOverlapping()->runInBackground();
         //
     }
 

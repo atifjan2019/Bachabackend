@@ -30,7 +30,7 @@ class ImageController extends Controller
         }
         $sourceKey = $m[1].'/'.$m[2];
         $format = strtolower($m[3]);
-        $target = public_path('img/'.$width.'/'.$key);
+        $target = self::targetPath($width, $sourceKey, $format);
 
         if (is_file($target)) {
             return $this->file($target, $format);
@@ -42,9 +42,7 @@ class ImageController extends Controller
         }
 
         try {
-            $bytes = isset($source['path']) ? file_get_contents($source['path']) : $this->fetch($source['url']);
-            $out = $this->render($bytes, $width, $format);
-            $this->write($target, $out);
+            $out = self::generate($sourceKey, $width, $format);
         } catch (\Throwable $e) {
             Log::warning('[img] variant failed: '.$e->getMessage(), ['key' => $key, 'width' => $width]);
             if (isset($source['url'])) {
@@ -58,6 +56,64 @@ class ImageController extends Controller
             'Content-Type' => self::mime($format),
             'Cache-Control' => ImageVariant::CACHE_CONTROL,
         ]);
+    }
+
+    /** Where a finished variant lives (served statically by the web server afterwards). */
+    public static function targetPath(int $width, string $sourceKey, string $format): string
+    {
+        return public_path('img/'.$width.'/'.$sourceKey.'.'.$format);
+    }
+
+    /**
+     * Make one variant and write it to public/img. The original is fetched
+     * once and kept under storage/app/media-originals, so every further
+     * width (and any later regeneration) works without the media CDN.
+     *
+     * @throws \RuntimeException when the source can't be fetched or decoded
+     */
+    public static function generate(string $sourceKey, int $width, string $format): string
+    {
+        $source = ImageVariant::source($sourceKey);
+        if ($source === null) {
+            throw new \RuntimeException('unknown source');
+        }
+        $bytes = isset($source['path']) ? (string) file_get_contents($source['path']) : self::original($sourceKey, $source['url']);
+        $out = self::render($bytes, $width, $format);
+        self::write(self::targetPath($width, $sourceKey, $format), $out);
+
+        return $out;
+    }
+
+    /** The original bytes of a media-bucket image: from the local copy, else fetched and kept. */
+    private static function original(string $sourceKey, string $url): string
+    {
+        $cache = storage_path('app/media-originals/'.$sourceKey);
+        if (is_file($cache) && filesize($cache) > 0) {
+            return (string) file_get_contents($cache);
+        }
+        $bytes = self::fetch($url);
+        // Keep the original only once it is known to decode, so a CDN error
+        // page or a corrupt download never poisons the cache.
+        if (@getimagesizefromstring($bytes) === false && ! self::decodes($bytes)) {
+            throw new \RuntimeException('source is not a decodable image');
+        }
+        self::write($cache, $bytes);
+
+        return $bytes;
+    }
+
+    private static function decodes(string $bytes): bool
+    {
+        try {
+            if (class_exists(\Imagick::class)) {
+                (new \Imagick)->readImageBlob($bytes);
+
+                return true;
+            }
+        } catch (\Throwable) {
+        }
+
+        return @imagecreatefromstring($bytes) !== false;
     }
 
     /** A plain 404 (the storefront's HTML error page would be wasted on an <img>). */
@@ -80,13 +136,17 @@ class ImageController extends Controller
     }
 
     /** Download the original from the media bucket (never from anywhere else). */
-    private function fetch(string $url): string
+    private static function fetch(string $url): string
     {
         // No image/avif in Accept: the CDN would otherwise hand back AVIF,
         // which not every image library on the server can decode.
-        $res = Http::timeout(20)->withHeaders(['Accept' => 'image/webp,image/png,image/jpeg,image/*;q=0.8'])->get($url);
-        if (! $res->successful() || ! str_starts_with((string) $res->header('Content-Type'), 'image/')) {
-            throw new \RuntimeException('source responded '.$res->status().' '.$res->header('Content-Type'));
+        $res = Http::timeout(20)->withHeaders([
+            'Accept' => 'image/webp,image/png,image/jpeg,image/*;q=0.8,*/*;q=0.5',
+            'User-Agent' => 'BachaStylo-Images/1.0 (+https://www.bachastylo.com)',
+        ])->get($url);
+        $type = (string) $res->header('Content-Type');
+        if (! $res->successful() || str_starts_with($type, 'text/')) {
+            throw new \RuntimeException('source responded '.$res->status().' '.$type);
         }
         $body = $res->body();
         if (strlen($body) > self::MAX_SOURCE_BYTES) {
@@ -187,7 +247,7 @@ class ImageController extends Controller
     }
 
     /** Atomic write so a concurrent request never serves a half-written file. */
-    private function write(string $target, string $bytes): void
+    private static function write(string $target, string $bytes): void
     {
         $dir = dirname($target);
         if (! is_dir($dir) && ! @mkdir($dir, 0755, true) && ! is_dir($dir)) {
