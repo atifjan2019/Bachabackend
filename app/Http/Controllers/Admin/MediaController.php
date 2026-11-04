@@ -55,19 +55,32 @@ class MediaController extends Controller
     public function deleteR2(Request $request)
     {
         $request->validate(['path' => 'required|string']);
-        $path = $request->input('path');
-
-        try {
-            $diskName = config('filesystems.default');
-            Storage::disk($diskName)->delete($path);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to delete'], 500);
-        }
-
-        // Also remove from DB if tracked
+        $path = ltrim((string) $request->input('path'), '/');
         $diskName = config('filesystems.default');
         $url = Storage::disk($diskName)->url($path);
+
+        // A file the catalogue still uses must not go: the category or
+        // product would keep pointing at nothing. Say where it is used.
+        $usages = MediaLibrary::usages($url);
+        if ($usages !== []) {
+            return response()->json([
+                'error' => 'This image is still in use: '.implode('; ', $usages).'. Change the image there first, then delete it here.',
+                'used_by' => $usages,
+            ], 409);
+        }
+
+        try {
+            $deleted = Storage::disk($diskName)->delete($path);
+        } catch (\Throwable $e) {
+            report($e);
+            $deleted = false;
+        }
+        if (! $deleted) {
+            return response()->json(['error' => 'Cloud storage refused to delete the file. Check the storage key.'], 500);
+        }
+
         Media::where('file_path', $url)->delete();
+        MediaLibrary::forgetLocalCopies($path);
         MediaLibrary::forget();
 
         return response()->json(['success' => true]);

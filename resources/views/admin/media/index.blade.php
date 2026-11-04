@@ -182,7 +182,10 @@
                     @endif
                     <div class="r2-actions">
                         <button class="copy-btn" onclick="copyUrl('{{ $file['url'] }}')"><i class="mdi mdi-content-copy"></i> Copy</button>
-                        <button class="del-btn" onclick="deleteR2File('{{ $file['path'] }}', 'card-{{ md5($file['path']) }}')"><i class="mdi mdi-delete-outline"></i> Delete</button>
+@if(!empty($file['used_by']))
+                        <span class="soft-badge" title="{{ implode('; ', $file['used_by']) }}" style="font-size:.62rem;">In use: {{ \Illuminate\Support\Str::limit($file['used_by'][0], 28) }}{{ count($file['used_by']) > 1 ? ' +'.(count($file['used_by']) - 1) : '' }}</span>
+                        @endif
+                                                <button class="del-btn" onclick="deleteR2File('{{ $file['path'] }}', 'card-{{ md5($file['path']) }}')"><i class="mdi mdi-delete-outline"></i> Delete</button>
                     </div>
                 </div>
             </div>
@@ -244,7 +247,7 @@ function deleteR2File(path, cardId) {
             }
             showToast('File deleted from cloud');
         } else {
-            alert('Failed to delete file');
+            alert(data.error || 'Failed to delete file');
         }
     })
     .catch(() => alert('Failed to delete file'));
