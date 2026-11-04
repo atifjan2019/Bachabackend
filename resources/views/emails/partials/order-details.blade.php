@@ -28,7 +28,7 @@
         <tr>
             <td style="padding:12px 0; border-bottom:1px solid #e6e6e8; font-size:14px; color:#141414;">
                 @if(! empty($itemImage))
-                    <img src="{{ $itemImage }}" alt="" width="48" height="60" style="width:48px; height:60px; object-fit:cover; border-radius:4px; border:1px solid #e6e6e8; vertical-align:middle; margin-right:10px;">
+                    <img src="{{ ($v = \App\Support\Storefront\ImageVariant::url($itemImage, 160, 'jpg')) ? url($v) : $itemImage }}" alt="" width="48" height="60" style="width:48px; height:60px; object-fit:cover; border-radius:4px; border:1px solid #e6e6e8; vertical-align:middle; margin-right:10px;">
                 @endif
                 {{ $itemName }}
                 @if($itemMeta !== '')

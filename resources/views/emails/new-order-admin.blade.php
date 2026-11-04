@@ -45,7 +45,7 @@
                     <p style="margin:0 0 10px; font-size:11px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; color:#e81d25;">Payment Receipt</p>
                     @unless($isPdf)
                         <a href="{{ $order->payment_receipt }}" target="_blank" style="text-decoration:none;">
-                            <img src="{{ $order->payment_receipt }}" alt="Payment receipt" style="display:block; max-width:100%; max-height:320px; border:1px solid #e6e6e8; border-radius:6px; margin:0 0 10px;">
+                            <img src="{{ ($v = \App\Support\Storefront\ImageVariant::url($order->payment_receipt, 960, 'jpg')) ? url($v) : $order->payment_receipt }}" alt="Payment receipt" style="display:block; max-width:100%; max-height:320px; border:1px solid #e6e6e8; border-radius:6px; margin:0 0 10px;">
                         </a>
                     @endunless
                     <a href="{{ $order->payment_receipt }}" target="_blank" style="font-size:13px; color:#e81d25; text-decoration:underline;">View / download full receipt</a>

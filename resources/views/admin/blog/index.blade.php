@@ -30,7 +30,7 @@
                     <td data-label="Title">
                         <div class="entity">
                             @if($post->image)
-                                <div class="entity-thumb"><img src="{{ $post->image }}" alt=""></div>
+                                <div class="entity-thumb"><img src="{{ admin_img($post->image, 160) }}" alt=""></div>
                             @else
                                 <div class="entity-thumb"><i class="mdi mdi-image-outline"></i></div>
                             @endif

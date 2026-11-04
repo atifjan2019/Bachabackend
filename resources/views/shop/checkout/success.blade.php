@@ -93,7 +93,7 @@
                         <a href="{{ $receipt }}" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-brand-red underline underline-offset-4">View uploaded receipt (PDF)</a>
                     @else
                         <a href="{{ $receipt }}" target="_blank" rel="noopener noreferrer" class="block">
-                            <img src="{{ $receipt }}" alt="Payment receipt" loading="lazy" decoding="async" class="max-h-80 w-auto rounded-md border border-ink-10">
+                            <img src="{{ \App\Support\Storefront\ImageVariant::url($receipt, 960, 'jpg') ?? $receipt }}" alt="Payment receipt" loading="lazy" decoding="async" class="max-h-80 w-auto rounded-md border border-ink-10">
                         </a>
                     @endif
                     <p class="mt-3 text-[11px] text-ink-50 italic leading-relaxed">The payment receipt you submitted with this order. Our team will verify it shortly.</p>
