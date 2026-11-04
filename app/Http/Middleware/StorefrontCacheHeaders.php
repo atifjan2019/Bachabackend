@@ -22,7 +22,13 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class StorefrontCacheHeaders
 {
-    public const VALUE = 'public, max-age=0, s-maxage=60, stale-while-revalidate=300';
+    // Note: PAGE_TTL is only a backstop; FlushStorefrontCacheAfterAdminWrite clears these pages on every admin change.
+    /**
+     * Browsers and any proxy must revalidate every time, so an admin change
+     * is visible on the next load. Speed comes from the in-app page cache
+     * below, which is cleared after every admin write.
+     */
+    public const VALUE = 'no-cache, max-age=0, must-revalidate';
 
     public const PAGE_TTL = 300;
 

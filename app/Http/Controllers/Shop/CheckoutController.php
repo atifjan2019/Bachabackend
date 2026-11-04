@@ -89,10 +89,15 @@ class CheckoutController extends Controller
 
         $receiptUrl = null;
         if ($requiresReceipt && $request->hasFile('payment_receipt')) {
-            $file = $request->file('payment_receipt');
-            $disk = config('filesystems.default');
-            $path = $file->storeAs('receipts', Str::uuid().'.'.$file->getClientOriginalExtension(), $disk);
-            $receiptUrl = Storage::disk($disk)->url($path);
+            // media_store() verifies the write (and re-encodes images); a
+            // storage failure must not produce an order with a dead receipt link.
+            try {
+                $receiptUrl = media_store($request->file('payment_receipt'), 'receipts');
+            } catch (ValidationException) {
+                throw ValidationException::withMessages([
+                    'payment_receipt' => 'We could not save your payment screenshot. Please try again, or choose Cash on Delivery and send the receipt on WhatsApp.',
+                ]);
+            }
         }
 
         // The Order model has no province/postal/notes columns: fold them into the address.

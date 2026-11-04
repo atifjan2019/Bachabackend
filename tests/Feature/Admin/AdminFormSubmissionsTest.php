@@ -196,7 +196,7 @@ class AdminFormSubmissionsTest extends TestCase
         Storage::fake('public');
 
         $response = $this->actingAs($admin, 'admin')->post(route('admin.media.store'), [
-            'file' => UploadedFile::fake()->create('banner.jpg', 100, 'image/jpeg'),
+            'file' => UploadedFile::fake()->image('banner.jpg', 640, 480),
         ]);
 
         $response->assertRedirect(route('admin.media.index'));

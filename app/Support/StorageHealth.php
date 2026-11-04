@@ -20,7 +20,20 @@ class StorageHealth
     /** @return array{ok: bool, error: ?string, checked_at: string} */
     public static function status(): array
     {
-        return Cache::remember(self::KEY, self::TTL, fn () => self::check());
+        // Kept in its own file rather than the application cache, which is
+        // flushed after every admin write; otherwise each write would cost a
+        // bucket round-trip on the next page.
+        $file = storage_path('framework/storage-health.json');
+        if (is_file($file) && filemtime($file) > time() - self::TTL) {
+            $cached = json_decode((string) file_get_contents($file), true);
+            if (is_array($cached) && array_key_exists('ok', $cached)) {
+                return $cached;
+            }
+        }
+        $status = self::check();
+        @file_put_contents($file, json_encode($status));
+
+        return $status;
     }
 
     public static function check(): array
@@ -42,6 +55,6 @@ class StorageHealth
 
     public static function forget(): void
     {
-        Cache::forget(self::KEY);
+        @unlink(storage_path('framework/storage-health.json'));
     }
 }

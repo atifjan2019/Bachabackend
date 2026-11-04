@@ -62,12 +62,24 @@ if (! function_exists('media_store')) {
     {
         $disk = config('filesystems.default');
         $filename = $filename ?: Str::uuid().'.'.$file->getClientOriginalExtension();
+        $options = ['CacheControl' => 'public, max-age=31536000, immutable'];
+
+        // Images are re-encoded (upright, ≤2000px, WebP) so the bucket only
+        // holds files the storefront can always read and resize. Anything
+        // else (PDF receipts, video) is stored as uploaded.
+        $image = \App\Support\UploadNormalizer::normalize($file);
+        if ($image !== null) {
+            $filename = preg_replace('/\.[A-Za-z0-9]+$/', '', $filename).'.'.$image['extension'];
+            $options['ContentType'] = $image['mime'];
+        }
 
         // The disk returns false instead of throwing when the bucket rejects
         // the write (a bad storage key, for instance). Never save a URL that
         // points at nothing: tell the admin the upload failed.
         try {
-            $stored = $file->storeAs($dir, $filename, ['disk' => $disk, 'CacheControl' => 'public, max-age=31536000, immutable']);
+            $stored = $image !== null
+                ? Storage::disk($disk)->put(trim($dir, '/').'/'.$filename, $image['bytes'], $options)
+                : $file->storeAs($dir, $filename, ['disk' => $disk] + $options);
         } catch (\Throwable $e) {
             report($e);
             $stored = false;

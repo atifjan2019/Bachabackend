@@ -8,6 +8,9 @@
     $metaDescription = $yield('description') ?: $settings->metaDescription();
     $canonical = $yield('canonical') ?: $settings->canonical(request()->getRequestUri());
     $ogImage = $yield('og_image') ?: $settings->get('og_image');
+    if ($ogImage && ($ogCopy = \App\Support\Storefront\ImageVariant::url($ogImage, \App\Support\Storefront\ImageVariant::FULL, 'jpg'))) {
+        $ogImage = url($ogCopy);
+    }
     $ogType = $yield('og_type') ?: 'website';
     $robots = $yield('robots') ?: $settings->robots();
     $whatsapp = $settings->whatsapp();
