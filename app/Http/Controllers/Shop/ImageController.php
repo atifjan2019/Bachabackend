@@ -91,7 +91,7 @@ class ImageController extends Controller
         if (is_file($cache) && filesize($cache) > 0) {
             return (string) file_get_contents($cache);
         }
-        $bytes = self::fetch($url);
+        $bytes = self::fromBucket($sourceKey) ?? self::fetch($url);
         // Keep the original only once it is known to decode, so a CDN error
         // page or a corrupt download never poisons the cache.
         if (@getimagesizefromstring($bytes) === false && ! self::decodes($bytes)) {
@@ -100,6 +100,25 @@ class ImageController extends Controller
         self::write($cache, $bytes);
 
         return $bytes;
+    }
+
+    /**
+     * Read the object straight from the bucket with the storage key (no
+     * Cloudflare in between). Null when the key lacks read permission or the
+     * object is missing, in which case the public URL is tried.
+     */
+    private static function fromBucket(string $sourceKey): ?string
+    {
+        if (! str_starts_with($sourceKey, 'm/') || config('filesystems.default') !== 's3') {
+            return null;
+        }
+        try {
+            $bytes = \Illuminate\Support\Facades\Storage::disk('s3')->get(substr($sourceKey, 2));
+
+            return is_string($bytes) && $bytes !== '' ? $bytes : null;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     private static function decodes(string $bytes): bool
