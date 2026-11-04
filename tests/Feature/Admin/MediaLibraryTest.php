@@ -59,4 +59,33 @@ class MediaLibraryTest extends TestCase
             ->assertOk()->assertJson(['success' => true]);
         $this->assertDatabaseMissing('media', ['file_path' => 'https://media.bachastylo.com/media/old.jpg']);
     }
+
+    public function test_force_delete_removes_the_image_from_every_record_first(): void
+    {
+        config(['filesystems.disks.s3.url' => 'https://media.bachastylo.com', 'filesystems.default' => 's3']);
+        $admin = AdminUser::create(['username' => 'a', 'email' => 'a@example.com', 'password' => Hash::make('secret123'), 'login_attempts' => 0]);
+        $url = 'https://media.bachastylo.com/products/shared.png';
+        $cat = Category::create(['name' => 'Shawls', 'slug' => 'shawls', 'image' => $url, 'image_alt' => 'x']);
+        $main = Product::create(['name' => 'Main', 'slug' => 'main', 'price' => '1', 'image' => $url]);
+        $gal = Product::create(['name' => 'Gal', 'slug' => 'gal', 'price' => '1', 'image' => 'https://media.bachastylo.com/products/keep.png',
+            'gallery' => ['https://media.bachastylo.com/products/g1.png', $url], 'gallery_alts' => ['first', 'second'],
+            'colors' => [['name' => 'Red', 'image' => $url]]]);
+        Setting::updateOrCreate(['setting_key' => 'og_image'], ['setting_value' => $url]);
+        Storage::shouldReceive('disk')->with('s3')->andReturn($fake = \Mockery::mock());
+        $fake->shouldReceive('url')->andReturnUsing(fn ($p) => 'https://media.bachastylo.com/'.$p);
+        $fake->shouldReceive('delete')->with('products/shared.png')->once()->andReturn(true);
+        $fake->shouldReceive('allFiles')->andThrow(new \RuntimeException('no list'));
+
+        $res = $this->actingAs($admin, 'admin')->postJson(route('admin.media.api.deleteR2'), ['path' => 'products/shared.png', 'force' => 1])->assertOk();
+        $this->assertEqualsCanonicalizing(['Product BS-00001', 'Product BS-00002', 'Category: Shawls', 'Setting: og_image'], $res->json('detached'));
+
+        $this->assertNull($cat->fresh()->image);
+        $this->assertNull($main->fresh()->image);
+        $gal = $gal->fresh();
+        $this->assertSame(['https://media.bachastylo.com/products/g1.png'], $gal->gallery);
+        $this->assertSame(['first'], $gal->gallery_alts);
+        $this->assertNull($gal->colors[0]['image']);
+        $this->assertSame('https://media.bachastylo.com/products/keep.png', $gal->image);
+        $this->assertSame('', Setting::where('setting_key', 'og_image')->value('setting_value'));
+    }
 }

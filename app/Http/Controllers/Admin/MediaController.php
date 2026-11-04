@@ -54,19 +54,24 @@ class MediaController extends Controller
      */
     public function deleteR2(Request $request)
     {
-        $request->validate(['path' => 'required|string']);
+        $request->validate(['path' => 'required|string', 'force' => 'nullable|boolean']);
         $path = ltrim((string) $request->input('path'), '/');
         $diskName = config('filesystems.default');
         $url = Storage::disk($diskName)->url($path);
 
-        // A file the catalogue still uses must not go: the category or
-        // product would keep pointing at nothing. Say where it is used.
+        // A file the catalogue still uses: say where, and only proceed when
+        // the admin confirms (force), in which case the references are
+        // removed first so nothing points at a missing file.
         $usages = MediaLibrary::usages($url);
+        $detached = [];
         if ($usages !== []) {
-            return response()->json([
-                'error' => 'This image is still in use: '.implode('; ', $usages).'. Change the image there first, then delete it here.',
-                'used_by' => $usages,
-            ], 409);
+            if (! $request->boolean('force')) {
+                return response()->json([
+                    'error' => 'This image is still in use: '.implode('; ', $usages).'.',
+                    'used_by' => $usages,
+                ], 409);
+            }
+            $detached = MediaLibrary::detach($url);
         }
 
         try {
@@ -83,7 +88,7 @@ class MediaController extends Controller
         MediaLibrary::forgetLocalCopies($path);
         MediaLibrary::forget();
 
-        return response()->json(['success' => true]);
+        return response()->json(['success' => true, 'detached' => $detached]);
     }
 
     public function destroy(string $id)

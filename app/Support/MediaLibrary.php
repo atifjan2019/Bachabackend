@@ -129,6 +129,87 @@ class MediaLibrary
         return [];
     }
 
+    /**
+     * Remove every reference to an image URL — product main image, gallery
+     * entry, colour photo, category image, blog image, branding setting —
+     * so the file can be deleted without leaving a record pointing at
+     * nothing. Returns a label per record changed.
+     *
+     * @return list<string>
+     */
+    public static function detach(string $url): array
+    {
+        $changed = [];
+
+        $columns = array_values(array_filter(['id', 'name', 'sku', 'image', 'image_alt', 'gallery', 'gallery_alts', Product::hasColumn('colors') ? 'colors' : null]));
+        Product::query()->select($columns)
+            // JSON columns store the URL with escaped slashes ("https:\/\/…"), so match both spellings.
+            ->where(function ($q) use ($url) {
+                $escaped = str_replace('/', '\\/', $url);
+                $q->where('image', $url);
+                foreach (['gallery', 'colors'] as $col) {
+                    $q->orWhere($col, 'like', '%'.$url.'%')->orWhere($col, 'like', '%'.$escaped.'%');
+                }
+            })
+            ->get()->each(function (Product $p) use ($url, &$changed) {
+                $dirty = false;
+                if ($p->image === $url) {
+                    $p->image = null;
+                    $p->image_alt = null;
+                    $dirty = true;
+                }
+                $gallery = array_values((array) ($p->gallery ?? []));
+                $alts = array_values((array) ($p->gallery_alts ?? []));
+                $kept = [];
+                $keptAlts = [];
+                foreach ($gallery as $i => $g) {
+                    if ($g === $url) {
+                        $dirty = true;
+
+                        continue;
+                    }
+                    $kept[] = $g;
+                    $keptAlts[] = $alts[$i] ?? '';
+                }
+                if (count($kept) !== count($gallery)) {
+                    $p->gallery = $kept;
+                    $p->gallery_alts = array_filter($keptAlts, fn ($a) => $a !== '') ? $keptAlts : null;
+                }
+                $colors = (array) ($p->colors ?? []);
+                foreach ($colors as $i => $c) {
+                    if (is_array($c) && ($c['image'] ?? null) === $url) {
+                        $colors[$i]['image'] = null;
+                        $dirty = true;
+                    }
+                }
+                if ($dirty) {
+                    $p->colors = $colors;
+                    $p->save();
+                    $changed[] = 'Product '.($p->sku ?: '#'.$p->id);
+                }
+            });
+
+        foreach (Category::query()->where('image', $url)->get() as $cat) {
+            $cat->update(['image' => null, 'image_alt' => null]);
+            $changed[] = 'Category: '.$cat->name;
+        }
+        foreach (BlogPost::query()->where('image', $url)->orWhere('og_image', $url)->get() as $post) {
+            $post->update(['image' => $post->image === $url ? null : $post->image, 'og_image' => $post->og_image === $url ? null : $post->og_image]);
+            $changed[] = 'Blog: '.$post->title;
+        }
+        foreach (Setting::query()->where('setting_value', $url)->get() as $row) {
+            $row->update(['setting_value' => '']);
+            $changed[] = 'Setting: '.$row->setting_key;
+        }
+        Media::query()->where('file_path', $url)->delete();
+
+        if ($changed) {
+            Cache::flush();
+        }
+
+        return $changed;
+    }
+
     /** Drop the server's cached original and resized copies of a bucket object. */
     public static function forgetLocalCopies(string $path): void
     {

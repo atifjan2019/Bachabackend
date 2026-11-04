@@ -39,39 +39,16 @@
     font-size: 2.5rem;
     cursor: pointer;
 }
-.r2-card .r2-meta {
-    padding: 8px 10px;
-    border-top: 1px solid #eee;
-}
-.r2-card .r2-name {
-    font-size: 11px;
-    color: #333;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.r2-card .r2-folder {
-    font-size: 10px;
-    color: #999;
-    margin-top: 2px;
-}
-.r2-actions {
-    display: flex;
-    gap: 4px;
-    margin-top: 6px;
-}
-.r2-actions button {
-    flex: 1;
-    padding: 4px 0;
-    font-size: 11px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.15s;
-    background: #fff;
-}
+.r2-card .r2-meta { padding: 8px 10px 9px; border-top: 1px solid #eee; }
+.r2-card .r2-name { font-size: 11px; font-weight: 600; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.r2-sub { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 3px; min-height: 16px; }
+.r2-folder { font-size: 10px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.r2-use { flex-shrink: 0; font-size: 9.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #047857; background: #ecfdf5; border-radius: 999px; padding: 1px 7px; cursor: help; }
+.r2-use.r2-free { color: #9ca3af; background: #f3f4f6; cursor: default; }
+.r2-actions { display: flex; gap: 6px; margin-top: 8px; }
+.r2-actions button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 4px; height: 28px; font-size: 11px; font-weight: 600; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer; transition: all 0.15s; background: #fff; color: #374151; }
 .r2-actions .copy-btn:hover { background: #2d3436; color: #fff; border-color: #2d3436; }
-.r2-actions .del-btn { color: #e74c3c; }
+.r2-actions .del-btn { color: #e74c3c; border-color: #fde2e2; }
 .r2-actions .del-btn:hover { background: #e74c3c; color: #fff; border-color: #e74c3c; }
 .copied-toast {
     position: fixed;
@@ -177,15 +154,17 @@
                 @endif
                 <div class="r2-meta">
                     <div class="r2-name" title="{{ $file['name'] }}">{{ $file['name'] }}</div>
-                    @if($file['folder'])
-                        <div class="r2-folder">{{ $file['folder'] }}</div>
-                    @endif
-                    <div class="r2-actions">
-                        <button class="copy-btn" onclick="copyUrl('{{ $file['url'] }}')"><i class="mdi mdi-content-copy"></i> Copy</button>
-@if(!empty($file['used_by']))
-                        <span class="soft-badge" title="{{ implode('; ', $file['used_by']) }}" style="font-size:.62rem;">In use: {{ \Illuminate\Support\Str::limit($file['used_by'][0], 28) }}{{ count($file['used_by']) > 1 ? ' +'.(count($file['used_by']) - 1) : '' }}</span>
+                    <div class="r2-sub">
+                        @if($file['folder'])<span class="r2-folder">{{ $file['folder'] }}</span>@endif
+                        @if(!empty($file['used_by']))
+                            <span class="r2-use" title="{{ implode(' · ', $file['used_by']) }}"><i class="mdi mdi-link-variant"></i> {{ count($file['used_by']) === 1 ? 'in use' : 'used '.count($file['used_by']).'×' }}</span>
+                        @else
+                            <span class="r2-use r2-free">unused</span>
                         @endif
-                                                <button class="del-btn" onclick="deleteR2File('{{ $file['path'] }}', 'card-{{ md5($file['path']) }}')"><i class="mdi mdi-delete-outline"></i> Delete</button>
+                    </div>
+                    <div class="r2-actions">
+                        <button class="copy-btn" type="button" onclick="copyUrl('{{ $file['url'] }}')" title="Copy URL"><i class="mdi mdi-content-copy"></i> Copy</button>
+                        <button class="del-btn" type="button" onclick="deleteR2File('{{ $file['path'] }}', 'card-{{ md5($file['path']) }}')" title="Delete from cloud storage"><i class="mdi mdi-delete-outline"></i> Delete</button>
                     </div>
                 </div>
             </div>
@@ -223,20 +202,28 @@ function filterFolder(folder, el) {
     });
 }
 
-function deleteR2File(path, cardId) {
-    if (!confirm('Delete this file from cloud storage? This cannot be undone.')) return;
+function deleteR2File(path, cardId, force) {
+    if (!force && !confirm('Delete this file from cloud storage? This cannot be undone.')) return;
 
     fetch('{{ route("admin.media.api.deleteR2") }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'X-CSRF-TOKEN': '{{ csrf_token() }}',
             'X-Requested-With': 'XMLHttpRequest',
         },
-        body: JSON.stringify({ path: path }),
+        body: JSON.stringify({ path: path, force: force ? 1 : 0 }),
     })
-    .then(r => r.json())
-    .then(data => {
+    .then(r => r.json().then(data => ({ status: r.status, data: data })))
+    .then(({ status, data }) => {
+        if (status === 409 && data.used_by) {
+            var list = data.used_by.slice(0, 12).map(function (u) { return '  • ' + u; }).join('\n');
+            if (data.used_by.length > 12) list += '\n  • … and ' + (data.used_by.length - 12) + ' more';
+            var ok = confirm('This image is still used by:\n\n' + list + '\n\nDelete anyway? It will be removed from these records first (they will show no image until you pick another).');
+            if (ok) deleteR2File(path, cardId, true);
+            return;
+        }
         if (data.success) {
             const card = document.getElementById(cardId);
             if (card) {
@@ -245,7 +232,8 @@ function deleteR2File(path, cardId) {
                 card.style.transform = 'scale(0.9)';
                 setTimeout(() => card.remove(), 300);
             }
-            showToast('File deleted from cloud');
+            var n = (data.detached || []).length;
+            showToast(n ? 'Deleted and removed from ' + n + ' record' + (n === 1 ? '' : 's') : 'File deleted from cloud');
         } else {
             alert(data.error || 'Failed to delete file');
         }
