@@ -30,7 +30,7 @@ Route::get('/clear', function () {
 // Resized catalogue images (see ImageController). Outside the session
 // middleware so the response carries no cookies and caches cleanly.
 Route::get('img/{width}/{key}', [Shop\ImageController::class, 'show'])
-    ->where(['width' => '[0-9]+', 'key' => '.+'])
+    ->where(['width' => '[0-9]+|full', 'key' => '.+'])
     ->withoutMiddleware([
         \Illuminate\Cookie\Middleware\EncryptCookies::class,
         \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,

@@ -18,6 +18,8 @@ class ImageVariantTest extends TestCase
         $this->assertSame('/img/480/m/categories/a-b.png.webp?v=2', ImageVariant::url('https://media.example.com/categories/a-b.png', 480));
         $this->assertSame('/img/96/l/images/logo.png.png?v=2', ImageVariant::url('https://www.example.com/images/logo.png', 96, 'png'));
         $this->assertSame('/img/96/l/images/logo.png.png?v=2', ImageVariant::url('/images/logo.png', 96, 'png'));
+        $this->assertSame('/img/full/m/categories/a-b.png.webp?v=2', ImageVariant::url('https://media.example.com/categories/a-b.png', ImageVariant::FULL));
+        $this->assertNull(ImageVariant::url('https://media.example.com/categories/a-b.png', 'huge'));
         $this->assertSame(
             '/img/320/m/p/x.jpg.webp?v=2 320w, /img/640/m/p/x.jpg.webp?v=2 640w',
             ImageVariant::srcset('https://media.example.com/p/x.jpg', [320, 640])

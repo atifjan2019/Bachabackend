@@ -20,10 +20,14 @@ class ImageController extends Controller
 
     public const QUALITY = 74;
 
+    /** Quality for full-size copies, which stand in for the original. */
+    public const FULL_QUALITY = 88;
+
     public function show(string $width, string $key): Response
     {
-        $width = (int) $width;
-        if (! in_array($width, ImageVariant::WIDTHS, true)
+        // "full" keeps the original dimensions (width 0 = no resize).
+        $width = $width === ImageVariant::FULL ? 0 : (int) $width;
+        if (($width !== 0 && ! in_array($width, ImageVariant::WIDTHS, true))
             || str_contains($key, '..')
             || ! preg_match('#^(m|l)/([A-Za-z0-9_\-./ ]+\.(?:jpe?g|png|webp|avif|gif|jfif))\.(webp|png|jpg)$#i', $key, $m)) {
             return self::notFound();
@@ -61,7 +65,7 @@ class ImageController extends Controller
     /** Where a finished variant lives (served statically by the web server afterwards). */
     public static function targetPath(int $width, string $sourceKey, string $format): string
     {
-        return public_path('img/'.$width.'/'.$sourceKey.'.'.$format);
+        return public_path('img/'.($width === 0 ? ImageVariant::FULL : $width).'/'.$sourceKey.'.'.$format);
     }
 
     /**
@@ -217,7 +221,7 @@ class ImageController extends Controller
         if (method_exists($im, 'autoOrient')) {
             $im->autoOrient();
         }
-        if ($im->getImageWidth() > $width) {
+        if ($width > 0 && $im->getImageWidth() > $width) {
             $im->resizeImage($width, 0, \Imagick::FILTER_LANCZOS, 1);
         }
         if ($format === 'jpg') {
@@ -226,7 +230,7 @@ class ImageController extends Controller
         }
         $im->stripImage();
         $im->setImageFormat($format === 'jpg' ? 'jpeg' : $format);
-        $im->setImageCompressionQuality(self::QUALITY);
+        $im->setImageCompressionQuality($width === 0 ? self::FULL_QUALITY : self::QUALITY);
         if ($format === 'webp') {
             $im->setOption('webp:method', '4');
         }
@@ -247,7 +251,7 @@ class ImageController extends Controller
         imagepalettetotruecolor($src);
         imagealphablending($src, false);
         imagesavealpha($src, true);
-        if ($w > $width) {
+        if ($width > 0 && $w > $width) {
             $dst = imagescale($src, $width, (int) round($h * $width / $w), IMG_BICUBIC);
             imagedestroy($src);
             $src = $dst;
@@ -256,9 +260,9 @@ class ImageController extends Controller
         }
         ob_start();
         match ($format) {
-            'webp' => imagewebp($src, null, self::QUALITY),
+            'webp' => imagewebp($src, null, $width === 0 ? self::FULL_QUALITY : self::QUALITY),
             'png' => imagepng($src, null, 6),
-            default => imagejpeg($src, null, self::QUALITY + 2),
+            default => imagejpeg($src, null, ($width === 0 ? self::FULL_QUALITY : self::QUALITY) + 2),
         };
         imagedestroy($src);
 

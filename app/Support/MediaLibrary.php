@@ -67,6 +67,10 @@ class MediaLibrary
                 // Grid thumbnail: a 240px copy served by this site, so the
                 // admin never pulls 1,000 full-size files from the bucket.
                 'thumb' => \App\Support\Storefront\ImageVariant::url($url, 240) ?? $url,
+                // What "Copy URL" hands out: a full-size copy served by this
+                // site, which opens from any connection (the bucket's CDN
+                // does not, for some). The bucket URL stays the stored reference.
+                'copy_url' => ($full = \App\Support\Storefront\ImageVariant::url($url, \App\Support\Storefront\ImageVariant::FULL)) ? url($full) : $url,
                 'name' => basename($path),
                 'folder' => $folder === '.' ? '' : $folder,
                 'used_by' => $usedBy !== null ? [$usedBy] : [],

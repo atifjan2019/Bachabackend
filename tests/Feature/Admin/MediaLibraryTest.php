@@ -34,7 +34,7 @@ class MediaLibraryTest extends TestCase
         }
         $this->assertNotContains('https://media.bachastylo.com/products/manual.pdf', $urls);
         $first = collect($files)->firstWhere('url', 'https://media.bachastylo.com/products/a.png');
-        $this->assertSame(['path' => 'products/a.png', 'url' => 'https://media.bachastylo.com/products/a.png', 'thumb' => '/img/240/m/products/a.png.webp?v=2', 'name' => 'a.png', 'folder' => 'products', 'used_by' => ['Product BS-00001 – P']], $first);
+        $this->assertSame(['path' => 'products/a.png', 'url' => 'https://media.bachastylo.com/products/a.png', 'thumb' => '/img/240/m/products/a.png.webp?v=2', 'copy_url' => url('/img/full/m/products/a.png.webp?v=2'), 'name' => 'a.png', 'folder' => 'products', 'used_by' => ['Product BS-00001 – P']], $first);
         $this->assertSame('media/banner.jpg', $files[0]['path']);
 
         $this->actingAs($admin, 'admin')->get(route('admin.media.index'))->assertOk()->assertSee('a.png');

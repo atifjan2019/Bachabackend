@@ -86,10 +86,14 @@ class ImageVariant
     }
 
     /** Public URL of one variant, or null when the source can't be resized. */
-    public static function url(?string $src, int $width, string $format = 'webp'): ?string
+    /** Width token for a copy at the original dimensions (re-encoded, never resized). */
+    public const FULL = 'full';
+
+    public static function url(?string $src, int|string $width, string $format = 'webp'): ?string
     {
         $key = self::key($src);
-        if ($key === null || ! in_array($width, self::WIDTHS, true) || ! in_array($format, self::FORMATS, true)) {
+        $validWidth = $width === self::FULL || in_array($width, self::WIDTHS, true);
+        if ($key === null || ! $validWidth || ! in_array($format, self::FORMATS, true)) {
             return null;
         }
 

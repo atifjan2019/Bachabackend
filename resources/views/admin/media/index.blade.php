@@ -148,9 +148,9 @@
             @endphp
             <div class="r2-card" data-folder="{{ $file['folder'] }}" id="card-{{ md5($file['path']) }}">
                 @if($isImage)
-                    <img src="{{ $file['thumb'] ?? $file['url'] }}" alt="{{ $file['name'] }}" loading="lazy" decoding="async" onclick="copyUrl('{{ $file['url'] }}')">
+                    <img src="{{ $file['thumb'] ?? $file['url'] }}" alt="{{ $file['name'] }}" loading="lazy" decoding="async" onclick="copyUrl('{{ $file['copy_url'] ?? $file['url'] }}')">
                 @else
-                    <div class="r2-icon" onclick="copyUrl('{{ $file['url'] }}')"><i class="mdi mdi-file-outline"></i></div>
+                    <div class="r2-icon" onclick="copyUrl('{{ $file['copy_url'] ?? $file['url'] }}')"><i class="mdi mdi-file-outline"></i></div>
                 @endif
                 <div class="r2-meta">
                     <div class="r2-name" title="{{ $file['name'] }}">{{ $file['name'] }}</div>
@@ -163,7 +163,7 @@
                         @endif
                     </div>
                     <div class="r2-actions">
-                        <button class="copy-btn" type="button" onclick="copyUrl('{{ $file['url'] }}')" title="Copy URL"><i class="mdi mdi-content-copy"></i> Copy</button>
+                        <button class="copy-btn" type="button" onclick="copyUrl('{{ $file['copy_url'] ?? $file['url'] }}')" title="Copy URL"><i class="mdi mdi-content-copy"></i> Copy</button>
                         <button class="del-btn" type="button" onclick="deleteR2File('{{ $file['path'] }}', 'card-{{ md5($file['path']) }}')" title="Delete from cloud storage"><i class="mdi mdi-delete-outline"></i> Delete</button>
                     </div>
                 </div>

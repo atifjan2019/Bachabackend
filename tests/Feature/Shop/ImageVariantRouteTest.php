@@ -36,6 +36,16 @@ class ImageVariantRouteTest extends TestCase
         $this->get('/img/96/l/images/BachaStylo%20favicon.png.webp')->assertOk()->assertHeader('Content-Type', 'image/webp');
     }
 
+    public function test_full_keeps_the_original_dimensions(): void
+    {
+        File::deleteDirectory(public_path('img/full'));
+        [$ow] = getimagesize(public_path('images/BachaStylo favicon.png'));
+        $this->get('/img/full/l/images/BachaStylo%20favicon.png.webp')->assertOk()->assertHeader('Content-Type', 'image/webp');
+        [$w] = getimagesize(public_path('img/full/l/images/BachaStylo favicon.png.webp'));
+        $this->assertSame($ow, $w);
+        File::deleteDirectory(public_path('img/full'));
+    }
+
     public function test_unknown_sizes_sources_and_traversal_are_404(): void
     {
         $this->get('/img/500/l/images/BachaStylo%20favicon.png.webp')->assertNotFound();
