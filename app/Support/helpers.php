@@ -62,7 +62,21 @@ if (! function_exists('media_store')) {
     {
         $disk = config('filesystems.default');
         $filename = $filename ?: Str::uuid().'.'.$file->getClientOriginalExtension();
-        $file->storeAs($dir, $filename, ['disk' => $disk, 'CacheControl' => 'public, max-age=31536000, immutable']);
+
+        // The disk returns false instead of throwing when the bucket rejects
+        // the write (a bad storage key, for instance). Never save a URL that
+        // points at nothing: tell the admin the upload failed.
+        try {
+            $stored = $file->storeAs($dir, $filename, ['disk' => $disk, 'CacheControl' => 'public, max-age=31536000, immutable']);
+        } catch (\Throwable $e) {
+            report($e);
+            $stored = false;
+        }
+        if ($stored === false) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'upload' => 'The image could not be saved to cloud storage, so nothing was changed. The storage key (AWS_* in the server .env) is being rejected by the bucket — ask the developer to check it.',
+            ]);
+        }
 
         return Storage::disk($disk)->url(trim($dir, '/').'/'.$filename);
     }

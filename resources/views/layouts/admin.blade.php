@@ -1192,6 +1192,13 @@ function syncNow() {
                     <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
                 </div>
             @endif
+            @php($storageHealth = \App\Support\StorageHealth::status())
+            @if(! $storageHealth['ok'])
+                <div class="alert alert-danger">
+                    <strong>Cloud storage is rejecting uploads.</strong> Images saved from this panel will not reach the media bucket until the storage key is fixed
+                    ({{ $storageHealth['error'] }}). Checked {{ $storageHealth['checked_at'] }}.
+                </div>
+            @endif
             @if($errors->any())
                 <div class="alert alert-danger">
                     <i class="mdi mdi-alert-circle-outline"></i>
