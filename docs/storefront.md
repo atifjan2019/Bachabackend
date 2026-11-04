@@ -84,7 +84,10 @@ forms or inline on the admin lists (`PATCH admin/{categories,products}/{id}/quic
   widths are limited to `ImageVariant::WIDTHS`.
 - `<x-shop.img>` emits the srcset itself whenever it knows the slot size (`sizes`, `width` or `widths`);
   Alpine-driven `<img>`s use `bsf.srcset(url, widths)` (same rules, from `window.BSF.media`).
-- New uploads go through `media_store($file, $dir)` so the object carries `Cache-Control: max-age=31536000`.
+- New uploads go through `media_store($file, $dir)` so the object carries `Cache-Control: max-age=31536000`;
+  a refused write raises a validation error (`upload`) and `StorageHealth` shows a banner in the admin.
+- `php artisan media:warm` pre-generates every width (nightly 03:30); `media:cache-headers` rewrites bucket
+  objects' Cache-Control; originals are cached under `storage/app/media-originals`.
 - Guest storefront pages are cached whole for 5 min (`StorefrontCacheHeaders`, header `X-Storefront-Cache`);
   the CSRF token is swapped per visitor. Admin saves `Cache::flush()`, which drops them. Keep anything
   per-visitor out of server-rendered HTML (the cart lives in the browser; signed-in customers bypass it).

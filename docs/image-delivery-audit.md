@@ -66,19 +66,33 @@ What still depends on `media.bachastylo.com`:
 - The product JSON from `/api/v1` (no longer used by any live frontend).
 - The first fetch of any image uploaded after today, once, by the server.
 
-## 4. Broken references in the data (not a delivery problem)
+## 4. Broken references in the data — root cause found (4 Nov, afternoon)
 
-These URLs point at files that do not exist in the bucket (404), so they show the grey placeholder
-everywhere, and every generation attempt is logged as a failure:
+The server's R2 storage key was being **rejected by the bucket on every call** (401, including plain
+uploads). Laravel's storage driver reports a refused write as `false` rather than an error, so the admin
+panel treated every image upload as successful, saved the URL, and the file never landed. The last upload
+that actually reached the bucket is dated 30 September; any image added from the admin between then and
+4 November may be missing. The `.env` also carried three copies of the storage settings, one blank.
+
+Fixed on 4 November:
+
+- A new account-level R2 token (Object Read & Write) is installed; upload, read and list were verified.
+- `media_store()` now stops the save with a visible error when the bucket refuses a write, and the admin
+  shows a red banner (checked every 10 min, `App\Support\StorageHealth`) while writes are refused.
+- The resizer reads originals straight from the bucket with the key (`ImageController::fromBucket`), so
+  image generation no longer passes through Cloudflare at all; the public URL is only a fallback.
+- `php artisan media:cache-headers` sets a one-year `Cache-Control` on every object (files are UUID-named
+  and never change); run once on 4 November. The Media Library now lists the bucket itself as well.
+
+Records whose files never landed (re-upload them in the admin):
 
 | Record | Missing file |
 |---|---|
 | Category "Special Deal Offers" (id 76) | `categories/60a86f08-e086-41c2-9cdb-17fef2c566d1.png` |
-| Product BS-00406 "White Swati Shawl & Chitrali Cap Deal" | `products/381ba2bb-6147-4c31-abad-af4b34d3bf56.png` |
-| Product BS-00407 "Off White Swati Shawl & Chitrali Cap Deal" | `products/6542d4a0-39c0-44d6-96e4-c315f36403b0.webp` |
-| One more product image | `products/fa80862e-…` (see `media:warm` output for the record) |
+| Product BS-00408 "Off White Swati Shawl & Chitrali Cap Deal" (created 4 Nov) | `products/7785f51c-dee0-458c-8226-00a801807f57.webp` |
+| Three further product images (see `media:warm` log of 4 Nov) | `products/f536e663-…webp`, `products/e2174ee5-…webp`, `products/a431e86b-…webp` |
 
-Re-upload the images on those records in the admin panel.
+(BS-00406/00407, listed earlier, were deleted by the owner on 4 November.)
 
 ## 5. Recommendations
 
@@ -86,9 +100,8 @@ Re-upload the images on those records in the admin panel.
    "I'm Under Attack" off, Bot Fight Mode off; check WAF custom rules and rate limiting for anything matching
    `media.bachastylo.com`. If you want, also check Security → Events for blocked requests from your IP on
    the day it failed — that is the definitive answer.
-2. **R2 API key (you, optional):** issue a key with Object Read & Write and update `AWS_ACCESS_KEY_ID` /
-   `AWS_SECRET_ACCESS_KEY` in the server `.env`. The server would then read originals straight from the
-   bucket, bypassing Cloudflare entirely, and the Media Library could list the bucket itself.
+2. **R2 API key:** done on 4 November (see section 4). If the token is ever rotated, the red banner in the
+   admin is the signal; update the two `AWS_*` lines in the server `.env` and run `php artisan config:cache`.
 3. **Monitoring:** `grep "\[img\] variant failed" storage/logs/laravel.log` on the server shows generation
    failures; a sudden rise in "source responded 403/503" would mean the server is being blocked by Cloudflare.
 4. Fix the four broken references above.
