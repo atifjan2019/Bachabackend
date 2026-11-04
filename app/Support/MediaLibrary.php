@@ -55,6 +55,9 @@ class MediaLibrary
             $byUrl[$url] = [
                 'path' => $path,
                 'url' => $url,
+                // Grid thumbnail: a 240px copy served by this site, so the
+                // admin never pulls 1,000 full-size files from the bucket.
+                'thumb' => \App\Support\Storefront\ImageVariant::url($url, 240) ?? $url,
                 'name' => basename($path),
                 'folder' => $folder === '.' ? '' : $folder,
             ];

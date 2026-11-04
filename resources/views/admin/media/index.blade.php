@@ -171,7 +171,7 @@
             @endphp
             <div class="r2-card" data-folder="{{ $file['folder'] }}" id="card-{{ md5($file['path']) }}">
                 @if($isImage)
-                    <img src="{{ $file['url'] }}" alt="{{ $file['name'] }}" loading="lazy" onclick="copyUrl('{{ $file['url'] }}')">
+                    <img src="{{ $file['thumb'] ?? $file['url'] }}" alt="{{ $file['name'] }}" loading="lazy" decoding="async" onclick="copyUrl('{{ $file['url'] }}')">
                 @else
                     <div class="r2-icon" onclick="copyUrl('{{ $file['url'] }}')"><i class="mdi mdi-file-outline"></i></div>
                 @endif

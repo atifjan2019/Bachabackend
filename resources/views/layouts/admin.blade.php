@@ -985,7 +985,7 @@
     <div class="sb-logo">
         <a href="{{ route('admin.dashboard') }}">
             @if(!empty($site_settings['logo_url']))
-                <img src="{{ $site_settings['logo_url'] }}" alt="Logo">
+                <img src="{{ \App\Support\Storefront\ImageVariant::url($site_settings['logo_url'], 160, 'png') ?? $site_settings['logo_url'] }}" alt="Logo">
             @else
                 <span class="brand-name">Bacha<span class="brand-dot">·</span>Stylo</span>
             @endif

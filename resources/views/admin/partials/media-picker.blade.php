@@ -201,7 +201,7 @@ function renderMpGrid(files) {
     let html = '';
     files.forEach((f, i) => {
         html += '<div class="mp-item" data-url="' + f.url + '" data-folder="' + f.folder + '" onclick="toggleMpSelect(this)">';
-        html += '<img src="' + f.url + '" alt="' + f.name + '" loading="lazy">';
+        html += '<img src="' + (f.thumb || f.url) + '" alt="' + f.name + '" loading="lazy" decoding="async">';
         html += '<div class="mp-name">' + f.name + '</div>';
         html += '</div>';
     });
