@@ -31,11 +31,11 @@ class PerformanceMarkupTest extends TestCase
         Product::create(['name' => 'Ruby Shawl', 'slug' => 'ruby-shawl', 'category' => 'shawls', 'price' => '1000', 'image' => 'https://media.bachastylo.com/products/p1.jpg']);
 
         $this->get('/')->assertOk()
-            ->assertSee('srcset="/img/320/m/categories/c1.png.webp 320w, /img/360/m/categories/c1.png.webp 360w, /img/480/m/categories/c1.png.webp 480w', false);
+            ->assertSee('srcset="/img/320/m/categories/c1.png.webp?v=2 320w, /img/360/m/categories/c1.png.webp?v=2 360w, /img/480/m/categories/c1.png.webp?v=2 480w', false);
         $this->get('/products')->assertOk()
-            ->assertSee('/img/480/m/products/p1.jpg.webp 480w', false)
+            ->assertSee('/img/480/m/products/p1.jpg.webp?v=2 480w', false)
             ->assertSee('sizes="(max-width: 640px) calc(50vw - 22px), (max-width: 1024px) calc(33vw - 16px), 300px"', false);
         $this->get('/products/ruby-shawl')->assertOk()
-            ->assertSee('/img/768/m/products/p1.jpg.webp 768w', false);
+            ->assertSee('/img/768/m/products/p1.jpg.webp?v=2 768w', false);
     }
 }

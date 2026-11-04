@@ -181,7 +181,8 @@ export function srcset(url, widths = [320, 360, 480, 640, 960, 1280], format = '
     if (!url || !origin || typeof url !== 'string' || !url.startsWith(origin + '/')) return null;
     const path = url.slice(origin.length + 1);
     if (/[?#]/.test(path) || path.includes('..') || !/^[A-Za-z0-9_\-./%]+\.(jpe?g|png|webp|avif|gif|jfif)$/i.test(path)) return null;
-    const parts = widths.filter((w) => allowed.includes(w)).map((w) => `/img/${w}/m/${path}.${format} ${w}w`);
+    const version = config().imgVersion || 1;
+    const parts = widths.filter((w) => allowed.includes(w)).map((w) => `/img/${w}/m/${path}.${format}?v=${version} ${w}w`);
     return parts.length ? parts.join(', ') : null;
 }
 

@@ -25,6 +25,15 @@ class ImageVariant
 
     public const CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
+    /**
+     * Appended to every variant URL (?v=N). Copies are cached by browsers for
+     * a year as immutable, so when the way they are made changes (e.g. the
+     * AVIF transparency fix of 3 Nov 2026) this is bumped and every browser
+     * fetches fresh files. Keep ImageVariant.VERSION in helpers.js and the
+     * admin layout in step.
+     */
+    public const VERSION = 2;
+
     /** Public origin of the media bucket, e.g. https://media.bachastylo.com (no trailing slash). */
     public static function mediaOrigin(): string
     {
@@ -87,7 +96,7 @@ class ImageVariant
         // Packaged logos have spaces in their names; encode per segment.
         $encoded = implode('/', array_map('rawurlencode', explode('/', $key)));
 
-        return '/img/'.$width.'/'.$encoded.'.'.$format;
+        return '/img/'.$width.'/'.$encoded.'.'.$format.'?v='.self::VERSION;
     }
 
     /**

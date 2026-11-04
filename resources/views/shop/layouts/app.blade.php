@@ -18,6 +18,7 @@
         'apiBase' => url('/api/v1'),
         'media' => \App\Support\Storefront\ImageVariant::mediaOrigin(),
         'imgWidths' => \App\Support\Storefront\ImageVariant::WIDTHS,
+        'imgVersion' => \App\Support\Storefront\ImageVariant::VERSION,
         'csrf' => csrf_token(),
         'customer' => $customer ? ['name' => $customer->name, 'email' => $customer->email, 'phone' => $customer->phone] : null,
     ];
