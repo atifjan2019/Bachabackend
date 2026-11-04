@@ -31,10 +31,10 @@
             @elseif($showImage)
                 @if($promo['link'])
                     <a href="{{ $promo['link'] }}" target="_blank" rel="noopener noreferrer" class="block">
-                        <img src="{{ $promo['image'] }}" alt="{{ $promo['title'] ?: 'Promotion' }}" class="max-h-[60vh] w-full object-contain">
+                        <img src="{{ $promo['image'] }}" @if($set = \App\Support\Storefront\ImageVariant::srcset($promo['image'], [480, 768, 1280])) srcset="{{ $set }}" sizes="(max-width: 640px) 90vw, 640px" @endif alt="{{ $promo['title'] ?: 'Promotion' }}" class="max-h-[60vh] w-full object-contain">
                     </a>
                 @else
-                    <img src="{{ $promo['image'] }}" alt="{{ $promo['title'] ?: 'Promotion' }}" class="max-h-[60vh] w-full object-contain">
+                    <img src="{{ $promo['image'] }}" @if($set = \App\Support\Storefront\ImageVariant::srcset($promo['image'], [480, 768, 1280])) srcset="{{ $set }}" sizes="(max-width: 640px) 90vw, 640px" @endif alt="{{ $promo['title'] ?: 'Promotion' }}" class="max-h-[60vh] w-full object-contain">
                 @endif
             @else
                 <div class="relative flex aspect-video w-full items-center justify-center bg-gradient-to-br from-brand-black via-brand-black-soft to-[#2a1116]">

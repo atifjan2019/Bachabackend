@@ -67,3 +67,21 @@ if (! function_exists('media_store')) {
         return Storage::disk($disk)->url(trim($dir, '/').'/'.$filename);
     }
 }
+
+if (! function_exists('admin_img')) {
+    /**
+     * Admin preview/thumbnail URL for an image: a resized copy served by this
+     * site when the source is a catalogue image, else the URL unchanged.
+     * The media bucket sits behind Cloudflare, which some connections cannot
+     * reach; this site is reachable whenever the admin is.
+     */
+    function admin_img(?string $url, int $width = 240, string $format = 'webp'): string
+    {
+        $url = trim((string) $url);
+        if ($url === '') {
+            return '';
+        }
+
+        return \App\Support\Storefront\ImageVariant::url($url, $width, $format) ?? $url;
+    }
+}

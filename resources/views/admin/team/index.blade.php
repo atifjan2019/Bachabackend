@@ -37,7 +37,7 @@
                         <div class="entity">
                             <div class="entity-thumb">
                                 @if($member->image_url)
-                                    <img src="{{ $member->image_url }}" alt="{{ $member->title }}">
+                                    <img src="{{ admin_img($member->image_url, 480) }}" alt="{{ $member->title }}">
                                 @else
                                     <i class="mdi mdi-account-outline"></i>
                                 @endif
@@ -117,7 +117,7 @@
                     </div>
                     <small class="form-hint">Leave blank to show initials instead.</small>
                     <div id="founderImagePreview" class="preview-box" style="{{ !empty($founder['about_founder_image']) ? '' : 'display:none;' }}">
-                        <img src="{{ $founder['about_founder_image'] ?? '' }}" alt="Founder">
+                        <img src="{{ admin_img($founder['about_founder_image'] ?? '', 480) }}" alt="Founder">
                     </div>
                 </div>
                 <div class="field-span-6 form-group">
@@ -173,7 +173,7 @@
                     </div>
                     <small class="form-hint">Leave blank to show the "BS" monogram placeholder.</small>
                     <div id="storyImagePreview" class="preview-box" style="{{ !empty($story['about_story_image']) ? '' : 'display:none;' }}">
-                        <img src="{{ $story['about_story_image'] ?? '' }}" alt="Story">
+                        <img src="{{ admin_img($story['about_story_image'] ?? '', 480) }}" alt="Story">
                     </div>
                 </div>
             </div>
@@ -280,7 +280,7 @@ function imgPreview(boxId, src) {
     var box = document.getElementById(boxId);
     if (!box) return;
     var img = box.querySelector('img');
-    if (src) { img.src = src; box.style.display = ''; }
+    if (src) { img.src = adminThumb(src); box.style.display = ''; }
     else { box.style.display = 'none'; }
 }
 </script>

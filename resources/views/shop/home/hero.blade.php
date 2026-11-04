@@ -28,7 +28,8 @@
                class="absolute inset-0 h-full w-full object-cover object-center"></video>
     @endif
     @if($hasImage)
-        <img src="{{ $hero['image'] }}" alt="Intro banner" x-show="showImage" x-on:error="bannerFailed = true"
+        @php($introSet = \App\Support\Storefront\ImageVariant::srcset($hero['image'], [768, 1280, 1600]))
+        <img src="{{ $hero['image'] }}" @if($introSet) srcset="{{ $introSet }}" sizes="100vw" @endif alt="Intro banner" x-show="showImage" x-on:error="bannerFailed = true"
              class="absolute inset-0 h-full w-full object-cover object-center">
     @endif
     <div class="absolute inset-0" x-show="showDefault">

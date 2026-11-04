@@ -61,7 +61,7 @@
     </div>
 
     <div id="teamImagePreview" class="preview-box" style="{{ !empty($member?->image_url) ? '' : 'display:none;' }}">
-        <img src="{{ $member->image_url ?? '' }}" alt="Preview">
+        <img src="{{ admin_img($member->image_url ?? '', 480) }}" alt="Preview">
     </div>
 
     @if(!empty($member?->image_url))
@@ -117,7 +117,7 @@ function teamShowPreview(src) {
     var box = document.getElementById('teamImagePreview');
     if (!box) return;
     var img = box.querySelector('img');
-    if (src) { img.src = src; box.style.display = ''; }
+    if (src) { img.src = adminThumb(src); box.style.display = ''; }
     else { box.style.display = 'none'; }
 }
 </script>

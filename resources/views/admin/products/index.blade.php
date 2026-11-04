@@ -44,7 +44,7 @@
                     <td data-label="Product">
                         <div class="entity">
                             @if($product->image)
-                                <div class="entity-thumb"><img src="{{ $product->image }}" alt=""></div>
+                                <div class="entity-thumb"><img src="{{ admin_img($product->image, 160) }}" alt=""></div>
                             @else
                                 <div class="entity-thumb"><i class="mdi mdi-image-outline"></i></div>
                             @endif

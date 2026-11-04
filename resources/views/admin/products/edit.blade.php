@@ -118,7 +118,7 @@
                             <span class="btn-library" onclick="openMediaPicker('image', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
                             <div id="preview-main" class="preview-box" style="margin-top:8px;">
                                 @if($product->image)
-                                    <img src="{{ $product->image }}" alt="Product image" style="max-height:160px; border-radius:6px;">
+                                    <img src="{{ admin_img($product->image, 480) }}" alt="Product image" style="max-height:160px; border-radius:6px;">
                                 @endif
                             </div>
                             <input type="hidden" name="image" value="{{ old('image', $product->image) }}">
@@ -137,7 +137,7 @@
                                     $galleryUrls = is_array($product->gallery) ? $product->gallery : json_decode($product->gallery ?? '[]', true) ?? [];
                                 @endphp
                                 @foreach($galleryUrls as $gUrl)
-                                    <img src="{{ $gUrl }}" alt="Gallery" style="max-height:100px; border-radius:6px; border:1px solid #ddd;">
+                                    <img src="{{ admin_img($gUrl, 480) }}" alt="Gallery" style="max-height:100px; border-radius:6px; border:1px solid #ddd;">
                                 @endforeach
                             </div>
                             <span class="btn-library" onclick="openMediaPicker('gallery', true)"><i class="mdi mdi-folder-image"></i> Select from Library</span>

@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+    // Resized copy served by this site for a catalogue image (mirrors admin_img()).
+    window.adminThumb = function (url, w) {
+        w = w || 480;
+        var origin = @json(rtrim((string) config('filesystems.disks.s3.url', ''), '/'));
+        if (!url || !origin || url.indexOf(origin + '/') !== 0) return url;
+        var path = url.slice(origin.length + 1);
+        if (/[?#]/.test(path) || path.indexOf('..') !== -1 || !/\.(jpe?g|png|webp|avif|gif|jfif)$/i.test(path)) return url;
+        return '/img/' + w + '/m/' + path.split('/').map(encodeURIComponent).join('/') + '.webp';
+    };
+    </script>
     <meta charset="utf-8" />
     <title>@yield('title', 'Dashboard') — {{ $site_settings['business_name'] ?? 'Bacha Stylo' }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

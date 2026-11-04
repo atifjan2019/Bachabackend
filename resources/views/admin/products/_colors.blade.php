@@ -72,7 +72,7 @@ function removeColorRow(btn) {
 function setColorImage(row, url) {
     row.querySelector('[data-field="image"]').value = url || '';
     const img = row.querySelector('[data-field="preview"]');
-    if (url) { img.src = url; img.style.display = ''; } else { img.removeAttribute('src'); img.style.display = 'none'; }
+    if (url) { img.src = adminThumb(url); img.style.display = ''; } else { img.removeAttribute('src'); img.style.display = 'none'; }
 }
 function pickColorImage(el) {
     const row = el.closest('[data-color-row]');

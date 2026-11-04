@@ -68,7 +68,7 @@
                             <input type="file" name="logo_file" class="form-control" accept="image/*" onchange="previewImg(this, 'logo-preview')">
                             <div id="logo-preview" style="margin-top:8px;">
                                 @if(!empty($settings['logo_url']))
-                                    <img src="{{ $settings['logo_url'] }}" alt="Logo" style="max-height:60px; border-radius:4px;">
+                                    <img src="{{ admin_img($settings['logo_url'], 480) }}" alt="Logo" style="max-height:60px; border-radius:4px;">
                                 @endif
                             </div>
                             <span class="btn-library" onclick="openMediaPicker('logo_url', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
@@ -79,7 +79,7 @@
                             <input type="file" name="footer_logo_file" class="form-control" accept="image/*" onchange="previewImg(this, 'footer-logo-preview')">
                             <div id="footer-logo-preview" style="margin-top:8px;">
                                 @if(!empty($settings['footer_logo_url']))
-                                    <img src="{{ $settings['footer_logo_url'] }}" alt="Footer Logo" style="max-height:60px; border-radius:4px;">
+                                    <img src="{{ admin_img($settings['footer_logo_url'], 480) }}" alt="Footer Logo" style="max-height:60px; border-radius:4px;">
                                 @endif
                             </div>
                             <span class="btn-library" onclick="openMediaPicker('footer_logo_url', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
@@ -91,7 +91,7 @@
                             <input type="file" name="favicon_file" class="form-control" accept="image/*,.ico" onchange="previewImg(this, 'favicon-preview')">
                             <div id="favicon-preview" style="margin-top:8px;">
                                 @if(!empty($settings['favicon_url']))
-                                    <img src="{{ $settings['favicon_url'] }}" alt="Favicon" style="max-height:32px; border-radius:4px;">
+                                    <img src="{{ admin_img($settings['favicon_url'], 480) }}" alt="Favicon" style="max-height:32px; border-radius:4px;">
                                 @endif
                             </div>
                             <span class="btn-library" onclick="openMediaPicker('favicon_url', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
@@ -139,7 +139,7 @@
                             <input type="file" name="home_highlight_image_file" class="form-control" accept="image/*" onchange="previewImg(this, 'home-highlight-preview')">
                             <div id="home-highlight-preview" style="margin-top:8px;">
                                 @if(!empty($settings['home_highlight_image']))
-                                    <img src="{{ $settings['home_highlight_image'] }}" alt="Highlight" style="max-height:120px; border-radius:6px;">
+                                    <img src="{{ admin_img($settings['home_highlight_image'], 480) }}" alt="Highlight" style="max-height:120px; border-radius:6px;">
                                 @endif
                             </div>
                             <span class="btn-library" onclick="openMediaPicker('home_highlight_image', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
@@ -195,7 +195,7 @@
                             <input type="file" name="intro_image_file" class="form-control" accept="image/*" onchange="previewImg(this, 'intro-image-preview')">
                             <div id="intro-image-preview" style="margin-top:8px;">
                                 @if(!empty($settings['intro_image']))
-                                    <img src="{{ $settings['intro_image'] }}" alt="Intro banner" style="max-height:120px; border-radius:6px;">
+                                    <img src="{{ admin_img($settings['intro_image'], 480) }}" alt="Intro banner" style="max-height:120px; border-radius:6px;">
                                 @endif
                             </div>
                             <span class="btn-library" onclick="openMediaPicker('intro_image', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
@@ -272,7 +272,7 @@
                             <input type="file" name="promo_image_file" class="form-control" accept="image/*" onchange="previewImg(this, 'promo-image-preview')">
                             <div id="promo-image-preview" style="margin-top:8px;">
                                 @if(!empty($settings['promo_image']))
-                                    <img src="{{ $settings['promo_image'] }}" alt="Promo banner" style="max-height:120px; border-radius:6px;">
+                                    <img src="{{ admin_img($settings['promo_image'], 480) }}" alt="Promo banner" style="max-height:120px; border-radius:6px;">
                                 @endif
                             </div>
                             <span class="btn-library" onclick="openMediaPicker('promo_image', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>

@@ -41,7 +41,7 @@
                                 <td data-label="Item">
                                     <div class="entity">
                                         @if(!empty($item['image']))
-                                            <div class="entity-thumb"><img src="{{ $item['image'] }}" alt=""></div>
+                                            <div class="entity-thumb"><img src="{{ admin_img($item['image'], 960) }}" alt=""></div>
                                         @else
                                             <div class="entity-thumb"><i class="mdi mdi-image-outline"></i></div>
                                         @endif
@@ -203,7 +203,7 @@
                         <div class="detail-value">
                             @if(!empty($order->payment_receipt))
                                 <a href="{{ $order->payment_receipt }}" target="_blank" rel="noopener">
-                                    <img src="{{ $order->payment_receipt }}" alt="Payment receipt" style="max-width:100%;max-height:220px;border-radius:6px;border:1px solid var(--line,#e5e7eb);">
+                                    <img src="{{ admin_img($order->payment_receipt, 960) }}" alt="Payment receipt" style="max-width:100%;max-height:220px;border-radius:6px;border:1px solid var(--line,#e5e7eb);">
                                     <div style="margin-top:6px;font-size:12px;"><i class="mdi mdi-open-in-new"></i> View full receipt</div>
                                 </a>
                             @else

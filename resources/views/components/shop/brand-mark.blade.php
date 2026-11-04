@@ -6,8 +6,7 @@
     [$maxH, $px] = $sizes[$size] ?? $sizes['default'];
 @endphp
 <a href="{{ route('shop.home') }}" class="inline-flex items-center" aria-label="Bacha Stylo">
-    {{-- Originals only: the logo is tiny already and a resized copy once lost its transparent background. --}}
-    <x-shop.img :src="$src" alt="Bacha Stylo" :width="$px" :height="$px" :sizes="$px.'px'" :priority="$priority" :variants="false"
+    <x-shop.img :src="$src" alt="Bacha Stylo" :width="$px" :height="$px" :sizes="$px.'px'" :priority="$priority"
         :fallback-src="$logoUrl ? $packaged : null" fallback="none" referrerpolicy="no-referrer"
         {{ $attributes->class(['w-auto h-auto object-contain', $maxH]) }} />
 </a>

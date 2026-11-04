@@ -147,7 +147,7 @@
         <div class="left-content">
             <div class="left-logo">
                 @if(!empty($logo_url))
-                    <img src="{{ $logo_url }}" alt="Bacha Stylo">
+                    <img src="{{ admin_img($logo_url, 160) }}" alt="Bacha Stylo">
                 @endif
             </div>
             <div class="brand-name">Bacha <span>Stylo</span><br>Admin</div>

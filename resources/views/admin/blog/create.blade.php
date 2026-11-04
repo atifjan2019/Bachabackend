@@ -66,7 +66,7 @@
                     <div class="form-group">
                         <label class="form-label">Social Share Image (OG Image)</label>
                         <div id="og-preview" style="margin-bottom:8px; {{ old('og_image') ? '' : 'display:none;' }}">
-                            <img src="{{ old('og_image') }}" alt="OG preview" style="max-height:120px; border-radius:6px;">
+                            <img src="{{ admin_img(old('og_image'), 480) }}" alt="OG preview" style="max-height:120px; border-radius:6px;">
                         </div>
                         <span class="btn-library" onclick="openMediaPicker('og_image', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
                         <input type="hidden" name="og_image" value="{{ old('og_image') }}">

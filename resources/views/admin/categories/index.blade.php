@@ -35,7 +35,7 @@
                     <td data-label="Category">
                         <div class="entity">
                             @if($cat->image)
-                                <div class="entity-thumb"><img src="{{ $cat->image }}" alt=""></div>
+                                <div class="entity-thumb"><img src="{{ admin_img($cat->image, 160) }}" alt=""></div>
                             @else
                                 <div class="entity-thumb"><i class="mdi mdi-shape-outline"></i></div>
                             @endif

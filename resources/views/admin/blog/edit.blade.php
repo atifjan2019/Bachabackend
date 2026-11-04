@@ -66,7 +66,7 @@
                     <div class="form-group">
                         <label class="form-label">Social Share Image (OG Image)</label>
                         <div id="og-preview" style="margin-bottom:8px; {{ old('og_image', $post->og_image) ? '' : 'display:none;' }}">
-                            <img src="{{ old('og_image', $post->og_image) }}" alt="OG preview" style="max-height:120px; border-radius:6px;">
+                            <img src="{{ admin_img(old('og_image', $post->og_image), 480) }}" alt="OG preview" style="max-height:120px; border-radius:6px;">
                         </div>
                         <span class="btn-library" onclick="openMediaPicker('og_image', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>
                         <input type="hidden" name="og_image" value="{{ old('og_image', $post->og_image) }}">
@@ -87,7 +87,7 @@
                         <input type="file" name="image_file" class="form-control" accept="image/*" onchange="previewImg(this)">
                         <div id="img-preview" style="margin-top:8px;">
                             @if($post->image)
-                                <img src="{{ $post->image }}" alt="Featured image" style="max-height:140px; border-radius:6px; width:100%; object-fit:cover;">
+                                <img src="{{ admin_img($post->image, 480) }}" alt="Featured image" style="max-height:140px; border-radius:6px; width:100%; object-fit:cover;">
                             @endif
                         </div>
                         <span class="btn-library" onclick="openMediaPicker('image', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>

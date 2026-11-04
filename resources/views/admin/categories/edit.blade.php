@@ -50,7 +50,7 @@
                         <input type="file" name="image_file" class="form-control" accept="image/*" onchange="previewImg(this)">
                         <div id="img-preview" style="margin-top:8px;">
                             @if($category->image)
-                                <img src="{{ $category->image }}" alt="Category image" style="max-height:140px; border-radius:6px; width:100%; object-fit:cover;">
+                                <img src="{{ admin_img($category->image, 480) }}" alt="Category image" style="max-height:140px; border-radius:6px; width:100%; object-fit:cover;">
                             @endif
                         </div>
                         <span class="btn-library" onclick="openMediaPicker('image', false)"><i class="mdi mdi-folder-image"></i> Select from Library</span>

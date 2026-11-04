@@ -268,13 +268,13 @@ function renderMpPreview(target, urls, multiple) {
         container.innerHTML = '';
         urls.forEach(url => {
             const img = document.createElement('img');
-            img.src = url;
+            img.src = adminThumb(url);
             img.style.cssText = 'max-height:100px; border-radius:6px; border:1px solid #ddd;';
             container.appendChild(img);
         });
     } else if (urls[0]) {
         container.style.display = 'block';
-        container.innerHTML = '<img src="' + urls[0] + '" alt="Preview" style="max-height:160px; border-radius:6px;">';
+        container.innerHTML = '<img src="' + adminThumb(urls[0]) + '" alt="Preview" style="max-height:160px; border-radius:6px;">';
     }
 }
 </script>

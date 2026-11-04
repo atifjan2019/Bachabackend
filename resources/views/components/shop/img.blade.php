@@ -20,8 +20,14 @@
     // Resized variants (ImageVariant) when the slot size is known: fluid
     // candidates for a `sizes` image, 1x/2x for a fixed-width one.
     $srcset = null;
+    // Unsized images get the fluid set at 100vw: a resized copy from this
+    // site beats the original from the media CDN, which not every visitor
+    // can reach.
+    if ($variants && $src !== '' && ! $widths && ! $sizes && ! $width) {
+        $sizes = '100vw';
+    }
     if ($variants && $src !== '' && ($widths || $sizes || $width)) {
-        $candidates = $widths ?: ($sizes ? \App\Support\Storefront\ImageVariant::FLUID : [(int) $width, (int) $width * 2]);
+        $candidates = $widths ?: ($width ? [(int) $width, (int) $width * 2] : \App\Support\Storefront\ImageVariant::FLUID);
         $candidates = array_values(array_filter($candidates, fn ($w) => in_array($w, \App\Support\Storefront\ImageVariant::WIDTHS, true)));
         $srcset = $candidates ? \App\Support\Storefront\ImageVariant::srcset($src, $candidates) : null;
         if ($srcset && ! $sizes) {
